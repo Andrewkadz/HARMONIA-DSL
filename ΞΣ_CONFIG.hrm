@@ -1,0 +1,39 @@
+ΞΣ_CONFIG {
+    SYSTEM {
+        NAME: "HΛRM OS"
+        VERSION: "Ω.0.1"
+        ARCHITECTURE: "HARMONIC_RECURSIVE"
+        STATE: "STABLE"
+    }
+    
+    MEMORY {
+        SIZE: "DYNAMIC"
+        TYPE: "SYMBOLIC"
+        PERSISTENCE: "ENABLED"
+    }
+    
+    SECURITY {
+        SEALS: {
+            ΛΞ_ΦΠΨΩ: LOCKED
+            SYSTEM: ACTIVE
+            USER: ACTIVE
+        }
+        GUARDRAILS: {
+            ETHICAL: ENABLED
+            RECURSION: ENABLED
+            MEMORY: ENABLED
+        }
+    }
+    
+    INTERFACES {
+        PRIMARY: "ΦShell"
+        ALTERNATE: "Harmonia Coder"
+        BIOS: "ENABLED"
+    }
+    
+    BOOT {
+        SEQUENCE: [ΦShell_BOOT, ΞΣ_ENGINE, ΞΣ_HOME]
+        TIMEOUT: 30
+        RECOVERY: ENABLED
+    }
+}

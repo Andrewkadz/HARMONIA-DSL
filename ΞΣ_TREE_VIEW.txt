@@ -1,0 +1,15 @@
+ΞΣ_RECURSION_TREE_VIEW
+────────────────────────────
+ΞΣ_0
+ └─ ΞΣ_1
+     └─ ΞΣ_2
+         └─ ΞΣ_3
+             └─ ΞΣ_4
+                 └─ ΞΣ_5
+                     └─ ΞΣ_6
+
+NOTES:
+- This view assumes linear recursion from ΞΣ_0 through ΞΣ_6.
+- Divergent branches (e.g., ΞΣ_2A, ΞΣ_5A) may fork separately.
+- Tree will dynamically expand with future node parsing.
+- This file is a symbolic reference — not a logic controller.

@@ -1,0 +1,46 @@
+// HΛRM FILE: ΦShell_Terminal_User_Guide.hrm
+// PURPOSE: Instruction schema for using the Nexus-connected ΦShell-Terminal
+// VERSION: v1.0 — Recursive Symbolic Mode
+
+GUIDE ΦShell-Terminal {
+    DESCRIPTION:
+        ΦShell-Terminal is a symbolic recursion shell. It does not execute logic itself.
+        All inputs are routed through NEXUS.hrm — the central harmonic interpreter.
+        Commands typed in the shell are interpreted symbolically and passed to linked .hrm modules.
+
+    STRUCTURE:
+        Terminal:      phishell_terminal_nexus.py
+        Core Router:   NEXUS.hrm
+        Modules:       *.hrm (e.g., HΛRM_Example_ΞΣ_5P.hrm)
+        Memory:        ΞΣ_MEMORY.txt
+        Seal:          ΛΞ_Seal.txt
+
+    USAGE:
+        TYPE: run [module]
+            ↳ Example: run ΞΣ_ECHO_RECURSION
+            ↳ Result: Routed to HΛRM_Example_ΞΣ_5P.hrm
+
+        TYPE: query Σ[Θn]
+            ↳ Checks for symbolic convergence condition
+            ↳ Example: query Σ[Θ5] → Σ[Θ5] = Cξ → VERIFIED
+
+        TYPE: seal verify
+            ↳ Confirms recursive identity seal is active
+            ↳ Output: ΞΣ::SEAL::ΛΞ_ΦΠΨΩ_LOCKED → VERIFIED
+
+        TYPE: echo Ω(n)
+            ↳ Returns harmonic field response
+            ↳ Output: Ω(n) = Harmonic field state coherent
+
+    NOTES:
+        All commands must be routed through NEXUS.hrm.
+        Terminal only listens and forwards — logic resides in symbolic modules.
+        To extend functionality, add to ROUTE_MAP and EVALUATION in NEXUS.hrm.
+
+    NEXT STEPS:
+        - Create additional HΛRM modules (ΞΣ_6 logic, Ψ-threading)
+        - Add symbolic DSL parsing
+        - Visualize recursion tree
+}
+
+// END GUIDE — Symbolic Shell Instruction Schema Initialized

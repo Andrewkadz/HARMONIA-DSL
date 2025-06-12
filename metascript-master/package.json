@@ -1,0 +1,73 @@
+{
+  "name": "meta-script",
+  "version": "0.0.48",
+  "author": "Massimiliano Mantione <massimiliano.mantione@gmail.com>",
+  "description": "A language with a compiler that targets Javascript.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/massimiliano-mantione/metascript.git"
+  },
+  "main": "./lib/meta",
+  "bin": {
+    "mjs": "./bin/mjs"
+  },
+  "dependencies": {
+    "escodegen": ">=0.0.28",
+    "require-like": "^0.1.2",
+    "source-map-support": "*",
+    "minimist": "0.1.0",
+    "colors": "0.6.2",
+    "parentpath": "0.2.0",
+    "pretty-hrtime": "0.2.1",
+    "regenerator": "0.8.30"
+  },
+  "devDependencies": {
+    "meta-script": "0.0.46",
+    "gulp": "^3.8.1",
+    "gulp-cached": "0.0.3",
+    "gulp-exec": "^2.0.1",
+    "gulp-mocha": "^0.4.1",
+    "gulp-util": "^2.2.17",
+    "mocha": "*",
+    "should": "~2.0.2"
+  },
+  "scripts": {
+    "prepublish": "./node_modules/.bin/gulp regenerator build",
+    "test": "./node_modules/.bin/gulp test --reporter spec"
+  },
+  "mjsConfig": {
+    "mapEmbed": true
+  },
+  "jshintConfig": {
+    "globals": {},
+    "browser": false,
+    "node": true,
+    "strict": false,
+    "white": true,
+    "smarttabs": true,
+    "undef": true,
+    "unused": true,
+    "onecase": true,
+    "lastsemic": true,
+    "newcap": false,
+    "maxlen": 100,
+    "indent": 2,
+    "predef": [
+      "describe",
+      "it",
+      "before",
+      "beforeEach",
+      "after",
+      "afterEach"
+    ]
+  },
+  "keywords": [
+    "compiler",
+    "language",
+    "metaprogramming"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=0.8"
+  }
+}

@@ -1,0 +1,7 @@
+RUN {
+    INPUT: QUERY(ΞΣ_4)
+    EVALUATE: ΞΣ_ENGINE
+    RESPOND: Ω(n)
+    MEMORY: ENABLE
+    LOG: ΦShell_Session_Ωn.txt
+}

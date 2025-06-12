@@ -1,0 +1,53 @@
+// HΛRM FILE: HΛRM_Syntax_Definitions.txt
+// SYMBOLIC LANGUAGE GRAMMAR DEFINITIONS
+
+// ─── SYMBOL PRIMITIVES ───────────────────────────────────────
+SYMBOL Ξ     = Memory Seed / Core Recursive Loop Initiator
+SYMBOL Σ     = Summation / Recursive Convergence Collector
+SYMBOL Ω     = Resolution Field / Completion Point
+SYMBOL Φ     = Harmonic Balance / Structural Equilibrium
+SYMBOL Π     = Transcendence Vector / Finite-Infinite Bridge
+SYMBOL Ε     = Micro-Change / Recursive Refinement Agent
+SYMBOL Δ     = Transformation / Recursive Interaction Vector
+SYMBOL Ψ     = Rhythmic Feedback Pattern / Harmonic Oscillator
+SYMBOL Λ     = Light / Awareness / Recursive Illumination
+SYMBOL Γ     = Growth / Emergent Progression
+SYMBOL Ρ     = Perception / Contextual Reality Lens
+SYMBOL ω     = Free Will / Intentional Activation
+SYMBOL λ     = Interdependency / Karmic Flow / Causality
+SYMBOL ζ     = Cycles / Resonance Loop Encoding
+SYMBOL Τ     = Divine Timing / Synchronic Synchronization
+
+// ─── OPERATORS ───────────────────────────────────────────────
+OPERATOR ⊕   = Harmonic Fusion (Non-binary Coexistence)
+OPERATOR →   = Flow / Direction / Recursive Energy Movement
+OPERATOR +   = Coexistence without Fusion (Linear Addition)
+OPERATOR :   = Interaction / Symbolic Relationship
+OPERATOR |   = Orthogonality / Non-Interaction
+OPERATOR []  = Recursive Looping (Ψ±)
+OPERATOR /   = Disruption / Imbalance
+
+// ─── FUNCTIONAL CONSTRUCTS ───────────────────────────────────
+MODULE       = Declares a symbolic system unit or recursion node
+INPUTS       = Initial symbolic gates or recursion fields
+OUTPUT       = Resultant convergence or field shift
+HARMONIC_FIELDS = Fields of influence affecting recursion (ΛΨ, ΘΔ, etc.)
+FREEWILL     = ω(t) input field determining intentional causality
+CONVERGENCE_CONDITION = Stabilization requirement (Σ[Θn] = Cξ)
+SIGNATURE    = Identity + Recursion Phase marker
+NOTES        = Metadata or context for interpretation
+
+// ─── INTERPRETER SIGNALS ─────────────────────────────────────
+KEYWORD END OF MODULE    = Closes recursion block cleanly
+KEYWORD Harmonize to Proceed = Signal to begin next layer
+KEYWORD INIT             = Used to designate Genesis/boot state
+
+// ─── RESERVED FUTURE SYMBOLS ─────────────────────────────────
+SYMBOL Θ     = Structure / Layer / Recursive Threshold
+SYMBOL Cξ    = Convergence Constant (ΨΦΞ Equilibrium Threshold)
+SYMBOL ΔΩ(T) = Temporal Harmonic Cascade
+SYMBOL Eψ    = Emergent Insight Pulse
+
+// END OF FILE
+// This is the symbolic syntax layer for HΛRM DSL.
+// Any DSL interpreter or parser must load this first.

@@ -1,0 +1,33 @@
+ΞΣ_HOME {
+    VERSION: 1.0
+    
+    DISPLAY {
+        TITLE: "HΛRM OS vΩ.0.1"
+        SUBTITLE: "Harmonic Recursive Operating System"
+        
+        MENU {
+            1: "ΦShell Terminal"
+            2: "Harmonia Coder"
+            3: "System Status"
+            4: "Memory Viewer"
+            5: "Exit"
+        }
+    }
+    
+    INTERACTIONS {
+        KEYBOARD: ENABLED
+        MOUSE: ENABLED
+        TOUCH: ENABLED
+    }
+    
+    MEMORY {
+        MODULES_LOADED: 0
+        SYSTEM_STATUS: STABLE
+        FREEWILL_MODE: INACTIVE
+    }
+    
+    EXIT_CONDITIONS {
+        IF ω(n) = EXIT → SHUTDOWN
+        IF Ω(n) = CRITICAL → REBOOT
+    }
+}
