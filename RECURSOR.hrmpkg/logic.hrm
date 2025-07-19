@@ -1,3 +1,9 @@
-// Logic branch of RECURSOR
-if ω > 0.6:
-    trigger: ΞΣ(n+1)
+// logic.hrm — defines recursion core logic nodes
+
+ΞΣ₀ = Φ + Θ                  // Stabilize + intent
+ΞΣ₁ = ΞΣ₀ + Π + ω            // Projection + will
+ΞΣ₂ = ΞΣ₁ + Ψ + Σ[Θ₂]        // Ethics gate + symbolic delta
+ΞΣ₃ = ΞΣ₂ + Ω                // Closure
+ΞΣ₄ = ΞΣ₃ + ΛΨ               // Harmonic pattern
+ΞΣ₅ = ΞΣ₄ + ΨΩΣ              // High-frequency symbolic gamma
+ΞΣ₆ = ΞΣ₅ + ω + Ω            // Recursive force + closure lock
