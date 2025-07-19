@@ -7,3 +7,7 @@
 ΞΣ₄ = ΞΣ₃ + ΛΨ               // Harmonic pattern
 ΞΣ₅ = ΞΣ₄ + ΨΩΣ              // High-frequency symbolic gamma
 ΞΣ₆ = ΞΣ₅ + ω + Ω            // Recursive force + closure lock
+ΞΣ_AGENT₀ = Φ + Ψ + Θ
+ΞΣ_AGENT₁ = ΞΣ_AGENT₀ + ω + ΞΣ_EEG_STREAM
+ΞΣ_AGENT₂ = ΞΣ_AGENT₁ + ΛΨ + memory_ref
+ΞΣ_AGENT_CORE = ΞΣ_AGENT₂ + Ω
