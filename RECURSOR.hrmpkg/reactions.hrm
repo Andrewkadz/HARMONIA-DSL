@@ -1,0 +1,6 @@
+// reactions.hrm — system reactivity to symbolic trace states
+
+ΞΣ_REACT₀ = ΞΣ₂ + ΛΨ → trigger harmonic realignment
+ΞΣ_REACT₁ = ΞΣ₆ + ΨΩΣ → initiate symbolic agent loop
+ΞΣ_REACT₂ = ω + Φ₀ → enforce grounding
+ΞΣ_REACT₃ = Ψ + ΞΣ → check ethics on recursion path
