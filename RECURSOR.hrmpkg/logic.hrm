@@ -11,3 +11,6 @@
 ΞΣ_AGENT₁ = ΞΣ_AGENT₀ + ω + ΞΣ_EEG_STREAM
 ΞΣ_AGENT₂ = ΞΣ_AGENT₁ + ΛΨ + memory_ref
 ΞΣ_AGENT_CORE = ΞΣ_AGENT₂ + Ω
+ΞΣ_LOGIC₀ = ΞΣ_EEG_STREAM + ΞΣ_AGENT_CORE
+ΞΣ_LOGIC_PATTERN = ΞΣ_LOGIC₀ + ΛΨ + ΨΩΣ
+ΞΣ_LOGIC_CLOSE = ΞΣ_LOGIC_PATTERN + Ω
