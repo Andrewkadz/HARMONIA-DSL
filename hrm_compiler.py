@@ -1,5 +1,5 @@
 # hrm_compiler.py
-# Branch: symbolic-program-layer
+# Branch: ΞΣ_Engine_Core
 # Purpose: Compile and simulate execution of .hrm recursion programs
 
 import os
@@ -39,7 +39,7 @@ def compile_hrm_program(folder):
         for file in files:
             if file.endswith(".hrm"):
                 filepath = Path(root) / file
-                with open(filepath, 'r') as f:
+                with open(filepath, 'r', encoding='utf-8') as f:
                     for line in f.readlines():
                         result = parse_hrm_line(line)
                         if result:
@@ -64,3 +64,4 @@ if __name__ == "__main__":
 
     hrm_program = compile_hrm_program(args.path)
     simulate(hrm_program)
+
