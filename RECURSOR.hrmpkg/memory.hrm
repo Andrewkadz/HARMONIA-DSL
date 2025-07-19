@@ -9,3 +9,5 @@
 ΞΣ₄ = ΞΣ₃ + ΛΨ
 ΞΣ₅ = ΞΣ₄ + ΨΩΣ
 ΞΣ₆ = ΞΣ₅ + ω + Ω
+ΞΣ_MEMORY₀ = Θ + Φ₀ + ΞΣ_EEG_HISTORY
+ΞΣ_MEMORY_TRACE = ΞΣ_MEMORY₀ + Ψ + Ω
