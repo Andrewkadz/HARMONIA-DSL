@@ -1,0 +1,7 @@
+@'
+{"prompt": "Entangle two qubits", "response": "H(0) → CX(0,1) → Measure"}
+{"prompt": "Build recursive merge of ΨΨ and ΦΦ", "response": "[Ξ]ΨΨ⟴ΦΦ[Ω]"}
+{"prompt": "Stabilize quantum state", "response": "ΦπεNode.stabilize() → ΔΣ"}
+{"prompt": "Design harmonic superposition logic", "response": "ΨΛΩLoop(iterate)"}
+{"prompt": "Construct symbolic mapping structure", "response": "RecursiveSymbolicMap.connect()"}
+'@ | Set-Content -Encoding UTF8 dataset.jsonl
