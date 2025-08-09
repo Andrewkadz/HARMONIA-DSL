@@ -1,0 +1,22 @@
+FileName: InterpreterModuleToPy.1
+Version: 0.1
+InputFormat: hrm
+OutputFormat: py
+
+// HΛRM FILE: Interpreter.hrm
+// PURPOSE: Specify interpreter integration for the Harmonia OS console
+// ROLE: Describes how the console invokes the Φπε runtime to execute DSL scripts.
+
+INTERPRETER {
+    VERSION: 0.1
+    STATUS: DRAFT
+    ENGINE: "Φπε runtime (Python implementation)"
+    EXECUTION_MODE: "Local (offline) execution"
+    INTEGRATION:
+        "Call the Φπε runtime functions directly via Python (e.g., import φpe module),
+         allowing scripts to run and produce timeline data conforming to the SOTMA architecture."
+    NOTES:
+        Execution can be triggered on demand; future versions may support step‑by‑step execution.
+}
+
+// END FILE — Interpreter.hrm
