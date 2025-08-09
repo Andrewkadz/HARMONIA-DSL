@@ -1,0 +1,87 @@
+FileName: FileTypeOneSpec.1
+Version: 0.1
+InputFormat: hrm
+OutputFormat: hrm
+
+# FileTypeOne (.1) Specification
+Author: Andrew J. Kadziolka
+Version: 0.1
+Created: 2025‑08‑09
+
+## Purpose
+
+The **`.1`** file format provides a universal container for cross‑format
+conversions within the Harmonia OS ecosystem.  By combining a small
+metadata header with a verbatim payload, a `.1` file tells
+downstream tools how to interpret its contents and what output
+format is desired.  This allows arbitrary conversions (HRM → PDF,
+Python → JSON, etc.) to be achieved by a common parsing and dispatch
+mechanism.
+
+## Structure
+
+A `.1` file is divided into two sections separated by a single
+blank line:
+
+### Header
+
+The header is composed of lines of the form `Key: Value`.  The
+following keys are required:
+
+- **FileName** – the name of the `.1` file (without path).
+- **Version** – a semantic version describing the `.1` document
+  itself.
+- **InputFormat** – the format of the payload (e.g. `hrm`, `py`,
+  `json`).
+- **OutputFormat** – the desired output format (e.g. `pdf`, `json`,
+  `txt`).
+
+Additional optional fields may be provided to store metadata such as
+author or creation date.  The header terminates at the first blank
+line.
+
+### Payload
+
+Following the blank line is the payload section, which contains the
+original content in the format specified by `InputFormat`.  It is
+treated as raw text by the parser.  When converting, the parser
+interprets this payload using the appropriate parser for the
+`InputFormat`, then produces output in the `OutputFormat`.
+
+## Example
+
+The following snippet shows a minimal `.1` file that wraps a small
+HRM document for conversion to PDF:
+
+```
+FileName: example.1
+Version: 0.1
+InputFormat: hrm
+OutputFormat: pdf
+
+# Title
+This is a sample HRM payload that can be converted to PDF.
+```
+
+In this example the header tells the parser to treat the payload as
+an HRM document and that the desired output is PDF.  The parser
+would invoke an HRM → PDF converter on the payload.
+
+## Implementation Notes
+
+To implement support for `.1` files in your own tools:
+
+1. Read the file line by line until a blank line is encountered.
+   Parse each non‑blank line into `Key` and `Value` components
+   separated by the first colon (`:`).  Trim whitespace.
+2. Store these key–value pairs in a metadata dictionary.  At
+   minimum the required keys must be present.
+3. After the blank line, read the remainder of the file as the
+   payload.
+4. Dispatch the payload to the appropriate converter based on
+   `InputFormat` and `OutputFormat`.  If no converter exists for a
+   given pair of formats, raise an informative error.
+
+This specification intentionally remains simple and flexible so
+that future extensions can add additional fields or semantics
+without breaking existing tools.

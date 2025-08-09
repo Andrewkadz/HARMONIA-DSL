@@ -1,0 +1,46 @@
+# FileTypeOne Format (.1) Overview
+Author: Andrew J. Kadziolka
+Version: 0.1
+Created: 2025‑08‑09
+
+## Purpose
+
+The **`.1`** file type is a universal container designed for the Harmonia OS.
+It allows any piece of source material (an HRM script, a Python file, a JSON
+document and so on) to be packaged with metadata describing both its origin
+format and the desired output format.  A `.1` file is intentionally simple:
+it consists of a header containing key–value pairs and a payload with the
+original content.  When a converter encounters a `.1` file, it reads the
+header to understand how to interpret and transform the payload.
+
+## Directory Contents
+
+This directory introduces the `.1` format and includes:
+
+- **FileTypeOneSpec.hrm** – a specification of the `.1` format written in
+  Harmonia HRM notation.  It explains the structure and required fields.
+- **FileTypeOneSpec.1** – the same specification stored in a `.1` file.
+  The header declares that the payload is HRM and the desired output is HRM.
+- **SampleConversion.1** – a small example showing how an HRM document can be
+  wrapped in a `.1` file to be converted to PDF.
+
+These files are meant as a template.  You can create your own `.1`
+documents by following the specification and adjusting the `InputFormat`
+and `OutputFormat` fields to suit your needs.
+
+## Usage
+
+To convert a `.1` file, a parser must:
+
+1. Read the header until a blank line is encountered.  Each line of the
+   header uses the format `Key: Value`.  Required keys are `FileName`,
+   `Version`, `InputFormat` and `OutputFormat`.
+2. Parse the remaining lines of the file as the payload.  This will be the
+   original content in the format specified by `InputFormat`.
+3. Invoke the appropriate converter based on the `InputFormat` and
+   `OutputFormat` values.  For example, a converter could translate an
+   HRM script into a PDF document or render a Python script into JSON.
+
+The `.1` format does not prescribe any particular conversion logic; rather it
+acts as a neutral wrapper so that higher‑level tools can inspect the
+metadata and choose the appropriate transformation.
