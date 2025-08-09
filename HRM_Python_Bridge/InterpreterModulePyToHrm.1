@@ -1,0 +1,11 @@
+﻿FileName: InterpreterModulePyToHrm.1
+Version: 0.1
+InputFormat: py
+OutputFormat: hrm
+
+# interpreter_module.py
+VERSION = "0.1"
+STATUS = "DRAFT"
+
+def invoke_runtime(script):
+    return {"ok": True, "tokens": len(script)}
