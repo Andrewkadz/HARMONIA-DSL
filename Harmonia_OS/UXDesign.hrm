@@ -1,0 +1,20 @@
+// HΛRM FILE: UXDesign.hrm
+// PURPOSE: Summarize user experience and visual design principles for the Harmonia OS
+// ROLE: Outlines interface guidelines like symbol-first design and harmonic theme.
+
+UX_DESIGN {
+    VERSION: 0.1
+    STATUS: DRAFT
+    PRINCIPLES: {
+        SymbolFirst: "The UI uses glyphs and Greek letters in labels; the interface feels like an extension of the DSL.",
+        HarmonicTheme: "Dark background with gold or amber highlights; limited, meaningful color palette; optional glowing effects to indicate significant events."
+    }
+    EXAMPLES: {
+        RunButton: "Labelled with Φ (phi) or another appropriate glyph.",
+        OutputConsole: "Marked with Ω (omega) symbol."
+    }
+    NOTES:
+        Aims to reinforce the symbolic medium; reduces eye strain; each color or highlight indicates a type of information.
+}
+
+// END FILE — UXDesign.hrm

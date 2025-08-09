@@ -1,0 +1,17 @@
+// HΛRM FILE: FileManagement.hrm
+// PURPOSE: Describe file and session management for the Harmonia OS console
+// ROLE: Defines how the console saves, loads, and logs scripts and sessions.
+
+FILE_MANAGEMENT {
+    VERSION: 0.1
+    STATUS: DRAFT
+    FEATURES: {
+        SaveLoad: "Allows saving and loading of .hrm or text scripts; organizes scripts into projects or workspaces.",
+        Persistence: "Remembers last open file and session state; supports clearing sessions when needed.",
+        ExportLog: "Exports session logs with reflections, memory logs, and agent commentary for later review or debugging."
+    }
+    NOTES:
+        The UI includes file operations (New, Open, Save, Save As); supports projects; logs capture the dialogue between user, code, and agent.
+}
+
+// END FILE — FileManagement.hrm
