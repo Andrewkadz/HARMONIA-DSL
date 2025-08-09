@@ -1,0 +1,23 @@
+// HΛRM FILE: Console.hrm
+// PURPOSE: Entry point for the Harmonia OS interactive console
+// ROLE: Defines the main interactive shell module and loads submodules.
+
+CONSOLE_MODULE {
+    VERSION: 0.1
+    STATUS: ACTIVE
+    IDENTITY: HARMONIA_OS::CONSOLE
+
+    LOAD_MAP {
+        roadmap           → Roadmap.hrm
+        syntax_highlight  → SyntaxHighlight.hrm
+        interpreter       → Interpreter.hrm
+        mirror            → SymbolicMirror.hrm
+    }
+
+    NOTES:
+        This module initializes the interactive console, registers submodules,
+        and exposes commands for editing, parsing, running, and reflecting
+        Harmonia DSL scripts.
+}
+
+// END FILE — Console.hrm

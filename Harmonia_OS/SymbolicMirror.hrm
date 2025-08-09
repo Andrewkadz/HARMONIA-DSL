@@ -1,0 +1,21 @@
+// HΛRM FILE: SymbolicMirror.hrm
+// PURPOSE: Describe the symbolic mirror component of the Harmonia OS console
+// ROLE: Provides real‑time feedback on the meaning and structure of DSL scripts.
+
+SYMBOLIC_MIRROR {
+    VERSION: 0.1
+    STATUS: DRAFT
+    DESCRIPTION: 
+        "The symbolic mirror displays structured, symbolic feedback alongside code.
+         It reflects recursion state, field properties, and other semantic information
+         to help developers maintain harmonic coherence."
+    PANES: {
+        ASTView: "Visualizes the abstract syntax tree with glyph annotations.",
+        Timeline: "Shows the SOTMA timeline of execution states.",
+        Manifest: "Lists bloom manifest directives derived from the code."
+    }
+    NOTES:
+        This module is conceptual; implementation details depend on the UI toolkit chosen.
+}
+
+// END FILE — SymbolicMirror.hrm

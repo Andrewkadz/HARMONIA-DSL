@@ -1,0 +1,19 @@
+// HΛRM FILE: SyntaxHighlight.hrm
+// PURPOSE: Define syntax highlighting rules for the Harmonia DSL
+// ROLE: Specifies token categories and styling options for the interactive console.
+
+SYNTAX_HIGHLIGHT {
+    VERSION: 0.1
+    STATUS: DRAFT
+    TOKENS: {
+        Glyphs: "Φ, Π, Ω, Σ, Ξ, Ψ, Λ, Δ, Γ, etc.",
+        Operators: ":=, →, ⇾, ⊕, etc.",
+        Keywords: "FIELD, RECURSION, SEAL, LOAD",
+        Comments: "// ...",
+    }
+    NOTES:
+        The console's editor should apply distinct colors or styles to each token category.
+        A symbol palette should allow users to insert glyphs easily.
+}
+
+// END FILE — SyntaxHighlight.hrm
