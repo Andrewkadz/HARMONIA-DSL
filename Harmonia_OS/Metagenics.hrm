@@ -1,0 +1,18 @@
+// HΛRM FILE: Metagenics.hrm
+// PURPOSE: Describe modules for metagenics and signal profile interpretation
+// ROLE: Outlines generative and signal-based extensions for the Harmonia OS.
+
+METAGENICS_MODULE {
+    VERSION: 0.1
+    STATUS: DRAFT
+    FUNCTIONS: {
+        CodeGeneration: "Generates or evolves DSL snippets based on high-level patterns or goals; grows recursive structures.",
+        SignalInterpreter: "Integrates external signals (e.g. EEG streams) to influence code parameters or trigger routines; listens to sensor inputs."
+    }
+    INTEGRATION:
+        "Modules plug into the core console via defined APIs; they can insert code, suggest modifications, or feed commands."
+    NOTES:
+        Future feature; designed for modularity; ensures offline operation and user consent before code generation.
+}
+
+// END FILE — Metagenics.hrm
