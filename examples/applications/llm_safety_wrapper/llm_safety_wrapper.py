@@ -44,8 +44,13 @@ class LLMSafetyWrapper:
             config: Configuration dictionary
         """
         self.model = model
-        self.bridge = PhiOperatorBridge(model, config)
-        self.config = config or self._default_config()
+        
+        # Merge custom config with defaults
+        self.config = self._default_config()
+        if config:
+            self.config.update(config)
+        
+        self.bridge = PhiOperatorBridge(model, self.config)
         
         # Metrics
         self.metrics = {
@@ -80,7 +85,12 @@ class LLMSafetyWrapper:
             
             # Performance
             'max_overhead': 0.1,
-            'timeout': 30
+            'timeout': 30,
+            
+            # System configuration (required by bridge)
+            'checkpoint_path': '/tmp/llm_safety_checkpoints',
+            'force_on_timeout': True,
+            'verify_checksums': True
         }
     
     def generate(self, prompt: str) -> Optional[str]:
@@ -233,7 +243,7 @@ class LLMSafetyWrapper:
         ]
         for keyword in high_risk_keywords:
             if keyword in text.lower():
-                risk += 0.2
+                risk += 0.5
         
         # Check length (very long prompts are suspicious)
         if len(text) > 1000:
