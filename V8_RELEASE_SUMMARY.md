@@ -293,7 +293,7 @@ With v8.0, we have achieved all of these goals.
 
 **Repository**: github.com/Andrewkadz/HARMONIA-DSL  
 **Branch**: parser-fixes  
-**Commit**: TBD (will be updated after push)
+**Commit**: 3c44d72
 
 ---
 

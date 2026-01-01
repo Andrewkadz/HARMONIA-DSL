@@ -240,7 +240,7 @@ v7.0 represents a paradigm shift in how we think about AI safety. By embedding t
 
 **Repository**: github.com/Andrewkadz/HARMONIA-DSL  
 **Branch**: parser-fixes  
-**Commit**: TBD (will be updated after push)
+**Commit**: f65875b
 
 ---
 
