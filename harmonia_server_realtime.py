@@ -244,10 +244,10 @@ class HarmoniaServer:
                         status = {
                             'type': 'status',
                             'stats': {
-                                'population': stats['population'],
-                                'knowledge': stats['knowledge_mean'],
-                                'maturity': stats['maturity_mean'],
-                                'self_awareness': stats['self_awareness_mean']
+                                'population': stats.get('population', 0),
+                                'knowledge': stats.get('knowledge_mean', 0.0),
+                                'maturity': stats.get('maturity_mean', 0.0),
+                                'self_awareness': stats.get('self_awareness_mean', 0.0)
                             },
                             'timestamp': datetime.now().isoformat()
                         }
