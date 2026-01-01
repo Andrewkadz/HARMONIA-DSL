@@ -4,8 +4,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![Tests: 134/141 Passing](https://img.shields.io/badge/tests-134/141%20passing-brightgreen.svg)]()
-[![Status: v1.0 Production + v2.0 Alpha + v3.0 + v4.0](https://img.shields.io/badge/status-v1.0%20production%20%2B%20v2.0%20alpha%20%2B%20v3.0%20%2B%20v4.0-green.svg)]()
+[![Tests: 152/159 Passing](https://img.shields.io/badge/tests-152/159%20passing-brightgreen.svg)]()
+[![Status: v1.0 Production + v2.0 Alpha + v3.0 + v4.0 + v5.0](https://img.shields.io/badge/status-v1.0%20production%20%2B%20v2.0%20alpha%20%2B%20v3.0%20%2B%20v4.0%20%2B%20v5.0-green.svg)]()
 
 ---
 
@@ -180,9 +180,9 @@ The current version (v1.0) is a stable, tested, and practical implementation of 
 -   **v2.0 (Alpha)**: Time-stepping simulation (`∂`, `∫`) - Proof of concept complete ✓
 -   **v3.0 (Complete)**: Nonlinear dynamics (`exp-`, `tanh`, `^2`) - 19/19 tests passing ✓
 -   **v4.0 (Complete)**: Convergence analysis (`lim`) - 18/18 tests passing ✓
--   **v5.0 (Year 2)**: Probability and intentional action (`P`, `V`, `F`)
--   **v5.0 (Year 3)**: Energy and thermodynamics (`E`)
--   **v6.0+ (Year 4+)**: Full Grand Harmonic Equation integration
+-   **v5.0 (Complete)**: Intentional action (`P`, `V`, `F(P)`) - 18/18 tests passing ✓
+-   **v6.0 (Year 2)**: Energy and thermodynamics (`E`)
+-   **v7.0+ (Year 3+)**: Full Grand Harmonic Equation integration
 
 For the complete roadmap, see the **[Advanced Operators Implementation Plan](ADVANCED_OPERATORS_IMPLEMENTATION_PLAN.md)**.
 
@@ -212,6 +212,14 @@ For the complete roadmap, see the **[Advanced Operators Implementation Plan](ADV
 -   **[V4 User Guide](V4_CONVERGENCE_ANALYSIS_GUIDE.md)**: How to use convergence analysis
 -   **[V4 Demo](v4_convergence_demo.py)**: Live demonstrations of attractor detection
 -   **[V4 Examples](/examples/v4/)**: 2 complete example programs
+
+### v5.0 Intentional Action (Complete)
+-   **[V5 Specification](V5_INTENTIONAL_ACTION_SPECIFICATION.md)**: Complete technical specification
+-   **[V5 User Guide](V5_INTENTIONAL_ACTION_GUIDE.md)**: How to use intentional action
+-   **[V5 Safety Boundaries](V5_SAFETY_BOUNDARIES.md)**: How Φ and ε prevent chaos
+-   **[Φ-ε Interaction](PHI_EPSILON_INTERACTION.md)**: Mathematical ethics encoding
+-   **[V5 Demo](intentional_action.py)**: Live demonstrations of P, V, and F(P)
+-   **[V5 Examples](/examples/v5/)**: 2 complete example programs
 
 ### Theory
 -   **[/theory/](theory/README.md)**: The complete theoretical foundations, including the Grand Harmonic Equation.
