@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Tests: 86/86 Passing](https://img.shields.io/badge/tests-86/86%20passing-brightgreen.svg)]()
-[![Status: Production Ready](https://img.shields.io/badge/status-production%20ready-green.svg)]()
+[![Status: v1.0 Production + v2.0 Alpha](https://img.shields.io/badge/status-v1.0%20production%20%2B%20v2.0%20alpha-green.svg)]()
 
 ---
 
@@ -176,8 +176,8 @@ For a complete list of all 27 operators, see the **[Operator Reference Guide](OP
 
 The current version (v1.0) is a stable, tested, and practical implementation of the core homeostatic principle. The Grand Harmonic Equation provides a clear roadmap for future development.
 
--   **v1.0 (Current)**: Core stabilization formula (Σ)
--   **v2.0 (Year 1)**: Time-stepping simulation (`∂`, `∫`)
+-   **v1.0 (Current - Production)**: Core stabilization formula (Σ) - 86/86 tests passing
+-   **v2.0 (Current - Alpha)**: Time-stepping simulation (`∂`, `∫`) - Proof of concept complete
 -   **v3.0 (Year 2)**: Nonlinear dynamics (`exp-`, `tanh`, `^2`)
 -   **v4.0 (Year 2)**: Convergence analysis (`lim`)
 -   **v5.0 (Year 3)**: Energy and thermodynamics (`E`)
@@ -189,10 +189,18 @@ For the complete roadmap, see the **[Advanced Operators Implementation Plan](ADV
 
 ## 7. Key Documents
 
+### Core Documentation
 -   **[Academic Paper](HARMONIA_DSL_ACADEMIC_PAPER.md)**: The formal paper published on Academia.edu.
 -   **[Language Reference](HARMONIA_DSL_LANGUAGE_REFERENCE.md)**: The complete language specification.
 -   **[Operator Reference](OPERATOR_REFERENCE_GUIDE.md)**: Quick reference for all 27 operators.
 -   **[Practical Examples](PRACTICAL_EXAMPLES.md)**: Working examples and tutorials.
+
+### v2.0 Time & Dynamics (Alpha)
+-   **[V2 Implementation Status](V2_IMPLEMENTATION_STATUS.md)**: Current status of v2.0
+-   **[V2 User Guide](V2_TIME_DYNAMICS_GUIDE.md)**: How to use time-stepping features
+-   **[V2 Demo](time_stepping_demo.py)**: Working proof-of-concept demonstration
+
+### Theory
 -   **[/theory/](theory/README.md)**: The complete theoretical foundations, including the Grand Harmonic Equation.
 
 ---

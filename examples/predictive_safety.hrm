@@ -1,0 +1,27 @@
+# Predictive Safety Example
+# Demonstrates monitoring rate of change for early warning
+#
+# This program monitors the derivative of epsilon_drift to detect
+# when a system is trending towards danger, even if it's currently safe.
+#
+# This is the key innovation of v2.0: predictive safety through calculus.
+#
+# Run with:
+#   from time_stepping_interpreter import TimeSteppingInterpreter
+#   interpreter = TimeSteppingInterpreter()
+#   result = interpreter.run(open("predictive_safety.hrm").read(), num_steps=50)
+#   drift_derivative = interpreter.compute_derivative(result, "epsilon_drift")
+#   if drift_derivative > 0.1:
+#       print("⚠️  WARNING: System trending towards danger!")
+
+# Initialize with moderate drift
+Φ 5 3 0.2
+
+# Gradually increase drift each step
+ε 0.05
+
+# Compute derivative of drift (rate of change)
+∂ epsilon_drift
+
+# Stabilize
+Σ

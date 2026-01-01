@@ -556,3 +556,121 @@ class PhiPiEInterpreterFixed:
         context.tension.strength = max(0, context.tension.strength - 0.1)
         
         return field
+
+    def partial_derivative(self, field: Any, context: FieldContext, variable_name: str = "psi_signal") -> Any:
+        """
+        ∂ (Partial): Partial Derivative Operator
+        
+        Computes the discrete derivative (rate of change) of a state variable.
+        This operator requires time-stepping to function properly.
+        
+        Uses backward difference: ∂S/∂t ≈ S(t) - S(t-1)
+        
+        Implementation:
+        - Retrieves the history of the specified variable
+        - Computes the difference between current and previous values
+        - Stores result in context.derivative_value
+        
+        This operator enables:
+        - Predictive safety (monitoring rates of change)
+        - Trend analysis (is the system improving or degrading?)
+        - Dynamic adaptation (respond to velocity, not just position)
+        
+        Args:
+            field: The field being operated on
+            context: The field context (must have history)
+            variable_name: Name of the variable to differentiate (default: "psi_signal")
+        
+        Returns:
+            The field (unchanged)
+        """
+        # Check if we're in a time-stepping context
+        if not hasattr(context, 'history') or variable_name not in context.history:
+            # No history available - derivative is 0
+            if hasattr(context, 'derivative_value'):
+                context.derivative_value = 0.0
+            return field
+        
+        history = context.history[variable_name]
+        
+        if len(history) < 2:
+            # Not enough history to compute derivative
+            if hasattr(context, 'derivative_value'):
+                context.derivative_value = 0.0
+            return field
+        
+        # Backward difference: current - previous
+        derivative = history[-1] - history[-2]
+        
+        # Store the derivative value in the context
+        if hasattr(context, 'derivative_value'):
+            context.derivative_value = derivative
+        
+        # Also update psi_signal with the derivative (for chaining)
+        context.state.psi_signal = derivative
+        
+        return field
+    
+    def time_integral(self, field: Any, context: FieldContext, 
+                     variable_name: str = "psi_signal", window_size: Optional[int] = None) -> Any:
+        """
+        ∫ (Integral): Time Integral Operator
+        
+        Computes the discrete integral (accumulated value) of a state variable
+        over a specified time window. This operator requires time-stepping.
+        
+        Uses trapezoidal rule: ∫ S dt ≈ Δt * sum of averages of consecutive pairs
+        
+        Implementation:
+        - Retrieves the history of the specified variable
+        - Applies trapezoidal rule over the window
+        - Stores result in context.integral_value
+        
+        This operator enables:
+        - Memory and accumulation (total experience over time)
+        - Long-term stability analysis (has the system been stable?)
+        - Energy calculations (work done over time)
+        
+        Args:
+            field: The field being operated on
+            context: The field context (must have history)
+            variable_name: Name of the variable to integrate (default: "psi_signal")
+            window_size: Number of time steps to integrate over (None = all history)
+        
+        Returns:
+            The field (unchanged)
+        """
+        # Check if we're in a time-stepping context
+        if not hasattr(context, 'history') or variable_name not in context.history:
+            # No history available - integral is 0
+            if hasattr(context, 'integral_value'):
+                context.integral_value = 0.0
+            return field
+        
+        history = list(context.history[variable_name])
+        
+        if len(history) < 2:
+            # Not enough history to compute integral
+            if hasattr(context, 'integral_value'):
+                context.integral_value = 0.0
+            return field
+        
+        # Determine the window
+        if window_size is None or window_size > len(history):
+            window = history
+        else:
+            window = history[-window_size:]
+        
+        # Trapezoidal rule: sum of averages of consecutive pairs
+        integral = 0.0
+        for i in range(len(window) - 1):
+            integral += (window[i] + window[i + 1]) / 2.0
+        
+        # Store the integral value in the context
+        if hasattr(context, 'integral_value'):
+            context.integral_value = integral
+        
+        # Also update phi_state with the integral (for chaining)
+        context.state.phi_state = integral
+        
+        return field

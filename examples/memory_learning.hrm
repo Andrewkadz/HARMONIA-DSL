@@ -1,0 +1,35 @@
+# Memory and Learning Example
+# Demonstrates how state history enables memory
+#
+# This program shows how the system can "remember" past states
+# and compare them to the current state, enabling learning.
+#
+# Run with:
+#   from time_stepping_interpreter import TimeSteppingInterpreter
+#   interpreter = TimeSteppingInterpreter()
+#   result = interpreter.run(open("memory_learning.hrm").read(), num_steps=50)
+#   
+#   # Access memory
+#   psi_history = result.get_history("psi_signal")
+#   print(f"Past state (t=0): {psi_history[0]}")
+#   print(f"Current state (t=50): {psi_history[-1]}")
+#   print(f"Change: {psi_history[-1] - psi_history[0]}")
+
+# Initialize
+Φ 5 3 0.1
+
+# Evolve the system
+Ψ 0.2
+
+# Compute both derivative (short-term change) and integral (long-term accumulation)
+∂ psi_signal
+∫ psi_signal 10
+
+# Stabilize
+Σ
+
+# The history mechanism enables:
+# - Memory: Access to all past states
+# - Learning: Compare current to past
+# - Adaptation: Respond to trends
+# - Prediction: Extrapolate future states

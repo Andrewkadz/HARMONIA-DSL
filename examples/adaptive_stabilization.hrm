@@ -1,0 +1,23 @@
+# Adaptive Stabilization Example
+# Demonstrates a system that stabilizes over time
+#
+# This program starts with high drift and demonstrates how the system
+# naturally stabilizes through the homeostatic principle over time.
+#
+# Run with:
+#   from time_stepping_interpreter import run_time_stepping
+#   result = run_time_stepping(open("adaptive_stabilization.hrm").read(), num_steps=100)
+#   drift_history = result.get_history("epsilon_drift")
+#   print(f"Drift: {drift_history[0]:.3f} → {drift_history[-1]:.3f}")
+
+# Start with high drift (unstable)
+Φ 10 5 0.5
+
+# Monitor rate of change
+∂ epsilon_drift
+
+# Apply stabilization
+Σ
+
+# The system will naturally reduce drift over time
+# This demonstrates the homeostatic principle in action

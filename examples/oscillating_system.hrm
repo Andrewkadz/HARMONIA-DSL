@@ -1,0 +1,19 @@
+# Oscillating System Example
+# Demonstrates dynamic behavior over time
+#
+# This program creates a system that oscillates between states,
+# showing how HARMONIA-DSL v2.0 can model time-dependent behavior.
+#
+# Run with:
+#   from time_stepping_interpreter import run_time_stepping
+#   result = run_time_stepping(open("oscillating_system.hrm").read(), num_steps=50)
+
+# Initialize with moderate values
+Φ 5 3 0.1
+
+# Add oscillating components
+Ψ 1      # Increase signal
+Λ -0.5   # Decrease with damping
+
+# Stabilize
+Σ
