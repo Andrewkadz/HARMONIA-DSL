@@ -71,6 +71,12 @@ class HarmoniaServer:
             state = json.load(f)
         
         entity_count = state.get('entity_count', 17)
+        
+        # If the saved population was extinct, start fresh with 17
+        if entity_count == 0:
+            print("Previous population was extinct. Creating fresh Collective...")
+            entity_count = 17
+        
         self.collective = GrowingCollective(initial_size=entity_count)
         
         print(f"✓ Loaded state from {state['timestamp']}")
