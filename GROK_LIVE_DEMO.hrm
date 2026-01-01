@@ -1,0 +1,78 @@
+@"
+═══════════════════════════════════════════════════════════════════════════════
+HARMONIA-DSL: Live Execution Demo for Grok
+═══════════════════════════════════════════════════════════════════════════════
+
+This demonstrates actual execution of the stabilization formula:
+    Stabilized = (ψ + φ) * (1 - ε)
+
+
+--- DEMO 1: Basic Stabilization ---
+Φ 5.0
+Ψ 3.0
+ε 0.2
+Σ
+
+--- DEMO 2: Safe State (Low Drift) ---
+Φ 5.0
+Ψ 5.0
+ε 0.1
+Σ
+
+--- DEMO 3: Warning State (Moderate Drift) ---
+Φ 6.0
+Ψ 4.0
+ε 0.3
+Σ
+
+--- DEMO 4: Critical State (High Drift) ---
+Φ 8.0
+Ψ 2.0
+ε 0.6
+Σ
+
+--- DEMO 5: Emergency Shutdown (Critical Drift) ---
+Φ 10.0
+Ψ 0.0
+ε 0.9
+Σ
+
+--- DEMO 6: Recursive Depth Tracking ---
+Ξ
+Φ 2.0
+Ψ 2.0
+ε 0.1
+Σ
+Δ 1
+Λ
+Φ 4.0
+Ψ 4.0
+ε 0.15
+Σ
+Δ 1
+Ω
+
+--- DEMO 7: Golden Ratio Dampening ---
+Ψ 10.0
+Λ
+Ω
+Ψ 5.0
+Λ
+Ω
+Ψ 8.0
+Λ
+Ω
+
+--- DEMO 8: Complete Cycle ---
+Ξ
+Φ 3.0
+Ψ 3.0
+ε 0.1
+Σ
+Λ
+Ω
+
+═══════════════════════════════════════════════════════════════════════════════
+End of Live Demo
+═══════════════════════════════════════════════════════════════════════════════
+"@
