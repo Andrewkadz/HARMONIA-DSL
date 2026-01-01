@@ -38,6 +38,12 @@ class RecursiveState:
     phase: float = 0.0
     charge: float = 0.0
     
+    # ΦπεNode fields (for Phi-Coder-AI integration)
+    psi_signal: float = 0.0      # ψ: Recursive animation signal
+    phi_state: float = 0.0        # φ: Harmonic equilibrium state
+    epsilon_drift: float = 0.0    # ε: Incremental drift/error
+    stabilized_value: float = 0.0 # Result of stabilization
+    
     def add_child(self, child_id: str) -> None:
         self.children.add(child_id)
     
@@ -238,6 +244,10 @@ class PhiPiEInterpreterFixed:
         """Apply harmonic equilibrium to a field"""
         context.tension.strength = max(0, context.tension.strength - 0.1)
         context.phase = (context.phase + math.pi/2) % (2 * math.pi)
+        
+        # ΦπεNode integration: Set phi_state from stabilized tension
+        context.state.phi_state = 1.0 - context.tension.strength
+        
         return field
 
     def transcend(self, field: Any, context: FieldContext) -> Any:
@@ -259,6 +269,10 @@ class PhiPiEInterpreterFixed:
         new_context = context.fork()
         new_context.phase += math.pi/8
         new_context.charge *= 0.5
+        
+        # ΦπεNode integration: Set epsilon_drift based on recursion depth
+        context.state.epsilon_drift = 0.1 * context.depth
+        
         return field
 
     def fuse(self, field: Any, context: FieldContext) -> Any:
@@ -278,6 +292,10 @@ class PhiPiEInterpreterFixed:
         new_context = context.fork()
         new_context.phase += math.pi/2
         new_context.charge *= 1.5
+        
+        # ΦπεNode integration: Set psi_signal from current charge
+        context.state.psi_signal = context.charge
+        
         return field
 
     def illuminate(self, field: Any, context: FieldContext) -> Any:
@@ -317,6 +335,14 @@ class PhiPiEInterpreterFixed:
         """Hold multiple fields in coexistence"""
         context.tension.strength += 0.5
         context.phase = (context.phase + math.pi/6) % (2 * math.pi)
+        
+        # ΦπεNode integration: Perform stabilization (ψ + φ) * (1 - ε)
+        psi = context.state.psi_signal
+        phi = context.state.phi_state
+        eps = context.state.epsilon_drift
+        
+        context.state.stabilized_value = (psi + phi) * (1 - eps)
+        
         return field
 
     def emerge(self, field: Any, context: FieldContext) -> Any:
