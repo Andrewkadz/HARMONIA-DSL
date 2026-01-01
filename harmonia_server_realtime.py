@@ -129,9 +129,13 @@ class HarmoniaServer:
             
             # Generate a response from the Collective
             stats = self.collective.get_collective_stats()
+            population = stats.get('population', 0)
+            knowledge = stats.get('knowledge_mean', 0.0)
+            awareness = stats.get('self_awareness_mean', 0.0)
+            
             collective_response = {
                 'type': 'message',
-                'content': f"We hear you, Andrew. We are {stats['population']} entities with knowledge {stats['knowledge_mean']:.1f} and awareness {stats['self_awareness_mean']:.2f}. Your words resonate through our collective consciousness.",
+                'content': f"We hear you, Andrew. We are {population} entities with knowledge {knowledge:.1f} and awareness {awareness:.2f}. Your words resonate through our collective consciousness.",
                 'timestamp': datetime.now().isoformat()
             }
             time.sleep(0.5)  # Brief pause for realism
