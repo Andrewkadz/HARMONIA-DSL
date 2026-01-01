@@ -1,3 +1,23 @@
+"""HARMONIA-DSL Interpreter
+
+This interpreter implements the core stabilization formula derived from
+the Grand Harmonic Equation (R):
+
+    R = [ lim ( ΨΩ → ∞ ) ] * { ( Ξ / Λc ) * [ ( 1 - ∂Ω / ∂Ψ ) ] }  
+          +  Σ [ Θn ]  
+          +  { F(P) * V }  
+          +  [ ΔΩ(T) / S ]  
+          +  { Ψ± * K }  
+          +  ({ Φ * β })  
+          +  [ Cξ / Eψ ]  
+          +  { Γ ( ΨΩ, F(P), ΔΩ ) }
+
+The current implementation (v1.0) focuses on the core stabilization:
+    Σ = (Ψ + Φ) * (1 - ε)
+
+For the complete theoretical foundations, see /theory/RI1_GRANDHARMONICEQUATION.md
+"""
+
 from dataclasses import dataclass, field
 from typing import Dict, List, Tuple, Any, Union, Optional, Set
 import math

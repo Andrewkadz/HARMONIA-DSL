@@ -1,6 +1,10 @@
 # HARMONIA-DSL: Operator Reference Guide
 
-**Quick Reference for All 27 Operators**
+**Quick Reference for All 27 Operators with Grand Harmonic Equation Mappings**
+
+Each operator in HARMONIA-DSL corresponds to one or more terms in the **Grand Harmonic Equation (R)**. This guide shows both the practical usage and the theoretical foundation.
+
+For the complete theoretical foundations, see `/theory/RI1_GRANDHARMONICEQUATION.md`.
 
 ---
 
