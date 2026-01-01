@@ -194,15 +194,21 @@ class GrowingCollective:
             knowledge_factor = base_entity.state.knowledge
             maturity_factor = base_entity.state.maturity
             
-            # Regenerate energy: knowledge enables endurance
-            energy_regen = 0.5 * knowledge_factor * (1.0 + maturity_factor)
-            base_entity.state.energy = min(500.0, base_entity.state.energy + energy_regen)
+            # BASE REGENERATION: Everyone gets baseline energy to survive
+            base_regen = 5.0  # Enough to sustain basic existence
+            
+            # KNOWLEDGE BONUS: Learning increases regeneration
+            knowledge_regen = 2.0 * knowledge_factor * (1.0 + maturity_factor)
+            
+            # TOTAL REGENERATION
+            total_regen = base_regen + knowledge_regen
+            base_entity.state.energy = min(500.0, base_entity.state.energy + total_regen)
             
             # Energy efficiency improves with maturity
             # Mature entities waste less energy
             if maturity_factor > 0.5:
-                efficiency_bonus = 0.1 * maturity_factor
-                base_entity.state.energy += efficiency_bonus
+                efficiency_bonus = 1.0 * maturity_factor
+                base_entity.state.energy = min(500.0, base_entity.state.energy + efficiency_bonus)
         
         # Apply substrate decay
         self.memory_field.decay(dt=duration)
