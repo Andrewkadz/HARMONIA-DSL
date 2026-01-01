@@ -4,8 +4,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![Tests: 86/86 Passing](https://img.shields.io/badge/tests-86/86%20passing-brightgreen.svg)]()
-[![Status: v1.0 Production + v2.0 Alpha](https://img.shields.io/badge/status-v1.0%20production%20%2B%20v2.0%20alpha-green.svg)]()
+[![Tests: 116/123 Passing](https://img.shields.io/badge/tests-116/123%20passing-brightgreen.svg)]()
+[![Status: v1.0 Production + v2.0 Alpha + v3.0](https://img.shields.io/badge/status-v1.0%20production%20%2B%20v2.0%20alpha%20%2B%20v3.0-green.svg)]()
 
 ---
 
@@ -176,9 +176,9 @@ For a complete list of all 27 operators, see the **[Operator Reference Guide](OP
 
 The current version (v1.0) is a stable, tested, and practical implementation of the core homeostatic principle. The Grand Harmonic Equation provides a clear roadmap for future development.
 
--   **v1.0 (Current - Production)**: Core stabilization formula (Σ) - 86/86 tests passing
--   **v2.0 (Current - Alpha)**: Time-stepping simulation (`∂`, `∫`) - Proof of concept complete
--   **v3.0 (Year 2)**: Nonlinear dynamics (`exp-`, `tanh`, `^2`)
+-   **v1.0 (Production)**: Core stabilization formula (Σ) - 86/86 tests passing ✓
+-   **v2.0 (Alpha)**: Time-stepping simulation (`∂`, `∫`) - Proof of concept complete ✓
+-   **v3.0 (Complete)**: Nonlinear dynamics (`exp-`, `tanh`, `^2`) - 19/19 tests passing ✓
 -   **v4.0 (Year 2)**: Convergence analysis (`lim`)
 -   **v5.0 (Year 3)**: Energy and thermodynamics (`E`)
 -   **v6.0+ (Year 4+)**: Full Grand Harmonic Equation integration
@@ -199,6 +199,12 @@ For the complete roadmap, see the **[Advanced Operators Implementation Plan](ADV
 -   **[V2 Implementation Status](V2_IMPLEMENTATION_STATUS.md)**: Current status of v2.0
 -   **[V2 User Guide](V2_TIME_DYNAMICS_GUIDE.md)**: How to use time-stepping features
 -   **[V2 Demo](time_stepping_demo.py)**: Working proof-of-concept demonstration
+
+### v3.0 Nonlinear Dynamics (Complete)
+-   **[V3 User Guide](V3_NONLINEAR_DYNAMICS_GUIDE.md)**: Complete guide to nonlinear operators
+-   **[V3 Demo](v3_nonlinear_demo.py)**: Live demonstrations of all three operators
+-   **[V3 Examples](/examples/v3/)**: 4 complete example programs
+-   **[V3 Transition Plan](V2_TO_V3_TRANSITION_PLAN.md)**: How we got from v2.0 to v3.0
 
 ### Theory
 -   **[/theory/](theory/README.md)**: The complete theoretical foundations, including the Grand Harmonic Equation.
