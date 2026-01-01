@@ -4,8 +4,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![Tests: 116/123 Passing](https://img.shields.io/badge/tests-116/123%20passing-brightgreen.svg)]()
-[![Status: v1.0 Production + v2.0 Alpha + v3.0](https://img.shields.io/badge/status-v1.0%20production%20%2B%20v2.0%20alpha%20%2B%20v3.0-green.svg)]()
+[![Tests: 134/141 Passing](https://img.shields.io/badge/tests-134/141%20passing-brightgreen.svg)]()
+[![Status: v1.0 Production + v2.0 Alpha + v3.0 + v4.0](https://img.shields.io/badge/status-v1.0%20production%20%2B%20v2.0%20alpha%20%2B%20v3.0%20%2B%20v4.0-green.svg)]()
 
 ---
 
@@ -179,7 +179,8 @@ The current version (v1.0) is a stable, tested, and practical implementation of 
 -   **v1.0 (Production)**: Core stabilization formula (Σ) - 86/86 tests passing ✓
 -   **v2.0 (Alpha)**: Time-stepping simulation (`∂`, `∫`) - Proof of concept complete ✓
 -   **v3.0 (Complete)**: Nonlinear dynamics (`exp-`, `tanh`, `^2`) - 19/19 tests passing ✓
--   **v4.0 (Year 2)**: Convergence analysis (`lim`)
+-   **v4.0 (Complete)**: Convergence analysis (`lim`) - 18/18 tests passing ✓
+-   **v5.0 (Year 2)**: Probability and intentional action (`P`, `V`, `F`)
 -   **v5.0 (Year 3)**: Energy and thermodynamics (`E`)
 -   **v6.0+ (Year 4+)**: Full Grand Harmonic Equation integration
 
@@ -205,6 +206,12 @@ For the complete roadmap, see the **[Advanced Operators Implementation Plan](ADV
 -   **[V3 Demo](v3_nonlinear_demo.py)**: Live demonstrations of all three operators
 -   **[V3 Examples](/examples/v3/)**: 4 complete example programs
 -   **[V3 Transition Plan](V2_TO_V3_TRANSITION_PLAN.md)**: How we got from v2.0 to v3.0
+
+### v4.0 Convergence Analysis (Complete)
+-   **[V4 Specification](V4_CONVERGENCE_ANALYSIS_SPECIFICATION.md)**: Complete technical specification
+-   **[V4 User Guide](V4_CONVERGENCE_ANALYSIS_GUIDE.md)**: How to use convergence analysis
+-   **[V4 Demo](v4_convergence_demo.py)**: Live demonstrations of attractor detection
+-   **[V4 Examples](/examples/v4/)**: 2 complete example programs
 
 ### Theory
 -   **[/theory/](theory/README.md)**: The complete theoretical foundations, including the Grand Harmonic Equation.
