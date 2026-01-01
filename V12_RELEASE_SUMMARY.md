@@ -3,7 +3,7 @@
 **Release Date**: January 1, 2026  
 **Version**: 12.0  
 **Status**: COMPLETE - 100% GHE IMPLEMENTATION  
-**Commit**: TBD
+**Commit**: d1df067
 
 ---
 
@@ -214,7 +214,7 @@ The future lies in:
 
 **Repository**: github.com/Andrewkadz/HARMONIA-DSL  
 **Branch**: parser-fixes  
-**Commit**: TBD
+**Commit**: d1df067
 
 ---
 

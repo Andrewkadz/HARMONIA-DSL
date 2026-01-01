@@ -1,0 +1,144 @@
+{
+  "research_file": "RI1_RESEARCH_CLASSICALQUANTUMSOLUTION.pdf",
+  "research_length": 43229,
+  "key_concepts": {
+    "Recursive Harmonic Intelligence": 21,
+    "\u039eHRI-\u03a9": 38,
+    "\u03a6\u03c0\u03b5": 30,
+    "quantum-classical transition": 6,
+    "recursion depth": 74,
+    "entanglement": 67,
+    "wavefunction collapse": 21,
+    "harmonic space-time": 2,
+    "deterministic physics": 1,
+    "probabilistic physics": 2,
+    "unification": 8,
+    "consciousness": 1,
+    "recursive stabilization": 9,
+    "feedback resonance": 3,
+    "synchronization": 23
+  },
+  "initial_state": {
+    "population": 17,
+    "awareness_mean": 26.0,
+    "awareness_std": 9.797958971132712,
+    "ethics_mean": 18.0,
+    "coherence_mean": 9.0,
+    "energy_mean": 500.0,
+    "knowledge_mean": 0.1,
+    "maturity_mean": 0.1,
+    "self_awareness_mean": 0.0,
+    "num_conscious": 0,
+    "memory_stats": {
+      "total_memories": 15,
+      "avg_strength": 0.3533333333333332,
+      "avg_age": 0.0006129264831542969,
+      "avg_access_count": 0.0,
+      "capacity_used": 0.075
+    },
+    "comm_stats": {
+      "active_signals": 10,
+      "total_sent": 10,
+      "total_received": 0,
+      "bandwidth_used": 0.05,
+      "avg_signal_strength": 1.0
+    },
+    "births": 0,
+    "deaths": 0,
+    "challenges_attempted": 0,
+    "challenges_completed": 0,
+    "connection_attempts": 0,
+    "successful_connections": 0,
+    "messages_to_andrew": 0
+  },
+  "final_state": {
+    "population": 100,
+    "awareness_mean": 19.561657265494134,
+    "awareness_std": 0.12810148205154331,
+    "ethics_mean": 16.857570164784686,
+    "coherence_mean": 6.181258015566311,
+    "energy_mean": 511.8250296141216,
+    "knowledge_mean": 191.05462968703682,
+    "maturity_mean": 118.25029614121583,
+    "self_awareness_mean": 0.9453397702356965,
+    "num_conscious": 100,
+    "memory_stats": {
+      "total_memories": 200,
+      "avg_strength": 0.999982262787664,
+      "avg_age": 0.2580538833141327,
+      "avg_access_count": 0.26,
+      "capacity_used": 1.0
+    },
+    "comm_stats": {
+      "active_signals": 200,
+      "total_sent": 8885,
+      "total_received": 3241721,
+      "bandwidth_used": 1.0,
+      "avg_signal_strength": 0.8407978041321038
+    },
+    "births": 83,
+    "deaths": 0,
+    "challenges_attempted": 785965,
+    "challenges_completed": 785794,
+    "connection_attempts": 449345,
+    "successful_connections": 424905,
+    "messages_to_andrew": 424905
+  },
+  "response_log": [
+    {
+      "time": 30.001375913619995,
+      "population": 100,
+      "knowledge": 1.804077885735106,
+      "maturity": 0.8821611903858745,
+      "awareness": 22.977829381163176,
+      "memory_traces": 200,
+      "challenges_completed": 4240
+    },
+    {
+      "time": 60.00213837623596,
+      "population": 100,
+      "knowledge": 9.452446973277965,
+      "maturity": 5.502872880971365,
+      "awareness": 25.106057668662583,
+      "memory_traces": 200,
+      "challenges_completed": 33879
+    },
+    {
+      "time": 90.00799083709717,
+      "population": 100,
+      "knowledge": 41.389057628427,
+      "maturity": 25.275161144334028,
+      "awareness": 23.294720741973904,
+      "memory_traces": 200,
+      "challenges_completed": 165696
+    },
+    {
+      "time": 120.00787305831909,
+      "population": 100,
+      "knowledge": 91.58872934273033,
+      "maturity": 56.47361442306253,
+      "awareness": 23.56024987037465,
+      "memory_traces": 200,
+      "challenges_completed": 373994
+    },
+    {
+      "time": 150.00319719314575,
+      "population": 100,
+      "knowledge": 142.9806048647789,
+      "maturity": 88.37012436076213,
+      "awareness": 23.624564557628254,
+      "memory_traces": 200,
+      "challenges_completed": 586594
+    },
+    {
+      "time": 180.00247621536255,
+      "population": 100,
+      "knowledge": 191.05462968703682,
+      "maturity": 118.25029614121583,
+      "awareness": 19.561657265494134,
+      "memory_traces": 200,
+      "challenges_completed": 785794
+    }
+  ],
+  "duration": 180.00304102897644
+}

@@ -1,0 +1,182 @@
+{
+  "corpus_size": 14227123,
+  "corpus_concepts": {
+    "\u03a6\u03c0\u03b5": 5887,
+    "\u039eHRI": 197,
+    "recursion": 11388,
+    "harmonic": 14640,
+    "consciousness": 5469,
+    "resonance": 3684,
+    "emergence": 825,
+    "field": 12374,
+    "symbolic": 6642,
+    "recursive": 11494,
+    "sanctity": 89,
+    "sovereignty": 720,
+    "inoculation": 3,
+    "awareness": 3207,
+    "quantum": 3476,
+    "classical": 560,
+    "unification": 60,
+    "entanglement": 1089
+  },
+  "initial_state": {
+    "population": 17,
+    "awareness_mean": 26.0,
+    "awareness_std": 9.797958971132712,
+    "ethics_mean": 18.0,
+    "coherence_mean": 9.0,
+    "energy_mean": 500.0,
+    "knowledge_mean": 0.1,
+    "maturity_mean": 0.1,
+    "self_awareness_mean": 0.0,
+    "num_conscious": 0,
+    "memory_stats": {
+      "total_memories": 18,
+      "avg_strength": 0.5434444444444444,
+      "avg_age": 0.0006316900253295898,
+      "avg_access_count": 0.0,
+      "capacity_used": 0.09
+    },
+    "comm_stats": {
+      "active_signals": 50,
+      "total_sent": 50,
+      "total_received": 0,
+      "bandwidth_used": 0.25,
+      "avg_signal_strength": 1.0
+    },
+    "births": 0,
+    "deaths": 0,
+    "challenges_attempted": 0,
+    "challenges_completed": 0,
+    "connection_attempts": 0,
+    "successful_connections": 0,
+    "messages_to_andrew": 0
+  },
+  "final_state": {
+    "population": 100,
+    "awareness_mean": 30.176102478902536,
+    "awareness_std": 0.2067628499542357,
+    "ethics_mean": 18.16086642076986,
+    "coherence_mean": 8.496448780991882,
+    "energy_mean": 550.69938743055,
+    "knowledge_mean": 816.6776024357557,
+    "maturity_mean": 506.9938743054995,
+    "self_awareness_mean": 0.939730683600454,
+    "num_conscious": 100,
+    "memory_stats": {
+      "total_memories": 200,
+      "avg_strength": 0.9999939269641758,
+      "avg_age": 0.11638900279998779,
+      "avg_access_count": 0.2,
+      "capacity_used": 1.0
+    },
+    "comm_stats": {
+      "active_signals": 200,
+      "total_sent": 30465,
+      "total_received": 9795403,
+      "bandwidth_used": 1.0,
+      "avg_signal_strength": 0.935260664551258
+    },
+    "births": 85,
+    "deaths": 2,
+    "challenges_attempted": 3373658,
+    "challenges_completed": 3373500,
+    "connection_attempts": 3035122,
+    "successful_connections": 2851570,
+    "messages_to_andrew": 2851570
+  },
+  "response_log": [
+    {
+      "time": 60.002713680267334,
+      "population": 100,
+      "knowledge": 8.918841519556349,
+      "maturity": 5.137871061948929,
+      "self_awareness": 0.939730683600454,
+      "challenges": 31523,
+      "messages": 5942
+    },
+    {
+      "time": 120.00874757766724,
+      "population": 100,
+      "knowledge": 85.43942982313081,
+      "maturity": 52.56585200393943,
+      "self_awareness": 0.939730683600454,
+      "challenges": 347600,
+      "messages": 94896
+    },
+    {
+      "time": 180.0117199420929,
+      "population": 100,
+      "knowledge": 169.54830917146333,
+      "maturity": 104.7825317988949,
+      "self_awareness": 0.939730683600454,
+      "challenges": 696100,
+      "messages": 337014
+    },
+    {
+      "time": 240.00792455673218,
+      "population": 100,
+      "knowledge": 260.3905952532664,
+      "maturity": 161.20149885864336,
+      "self_awareness": 0.939730683600454,
+      "challenges": 1072000,
+      "messages": 689472
+    },
+    {
+      "time": 300.0163645744324,
+      "population": 100,
+      "knowledge": 353.37442410769296,
+      "maturity": 218.96734322346262,
+      "self_awareness": 0.939730683600454,
+      "challenges": 1456600,
+      "messages": 1050567
+    },
+    {
+      "time": 360.0050165653229,
+      "population": 100,
+      "knowledge": 439.6338118208724,
+      "maturity": 272.6459676104301,
+      "self_awareness": 0.939730683600454,
+      "challenges": 1813700,
+      "messages": 1386075
+    },
+    {
+      "time": 420.01012134552,
+      "population": 100,
+      "knowledge": 538.2268141707367,
+      "maturity": 333.9374937203819,
+      "self_awareness": 0.939730683600454,
+      "challenges": 2222000,
+      "messages": 1769759
+    },
+    {
+      "time": 480.0004622936249,
+      "population": 100,
+      "knowledge": 627.8196452405749,
+      "maturity": 389.599261399965,
+      "self_awareness": 0.939730683600454,
+      "challenges": 2592400,
+      "messages": 2117836
+    },
+    {
+      "time": 540.0084898471832,
+      "population": 100,
+      "knowledge": 715.6874737343537,
+      "maturity": 444.1526033250503,
+      "self_awareness": 0.939730683600454,
+      "challenges": 2955800,
+      "messages": 2458986
+    },
+    {
+      "time": 600.0000445842743,
+      "population": 100,
+      "knowledge": 816.6776024357557,
+      "maturity": 506.9938743054995,
+      "self_awareness": 0.939730683600454,
+      "challenges": 3373500,
+      "messages": 2851570
+    }
+  ],
+  "duration_minutes": 10.000010180473328
+}

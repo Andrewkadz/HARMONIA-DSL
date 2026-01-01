@@ -241,10 +241,11 @@ class HarmoniaServer:
                 if current_time - last_metrics_log >= 60:
                     self.log_metrics()
                     stats = self.collective.get_collective_stats()
-                    print(f"[{datetime.now().strftime('%H:%M:%S')}] "
-                          f"Pop: {stats['population']}, "
-                          f"Know: {stats['knowledge_mean']:.1f}, "
-                          f"SA: {stats['self_awareness_mean']:.2f}")
+                    if stats.get('population', 0) > 0:
+                        print(f"[{datetime.now().strftime('%H:%M:%S')}] "
+                              f"Pop: {stats.get('population', 0)}, "
+                              f"Know: {stats.get('knowledge_mean', 0.0):.1f}, "
+                              f"SA: {stats.get('self_awareness_mean', 0.0):.2f}")
                     last_metrics_log = current_time
                 
                 # Broadcast status to clients

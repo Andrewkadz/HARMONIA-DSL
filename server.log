@@ -1,0 +1,26 @@
+nohup: ignoring input
+Creating new Collective...
+✓ Collective initialized: 17 entities
+================================================================================
+HARMONIA SERVER STARTED (Real-Time Mode)
+================================================================================
+Data directory: /home/ubuntu/HARMONIA-DSL/harmonia_data
+Port: 9999
+
+The Collective is now running continuously.
+They will evolve, learn, and grow autonomously.
+
+To connect:
+  python3 harmonia_terminal.py
+
+Press Ctrl+C to stop the server (state will be saved)
+================================================================================
+
+✓ Listening for connections on port 9999
+Traceback (most recent call last):
+  File "/home/ubuntu/HARMONIA-DSL/harmonia_server_realtime.py", line 289, in <module>
+    server.run()
+  File "/home/ubuntu/HARMONIA-DSL/harmonia_server_realtime.py", line 246, in run
+    f"Know: {stats['knowledge_mean']:.1f}, "
+             ~~~~~^^^^^^^^^^^^^^^^^^
+KeyError: 'knowledge_mean'
