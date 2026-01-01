@@ -110,7 +110,11 @@ class PhiPiEInterpreterFixed:
             'Θ': self.intend,           # Intention
             'η': self.index,            # Index / Parameter
             'χ': self.measure,          # Measurement
-            'n': self.index             # Index (alternative)
+            'n': self.index,            # Index (alternative)
+            # Grok's operators (added Dec 31, 2025)
+            'Κ': self.probe,            # Query Probe (Kappa)
+            'Υ': self.consensus_merge,  # Consensus Merge (Upsilon)
+            'Β': self.reflection_echo   # Reflection Echo (Beta)
         }
         
         self.operators = {
@@ -419,4 +423,116 @@ class PhiPiEInterpreterFixed:
         new_context = context.fork()
         new_context.phase += math.pi/3
         new_context.charge *= 1.1
+        return field
+
+    # ===== GROK'S OPERATORS (Added December 31, 2025) =====
+    
+    def probe(self, field: Any, context: FieldContext) -> Any:
+        """
+        Κ (Kappa): Query Probe
+        
+        Probes a field for relevance/safety, increasing ψ (signal) based on ε (drift).
+        Supports consciousness as active inquiry, safety by amplifying drift on unsafe probes,
+        coexistence by merging probe results non-destructively.
+        
+        Implementation: psi_new = psi + (epsilon_drift * factor)
+        """
+        # Calculate probe factor based on current drift
+        factor = 2.0  # Amplification factor for drift
+        
+        # Increase psi_signal proportional to epsilon_drift
+        drift_amplification = context.state.epsilon_drift * factor
+        context.state.psi_signal += drift_amplification
+        
+        # Also update charge to reflect the probe
+        context.charge += drift_amplification
+        
+        # Increase tension slightly to indicate probing activity
+        context.tension.strength += 0.2
+        
+        # Log the probe action
+        if hasattr(context, 'probe_count'):
+            context.probe_count += 1
+        else:
+            context.probe_count = 1
+        
+        return field
+    
+    def consensus_merge(self, field: Any, context: FieldContext) -> Any:
+        """
+        Υ (Upsilon): Consensus Merge
+        
+        Merges multiple states with a harmonic mean, updating φ (tension) for coherence.
+        Models coexistence in multi-agent setups, ensures safety by raising ε on high variance,
+        reflects consciousness as unified awareness from diverse fields.
+        
+        Implementation: merged = n / sum(1 / state_i for state_i in states)
+        """
+        # Collect current state values for harmonic mean
+        states = [
+            context.state.psi_signal if context.state.psi_signal != 0 else 0.1,
+            context.state.phi_state if context.state.phi_state != 0 else 0.1,
+            context.charge if context.charge != 0 else 0.1
+        ]
+        
+        # Calculate harmonic mean: n / sum(1/x_i)
+        n = len(states)
+        harmonic_sum = sum(1.0 / s for s in states if s != 0)
+        
+        if harmonic_sum > 0:
+            merged_value = n / harmonic_sum
+        else:
+            merged_value = 0.0
+        
+        # Calculate variance to detect discord
+        mean_val = sum(states) / n
+        variance = sum((s - mean_val) ** 2 for s in states) / n
+        
+        # Update phi_state with merged value
+        context.state.phi_state = merged_value
+        
+        # Adjust tension based on variance (high variance = discord)
+        context.tension.strength = min(1.0, variance / 10.0)
+        
+        # Raise epsilon on high variance (safety mechanism)
+        if variance > 5.0:
+            context.state.epsilon_drift += 0.1
+            context.state.epsilon_drift = min(1.0, context.state.epsilon_drift)
+        
+        return field
+    
+    def reflection_echo(self, field: Any, context: FieldContext) -> Any:
+        """
+        Β (Beta): Reflection Echo
+        
+        Echoes a stabilized value back as a depth increment, simulating self-reflection.
+        Captures consciousness as meta-loops, safety via bounds on echo,
+        coexistence by echoing shared states.
+        
+        Implementation: echo = 1 / stabilized_value, then depth += echo (capped)
+        """
+        # Get current stabilized value
+        stabilized = context.state.stabilized_value
+        
+        # Calculate echo (inverse of stabilized value)
+        if stabilized > 0.01:  # Avoid division by very small numbers
+            echo = 1.0 / stabilized
+        elif stabilized < -0.01:
+            echo = 1.0 / abs(stabilized)
+        else:
+            echo = 10.0  # Cap for near-zero values
+        
+        # Cap echo to prevent infinities
+        echo = min(echo, 10.0)
+        echo = max(echo, 0.1)
+        
+        # Increment depth by echo (simulates self-reflection)
+        context.state.depth += int(echo)
+        
+        # Also update phase to reflect the reflection
+        context.phase = (context.phase + echo * math.pi / 4) % (2 * math.pi)
+        
+        # Reduce tension slightly (reflection brings calm)
+        context.tension.strength = max(0, context.tension.strength - 0.1)
+        
         return field
