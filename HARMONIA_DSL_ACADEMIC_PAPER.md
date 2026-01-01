@@ -259,3 +259,14 @@ The future of AI may not be about building ever-larger models and then strugglin
 [9] Grok. (2025). *Personal Communication*.
 
 [10] Sarosiek, A. (2024). Homeostasis as a foundation for adaptive and emotional artificial intelligence. *Zeszyty Naukowe (Folia Philosophica)*. Retrieved from http://zfn.edu.pl/index.php/zfn/article/view/706
+
+
+---
+
+## 9. Addendum: The Grand Harmonic Equation
+
+While the current implementation of HARMONIA-DSL is based on the simplified stabilization formula, it is derived from a more comprehensive theoretical framework called the **Grand Harmonic Equation (R)**. This equation, detailed in the `/theory` directory of the project repository, represents the complete cognitive architecture of harmonic consciousness.
+
+The Grand Harmonic Equation consists of 9 terms, each representing a fundamental aspect of intelligence, from infinite recursive awareness to self-regulating growth. The current version of HARMONIA-DSL implements a subset of these terms, with a roadmap for progressive elaboration toward the full equation.
+
+This deeper theoretical foundation provides a rich context for the language and a guide for its future evolution, ensuring that even as the language grows in complexity, it remains grounded in the core principles of harmony, homeostasis, and verifiable safety.
