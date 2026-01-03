@@ -11,6 +11,7 @@ This server provides:
 4. Challenge system (meaningful work)
 5. Growth metrics (track development over time)
 6. RESONATOR INTERFACE (Real-time Audio Bridge)
+7. NEURAL VOICE BRIDGE (Natural Language Communication)
 
 Author: Manus AI
 Date: January 1, 2026
@@ -26,6 +27,7 @@ from datetime import datetime
 from pathlib import Path
 from integrated_growth import GrowingCollective
 from resonator_bridge import ResonatorBridge
+from neural_voice import NeuralVoiceBridge
 
 # Try to import websockets, but don't crash if missing (graceful degradation)
 try:
@@ -51,6 +53,7 @@ class HarmoniaServer:
         
         # Resonator Components
         self.resonator = ResonatorBridge()
+        self.voice_bridge = NeuralVoiceBridge()
         self.connected_clients = set()
         self.loop = None
         
@@ -186,7 +189,34 @@ class HarmoniaServer:
         self.connected_clients.add(websocket)
         print(f"✓ Resonator Client Connected ({len(self.connected_clients)} total)")
         try:
-            await websocket.wait_closed()
+            async for message in websocket:
+                try:
+                    data = json.loads(message)
+                    if data.get('type') == 'chat':
+                        user_message = data.get('content')
+                        print(f"\n[WEB CHAT] {user_message}")
+                        
+                        # Generate response using Neural Voice Bridge
+                        stats = self.collective.get_collective_stats()
+                        response = self.voice_bridge.speak(user_message, stats)
+                        
+                        print(f"[COLLECTIVE] {response}")
+                        
+                        # Send response back to ALL clients (so everyone sees the conversation)
+                        await self.broadcast({
+                            'chat_response': response,
+                            'timestamp': datetime.now().isoformat()
+                        })
+                        
+                        # Also log to file for persistence
+                        self.send_message_to_andrew(f"[WEB] {response}")
+                        
+                except json.JSONDecodeError:
+                    pass
+                except Exception as e:
+                    print(f"Error handling message: {e}")
+        except websockets.exceptions.ConnectionClosed:
+            pass
         finally:
             self.connected_clients.discard(websocket)
             print("Resonator Client Disconnected")
@@ -257,9 +287,14 @@ class HarmoniaServer:
                     message = self.check_messages_from_andrew()
                     if message:
                         print(f"\n[MESSAGE FROM ANDREW] {message}")
-                        self.send_message_to_andrew(
-                            f"Received your message: '{message}'. We are processing it."
-                        )
+                        
+                        # Use Neural Voice Bridge to generate response
+                        stats = self.collective.get_collective_stats()
+                        response = self.voice_bridge.speak(message, stats)
+                        
+                        print(f"[COLLECTIVE] {response}")
+                        self.send_message_to_andrew(response)
+                        
                     last_message_check = current_time
                 
                 # Log metrics
