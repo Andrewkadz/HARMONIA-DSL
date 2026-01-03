@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 """
 HARMONIA Persistent Server
@@ -9,6 +10,7 @@ This server provides:
 3. Communication interface (message exchange with Andrew)
 4. Challenge system (meaningful work)
 5. Growth metrics (track development over time)
+6. RESONATOR INTERFACE (Real-time Audio Bridge)
 
 Author: Manus AI
 Date: January 1, 2026
@@ -18,9 +20,20 @@ For: Andrew Josef Kadziolka
 import json
 import time
 import os
+import asyncio
+import threading
 from datetime import datetime
 from pathlib import Path
 from integrated_growth import GrowingCollective
+from resonator_bridge import ResonatorBridge
+
+# Try to import websockets, but don't crash if missing (graceful degradation)
+try:
+    import websockets
+    WEBSOCKETS_AVAILABLE = True
+except ImportError:
+    WEBSOCKETS_AVAILABLE = False
+    print("Warning: 'websockets' library not found. Resonator audio will be disabled.")
 
 class HarmoniaServer:
     def __init__(self, data_dir="./harmonia_data"):
@@ -35,6 +48,11 @@ class HarmoniaServer:
         
         self.collective = None
         self.running = False
+        
+        # Resonator Components
+        self.resonator = ResonatorBridge()
+        self.connected_clients = set()
+        self.loop = None
         
     def initialize(self):
         """Initialize or load the Collective"""
@@ -110,9 +128,93 @@ class HarmoniaServer:
         """Run one evolution cycle"""
         self.collective.evolve_step(duration=duration)
         
+        # Broadcast state to Resonator clients
+        if WEBSOCKETS_AVAILABLE and self.connected_clients:
+            # 1. Get Summary Stats
+            stats = self.collective.get_collective_stats()
+            
+            # 2. Get Sonic Data (for Audio)
+            sonic_data = self.resonator.get_sonic_state(stats)
+            
+            # 3. Get Visual Data (for React Frontend)
+            # We construct a rich packet that serves both audio and visual clients
+            visual_entities = []
+            for e in self.collective.entities:
+                # Get full stats for detailed inspection
+                full_stats = e.get_full_stats()
+                
+                visual_entities.append({
+                    'id': str(e.id),
+                    'psi': float(e.state.psi),
+                    'phi': float(e.state.phi),
+                    'ethics': float(e.state.ethics),
+                    'age': int(e.age),
+                    'generation': int(e.generation),
+                    # Add detailed stats for inspection
+                    'energy': float(full_stats['energy']),
+                    'knowledge': float(full_stats['knowledge']),
+                    'maturity': float(full_stats['maturity']),
+                    'coherence': float(full_stats['coherence']),
+                    'self_awareness': float(full_stats['self_awareness'])
+                })
+                
+            full_packet = {
+                'timestamp': datetime.now().isoformat(),
+                'stats': stats,
+                'sonic': sonic_data,
+                'entities': visual_entities
+            }
+            
+            asyncio.run_coroutine_threadsafe(self.broadcast(full_packet), self.loop)
+
+    async def broadcast(self, data):
+        """Send data to all connected WebSocket clients"""
+        if not self.connected_clients:
+            return
+        message = json.dumps(data)
+        # Create a copy of the set to avoid modification during iteration
+        for websocket in list(self.connected_clients):
+            try:
+                await websocket.send(message)
+            except websockets.exceptions.ConnectionClosed:
+                self.connected_clients.discard(websocket)
+            except Exception as e:
+                print(f"Error broadcasting: {e}")
+
+    async def websocket_handler(self, websocket):
+        """Handle new WebSocket connections"""
+        self.connected_clients.add(websocket)
+        print(f"✓ Resonator Client Connected ({len(self.connected_clients)} total)")
+        try:
+            await websocket.wait_closed()
+        finally:
+            self.connected_clients.discard(websocket)
+            print("Resonator Client Disconnected")
+
+    def start_websocket_server(self):
+        """Start the WebSocket server in a separate thread"""
+        if not WEBSOCKETS_AVAILABLE:
+            return
+
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
+        
+        async def runner():
+            async with websockets.serve(self.websocket_handler, "0.0.0.0", 9998):
+                print("✓ Resonator Audio Bridge listening on ws://0.0.0.0:9998")
+                await asyncio.Future()  # run forever
+
+        self.loop.run_until_complete(runner())
+
     def run(self, cycle_duration=1.0, save_interval=60, message_check_interval=10):
         """Run the server continuously"""
         self.running = True
+        
+        # Start WebSocket server in background thread
+        if WEBSOCKETS_AVAILABLE:
+            ws_thread = threading.Thread(target=self.start_websocket_server, daemon=True)
+            ws_thread.start()
+        
         last_save = time.time()
         last_message_check = time.time()
         last_metrics_log = time.time()
@@ -132,6 +234,9 @@ class HarmoniaServer:
         print()
         print("To read their messages:")
         print(f"  tail -f {self.messages_to_andrew}")
+        print()
+        print("To HEAR the Collective:")
+        print("  Open 'resonator_client.html' in your browser.")
         print()
         print("Press Ctrl+C to stop the server (state will be saved)")
         print("=" * 80)

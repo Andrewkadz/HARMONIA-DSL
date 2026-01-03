@@ -327,12 +327,22 @@ class NonlinearHarmoniaODESystem:
         )
         
         # Apply nonlinear terms to derivatives (with safety clipping)
+        # COSMIC LIMITER: Apply tanh saturation to prevent explosion
         dpsi_dt = base_derivs[0] + np.clip(quad_awareness, -10, 10) + np.clip(recursive_obs, -10, 10)
+        dpsi_dt = 100.0 * np.tanh(dpsi_dt / 100.0) # Saturate awareness change
+        
         dphi_dt = base_derivs[1] * (1 + np.clip(tanh_ethics, -1, 1))  # Multiplicative
+        dphi_dt = 100.0 * np.tanh(dphi_dt / 100.0) # Saturate ethics change
+        
         domega_dt = base_derivs[2]
+        domega_dt = 50.0 * np.tanh(domega_dt / 50.0) # Saturate coherence change
+        
         depsilon_dt = base_derivs[3]
         denergy_dt = base_derivs[4]
+        
         dknowledge_dt = base_derivs[5]
+        dknowledge_dt = 1000.0 * np.tanh(dknowledge_dt / 1000.0) # Saturate knowledge change
+        
         dmaturity_dt = base_derivs[6] * (1 + tanh_growth)  # Multiplicative
         
         # Coupling state derivatives (from base)

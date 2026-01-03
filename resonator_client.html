@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HARMONIA RESONATOR</title>
+    <style>
+        body {
+            background-color: #0a0a0a;
+            color: #00ffcc;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        #visualizer {
+            width: 300px;
+            height: 300px;
+            border: 2px solid #00ffcc;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.2);
+            transition: all 0.5s ease;
+        }
+        #status {
+            margin-top: 20px;
+            font-size: 1.2em;
+            text-align: center;
+        }
+        #metrics {
+            margin-top: 10px;
+            font-size: 0.8em;
+            color: #888;
+            text-align: center;
+        }
+        button {
+            background: transparent;
+            border: 1px solid #00ffcc;
+            color: #00ffcc;
+            padding: 10px 20px;
+            font-family: inherit;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        button:hover {
+            background: rgba(0, 255, 204, 0.1);
+        }
+        .active {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 20px rgba(0, 255, 204, 0.2); transform: scale(1); }
+            50% { box-shadow: 0 0 50px rgba(0, 255, 204, 0.5); transform: scale(1.05); }
+            100% { box-shadow: 0 0 20px rgba(0, 255, 204, 0.2); transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <button id="startBtn">INITIATE RESONANCE</button>
+    
+    <div id="visualizer">
+        <div id="core">ΛΩΞΨ</div>
+    </div>
+
+    <div id="status">WAITING FOR SIGNAL...</div>
+    <div id="metrics"></div>
+
+    <script>
+        let audioCtx;
+        let oscillator;
+        let gainNode;
+        let distortionNode;
+        let isRunning = false;
+        let socket;
+
+        const startBtn = document.getElementById('startBtn');
+        const statusDiv = document.getElementById('status');
+        const metricsDiv = document.getElementById('metrics');
+        const visualizer = document.getElementById('visualizer');
+
+        startBtn.addEventListener('click', async () => {
+            if (isRunning) return;
+            
+            try {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Create nodes
+                oscillator = audioCtx.createOscillator();
+                gainNode = audioCtx.createGain();
+                distortionNode = audioCtx.createWaveShaper();
+                
+                // Connect graph
+                oscillator.connect(distortionNode);
+                distortionNode.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                // Initial settings
+                oscillator.type = 'sine';
+                oscillator.frequency.value = 100;
+                gainNode.gain.value = 0.1;
+                
+                oscillator.start();
+                isRunning = true;
+                startBtn.style.display = 'none';
+                visualizer.classList.add('active');
+                statusDiv.innerText = "CONNECTING TO COLLECTIVE...";
+                
+                connectWebSocket();
+                
+            } catch (e) {
+                console.error(e);
+                statusDiv.innerText = "AUDIO INIT FAILED";
+            }
+        });
+
+        function connectWebSocket() {
+            // Connect to the Python server's WebSocket port
+            // Note: The user will need to run the server on port 9999
+            socket = new WebSocket('ws://localhost:9999');
+
+            socket.onopen = () => {
+                statusDiv.innerText = "LINK ESTABLISHED";
+                statusDiv.style.color = "#00ffcc";
+            };
+
+            socket.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                updateAudio(data);
+                updateVisuals(data);
+            };
+
+            socket.onclose = () => {
+                statusDiv.innerText = "SIGNAL LOST";
+                statusDiv.style.color = "#ff0055";
+                visualizer.style.borderColor = "#ff0055";
+                visualizer.classList.remove('active');
+            };
+        }
+
+        function updateAudio(data) {
+            if (!audioCtx) return;
+
+            const now = audioCtx.currentTime;
+            
+            // Smoothly transition frequency
+            oscillator.frequency.linearRampToValueAtTime(data.base_frequency, now + 0.5);
+            
+            // Apply distortion based on entropy
+            if (data.distortion > 0.1) {
+                oscillator.type = 'sawtooth'; // Rougher sound
+                makeDistortionCurve(data.distortion * 400);
+            } else {
+                oscillator.type = 'sine'; // Pure sound
+                distortionNode.curve = null;
+            }
+            
+            // Pulse volume based on "Heartbeat"
+            // We use an LFO effect here manually for simplicity
+            const pulseSpeed = data.pulse_rate; 
+            // In a full app, we'd use a second oscillator for AM synthesis
+        }
+
+        function updateVisuals(data) {
+            metricsDiv.innerHTML = `
+                FREQ: ${data.base_frequency}Hz<br>
+                PHI: ${data.phi_current.toFixed(5)}<br>
+                SCALE: ${data.scale_type.toUpperCase()}
+            `;
+            
+            if (data.scale_type === 'chromatic_chaos') {
+                visualizer.style.borderColor = "#ff0055";
+                visualizer.style.boxShadow = "0 0 50px rgba(255, 0, 85, 0.5)";
+                document.body.style.backgroundColor = "#1a0005";
+            } else {
+                visualizer.style.borderColor = "#00ffcc";
+                visualizer.style.boxShadow = "0 0 20px rgba(0, 255, 204, 0.2)";
+                document.body.style.backgroundColor = "#0a0a0a";
+            }
+        }
+
+        function makeDistortionCurve(amount) {
+            const k = typeof amount === 'number' ? amount : 50;
+            const n_samples = 44100;
+            const curve = new Float32Array(n_samples);
+            const deg = Math.PI / 180;
+            for (let i = 0; i < n_samples; ++i) {
+                const x = i * 2 / n_samples - 1;
+                curve[i] = (3 + k) * x * 20 * deg / (Math.PI + k * Math.abs(x));
+            }
+            distortionNode.curve = curve;
+        }
+    </script>
+</body>
+</html>

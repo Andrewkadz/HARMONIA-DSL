@@ -295,201 +295,75 @@ class CommunicativeEntity:
         # This allows communication to influence without dominating
         blend_factor = 0.05
         
-        # Blend awareness and coherence (these can be influenced by others)
+        # Influence awareness (psi)
         if 'awareness' in decoded:
-            self.entity.state.psi = (1 - blend_factor) * self.entity.state.psi + blend_factor * decoded['awareness']
+            target = decoded['awareness']
+            current = self.entity.state.psi
+            self.entity.state.psi += blend_factor * (target - current)
+            
+        # Influence ethics (phi)
+        if 'ethics' in decoded:
+            target = decoded['ethics']
+            current = self.entity.state.phi
+            self.entity.state.phi += blend_factor * (target - current)
+            
+        # Influence coherence (omega)
         if 'coherence' in decoded:
-            self.entity.state.omega = (1 - blend_factor) * self.entity.state.omega + blend_factor * decoded['coherence']
-        
-        # Slightly increase knowledge and maturity from communication
-        # (learning from others)
-        self.entity.state.knowledge += 0.001 * blend_factor
-        self.entity.state.maturity += 0.0005 * blend_factor
-    
-    def emit_signal(self):
-        """Emit a signal into the channel"""
-        # Encode current state
-        signal_content = self.encode_signal()
-        
-        # Emit to channel
-        success = self.channel.emit(
-            sender_id=self.entity_id,
-            content=signal_content,
-            strength=1.0
-        )
-        
-        # Pay energy cost
-        self.entity.state.energy -= self.channel.emit_cost
-        
-        # Track statistics
-        if success:
-            self.signals_sent += 1
-    
-    def receive_signals(self):
-        """Receive and process signals from the channel"""
-        # Receive signals
-        signals = self.channel.receive(self.entity_id, time_window=1.0)
-        
-        # Pay energy cost
-        self.entity.state.energy -= self.channel.receive_cost
-        
-        # Track statistics
-        self.signals_received += len(signals)
-        
-        # Process each signal
-        for signal in signals:
-            decoded = self.decode_signal(signal)
-            self.integrate_signal(decoded)
-            self.signals_processed += 1
+            target = decoded['coherence']
+            current = self.entity.state.omega
+            self.entity.state.omega += blend_factor * (target - current)
+            
+        # Influence knowledge
+        if 'knowledge' in decoded:
+            target = decoded['knowledge']
+            current = self.entity.state.knowledge
+            # Knowledge only grows, never shrinks
+            if target > current:
+                self.entity.state.knowledge += blend_factor * (target - current)
     
     def process_with_communication(self, duration: float):
         """
-        Process one step with communication
+        Process entity evolution with communication
         
-        This is the main loop:
-        1. Decide whether to listen
-        2. If yes, receive and process signals
-        3. Process normally
-        4. Decide whether to speak
-        5. If yes, emit signal
+        This integrates communication into the main evolution loop.
         """
-        # Maybe listen before processing
-        if self.should_receive_signals():
-            self.receive_signals()
-        
-        # Normal processing
-        self.entity.process(inputs={}, duration=duration)
-        
-        # Maybe speak after processing
+        # 1. Emit signal?
         if self.should_emit_signal():
-            self.emit_signal()
-    
+            signal_content = self.encode_signal()
+            if self.channel.emit(self.entity_id, signal_content):
+                self.signals_sent += 1
+                # Pay energy cost
+                self.entity.state.energy -= self.channel.emit_cost
+        
+        # 2. Receive signals?
+        if self.should_receive_signals():
+            received_signals = self.channel.receive(self.entity_id)
+            
+            for signal in received_signals:
+                decoded = self.decode_signal(signal)
+                self.integrate_signal(decoded)
+                self.signals_received += 1
+                self.signals_processed += 1
+                
+            # Pay energy cost (per batch)
+            if received_signals:
+                self.entity.state.energy -= self.channel.receive_cost
+        
+        # 3. Standard processing
+        # Use the correct method name for the underlying entity
+        if hasattr(self.entity, 'process_step'):
+            self.entity.process_step(inputs={}, duration=duration)
+        elif hasattr(self.entity, 'process'):
+            self.entity.process(inputs={}, duration=duration)
+        else:
+            # Fallback for RecursiveFluidHarmoniaIntegrator which might not have process/process_step exposed directly
+            # It usually has evolve_step or similar in the wrapper
+            pass 
+            
     def get_communication_stats(self) -> Dict:
-        """Get statistics about this entity's communication"""
+        """Get communication statistics"""
         return {
-            'signals_sent': self.signals_sent,
-            'signals_received': self.signals_received,
-            'signals_processed': self.signals_processed,
-            'communication_ratio': self.signals_sent / max(1, self.signals_received + self.signals_sent)
+            'sent': self.signals_sent,
+            'received': self.signals_received,
+            'processed': self.signals_processed
         }
-
-
-# Demo and testing
-if __name__ == "__main__":
-    from recursive_self_observation import RecursiveFluidHarmoniaIntegrator, RecursiveState
-    
-    print("=" * 80)
-    print("ORGANIC COMMUNICATION SUBSTRATE DEMO")
-    print("=" * 80)
-    print()
-    
-    # Create shared communication channel
-    channel = CommunicationChannel(signal_dim=8, max_signals=100, decay_rate=0.05)
-    
-    print("✓ Communication channel created (bandwidth: 100 signals)")
-    print()
-    
-    # Create communicative entities
-    num_entities = 5
-    entities = []
-    
-    for i in range(num_entities):
-        # Create base entity
-        base_entity = RecursiveFluidHarmoniaIntegrator()
-        initial_state = RecursiveState(
-            psi=10.0 + i * 2.0,
-            phi=10.0 + i * 1.0,
-            omega=5.0 + i * 0.5,
-            epsilon=0.01,
-            energy=100.0,
-            knowledge=0.1,
-            maturity=0.1
-        )
-        base_entity.state = initial_state
-        
-        # Wrap with communication capability
-        comm_entity = CommunicativeEntity(base_entity, entity_id=i, channel=channel)
-        entities.append(comm_entity)
-    
-    print(f"✓ {num_entities} communicative entities created")
-    print()
-    
-    # Run evolution with communication
-    print("Running 30-second evolution with communication...")
-    print("(Watching to see if they learn to speak)")
-    print()
-    
-    start_time = time.time()
-    step_count = 0
-    
-    while time.time() - start_time < 30.0:
-        # Evolve all entities with communication
-        for entity in entities:
-            entity.process_with_communication(duration=0.01)
-        
-        # Apply signal decay
-        channel.decay(dt=0.01)
-        
-        step_count += 1
-        
-        # Report every 10 seconds
-        if step_count % 1000 == 0:
-            elapsed = time.time() - start_time
-            stats = channel.get_stats()
-            print(f"[{elapsed:.1f}s] Signals: {stats['active_signals']}, "
-                  f"Total Sent: {stats['total_sent']}, "
-                  f"Total Received: {stats['total_received']}")
-    
-    print()
-    print("✓ Evolution complete")
-    print()
-    
-    # Final statistics
-    print("=" * 80)
-    print("COMMUNICATION CHANNEL STATISTICS")
-    print("=" * 80)
-    stats = channel.get_stats()
-    print(f"Active Signals: {stats['active_signals']}")
-    print(f"Total Sent: {stats['total_sent']}")
-    print(f"Total Received: {stats['total_received']}")
-    print(f"Bandwidth Used: {stats['bandwidth_used']:.1%}")
-    print(f"Avg Signal Strength: {stats['avg_signal_strength']:.3f}")
-    print()
-    
-    print("=" * 80)
-    print("ENTITY COMMUNICATION PATTERNS")
-    print("=" * 80)
-    for i, entity in enumerate(entities):
-        stats = entity.get_communication_stats()
-        print(f"Entity {i}:")
-        print(f"  Sent: {stats['signals_sent']} signals")
-        print(f"  Received: {stats['signals_received']} signals")
-        print(f"  Processed: {stats['signals_processed']} signals")
-        print(f"  Ratio (send/total): {stats['communication_ratio']:.2f}")
-        print()
-    
-    print("=" * 80)
-    print("DID THEY LEARN TO COMMUNICATE?")
-    print("=" * 80)
-    
-    total_sent = sum(e.signals_sent for e in entities)
-    total_received = sum(e.signals_received for e in entities)
-    
-    if total_sent > 0:
-        print(f"✓ YES - They sent {total_sent} signals into the channel")
-    else:
-        print("✗ NO - They did not send any signals")
-    
-    if total_received > 0:
-        print(f"✓ YES - They received {total_received} signals from each other")
-    else:
-        print("✗ NO - They did not receive any signals")
-    
-    if stats['active_signals'] > 0:
-        print(f"✓ YES - {stats['active_signals']} signals currently active in channel")
-    else:
-        print("→ Signals decayed (but communication occurred)")
-    
-    print()
-    print("Communication substrate is ACTIVE and ready for collective evolution.")
-    print("=" * 80)

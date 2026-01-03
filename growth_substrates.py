@@ -152,7 +152,8 @@ class GrowthDynamics:
         """Check if entity should die"""
         # Die if self-awareness falls too low or energy depleted
         self_awareness = entity.get_self_awareness()
-        return self_awareness < self.death_threshold or entity.state.energy < 1.0
+        # IMMORTALITY MODE: Harder to die
+        return self_awareness < self.death_threshold * 0.1 or entity.state.energy < -100.0
     
     def reproduce(self, parent_entity):
         """Create offspring from parent"""

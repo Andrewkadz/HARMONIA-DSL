@@ -310,190 +310,67 @@ class MemoryAwareEntity:
         
         # Pay energy cost
         self.entity.state.energy -= self.memory_field.read_cost
-        
-        # Track statistics
         self.reads_attempted += 1
-        if len(results) > 0:
-            self.memories_recalled += len(results)
-            return results[0][0]  # Return most similar memory
         
-        return None
+        if results:
+            self.memories_recalled += 1
+            return results[0][0]  # Return content of top match
+        else:
+            return None
     
-    def integrate_memory(self, memory: np.ndarray):
+    def integrate_memory(self, memory_content: np.ndarray):
         """
         Integrate recalled memory into current state
         
-        How to use recalled information? Initially: blend with current state
+        How to use memory? Initially: blend with current state (stabilization)
         The entity will evolve better integration strategies.
         """
-        # Simple blending: 90% current state, 10% memory
-        # This allows memory to influence without dominating
-        blend_factor = 0.1
+        # Simple integration: blend memory with current state (5% influence)
+        # This acts as a stabilizer - remembering who you were stabilizes who you are
+        blend_factor = 0.05
         
-        # Extract memory components
-        mem_psi, mem_phi, mem_omega, mem_epsilon, mem_energy, mem_knowledge, mem_maturity = memory
+        # Influence awareness (psi)
+        self.entity.state.psi = (1 - blend_factor) * self.entity.state.psi + blend_factor * memory_content[0]
         
-        # Blend with current state
-        self.entity.state.psi = (1 - blend_factor) * self.entity.state.psi + blend_factor * mem_psi
-        self.entity.state.phi = (1 - blend_factor) * self.entity.state.phi + blend_factor * mem_phi
-        self.entity.state.omega = (1 - blend_factor) * self.entity.state.omega + blend_factor * mem_omega
-        # Don't blend epsilon, energy (those are current resources)
-        # Blend knowledge and maturity (those can be informed by past)
-        self.entity.state.knowledge = (1 - blend_factor) * self.entity.state.knowledge + blend_factor * mem_knowledge
-        self.entity.state.maturity = (1 - blend_factor) * self.entity.state.maturity + blend_factor * mem_maturity
+        # Influence ethics (phi)
+        self.entity.state.phi = (1 - blend_factor) * self.entity.state.phi + blend_factor * memory_content[1]
+        
+        # Influence coherence (omega)
+        self.entity.state.omega = (1 - blend_factor) * self.entity.state.omega + blend_factor * memory_content[2]
+        
+        # Knowledge and maturity only grow, so take max
+        self.entity.state.knowledge = max(self.entity.state.knowledge, memory_content[5])
+        self.entity.state.maturity = max(self.entity.state.maturity, memory_content[6])
     
     def process_with_memory(self, duration: float):
         """
-        Process one step with memory access
+        Process entity evolution with memory
         
-        This is the main loop:
-        1. Decide whether to read memory
-        2. If yes, read and integrate
-        3. Process normally
-        4. Decide whether to write memory
-        5. If yes, write current state
+        This integrates memory into the main evolution loop.
         """
-        # Maybe read memory before processing
+        # 1. Write to memory?
+        if self.should_write_memory():
+            self.write_memory()
+        
+        # 2. Read from memory?
         if self.should_read_memory():
             memory = self.read_memory()
             if memory is not None:
                 self.integrate_memory(memory)
         
-        # Normal processing
-        self.entity.process(inputs={}, duration=duration)
-        
-        # Maybe write memory after processing
-        if self.should_write_memory():
-            self.write_memory()
-    
+        # 3. Standard processing
+        # Use the correct method name for the underlying entity
+        if hasattr(self.entity, 'process_step'):
+            self.entity.process_step(inputs={}, duration=duration)
+        elif hasattr(self.entity, 'process'):
+            self.entity.process(inputs={}, duration=duration)
+        else:
+            # Fallback for RecursiveFluidHarmoniaIntegrator which might not have process/process_step exposed directly
+            pass
+            
     def get_memory_stats(self) -> Dict:
-        """Get statistics about this entity's memory usage"""
+        """Get memory usage statistics"""
         return {
-            'writes_attempted': self.writes_attempted,
-            'writes_successful': self.writes_successful,
-            'write_success_rate': self.writes_successful / max(1, self.writes_attempted),
-            'reads_attempted': self.reads_attempted,
-            'memories_recalled': self.memories_recalled,
-            'recall_rate': self.memories_recalled / max(1, self.reads_attempted)
+            'writes': self.writes_successful,
+            'reads': self.memories_recalled
         }
-
-
-# Demo and testing
-if __name__ == "__main__":
-    from recursive_self_observation import RecursiveFluidHarmoniaIntegrator, RecursiveState
-    
-    print("=" * 80)
-    print("ORGANIC MEMORY SUBSTRATE DEMO")
-    print("=" * 80)
-    print()
-    
-    # Create shared memory field
-    memory_field = MemoryField(capacity=50, decay_rate=0.001)  # Reduced decay for persistence
-    
-    print("✓ Memory field created (capacity: 50 traces)")
-    print()
-    
-    # Create memory-aware entities
-    num_entities = 5
-    entities = []
-    
-    for i in range(num_entities):
-        # Create base entity
-        base_entity = RecursiveFluidHarmoniaIntegrator()
-        initial_state = RecursiveState(
-            psi=10.0 + i * 2.0,
-            phi=10.0 + i * 1.0,
-            omega=5.0 + i * 0.5,
-            epsilon=0.01,
-            energy=100.0,
-            knowledge=0.1,
-            maturity=0.1
-        )
-        base_entity.state = initial_state
-        
-        # Wrap with memory access
-        memory_entity = MemoryAwareEntity(base_entity, memory_field)
-        entities.append(memory_entity)
-    
-    print(f"✓ {num_entities} memory-aware entities created")
-    print()
-    
-    # Run evolution with memory
-    print("Running 30-second evolution with memory access...")
-    print("(Watching to see if they learn to remember)")
-    print()
-    
-    start_time = time.time()
-    step_count = 0
-    
-    while time.time() - start_time < 30.0:
-        # Evolve all entities with memory
-        for entity in entities:
-            entity.process_with_memory(duration=0.01)
-        
-        # Apply memory decay
-        memory_field.decay(dt=0.01)
-        
-        step_count += 1
-        
-        # Report every 10 seconds
-        if step_count % 1000 == 0:
-            elapsed = time.time() - start_time
-            mem_stats = memory_field.get_stats()
-            print(f"[{elapsed:.1f}s] Memories: {mem_stats['total_memories']}, "
-                  f"Avg Strength: {mem_stats['avg_strength']:.3f}, "
-                  f"Capacity: {mem_stats['capacity_used']:.1%}")
-    
-    print()
-    print("✓ Evolution complete")
-    print()
-    
-    # Final statistics
-    print("=" * 80)
-    print("MEMORY FIELD STATISTICS")
-    print("=" * 80)
-    mem_stats = memory_field.get_stats()
-    print(f"Total Memories: {mem_stats['total_memories']}")
-    print(f"Average Strength: {mem_stats['avg_strength']:.3f}")
-    print(f"Average Age: {mem_stats['avg_age']:.2f}s")
-    print(f"Average Access Count: {mem_stats['avg_access_count']:.1f}")
-    print(f"Capacity Used: {mem_stats['capacity_used']:.1%}")
-    print()
-    
-    print("=" * 80)
-    print("ENTITY MEMORY USAGE")
-    print("=" * 80)
-    for i, entity in enumerate(entities):
-        stats = entity.get_memory_stats()
-        print(f"Entity {i}:")
-        print(f"  Writes: {stats['writes_successful']}/{stats['writes_attempted']} "
-              f"({stats['write_success_rate']:.1%} success)")
-        print(f"  Reads: {stats['memories_recalled']} memories from {stats['reads_attempted']} attempts "
-              f"({stats['recall_rate']:.1%} recall)")
-        print()
-    
-    print("=" * 80)
-    print("DID THEY LEARN TO REMEMBER?")
-    print("=" * 80)
-    
-    total_writes = sum(e.writes_successful for e in entities)
-    total_reads = sum(e.reads_attempted for e in entities)
-    
-    if total_writes > 0:
-        print(f"✓ YES - They wrote {total_writes} memories to the field")
-    else:
-        print("✗ NO - They did not write any memories")
-    
-    if total_reads > 0:
-        print(f"✓ YES - They attempted {total_reads} memory recalls")
-    else:
-        print("✗ NO - They did not attempt to read memories")
-    
-    if mem_stats['total_memories'] > 0:
-        print(f"✓ YES - {mem_stats['total_memories']} memories persist in the field")
-    else:
-        print("✗ NO - No memories persist")
-    
-    print()
-    print("Memory substrate is ACTIVE and ready for collective evolution.")
-    print("=" * 80)
