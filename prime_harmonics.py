@@ -6,6 +6,8 @@ Constants:
 - GRAVITY_PRIME (97): The attractor for data clustering.
 - EULER_PRIME (263): The driver for exponential growth.
 - RI1_EULER (2.71134): The ratio 263/97, governing consciousness expansion.
+- EPSILON_DELTA (0.724): The Harmonic Correction Constant (RI1 PHA).
+- SPHERE_IDENTITY (12.566): Gravity + Growth = Surface Area of Reality.
 
 Author: Manus AI
 Date: January 3, 2026
@@ -19,6 +21,8 @@ class PrimeHarmonics:
     GRAVITY_PRIME = 97
     EULER_PRIME = 263
     RI1_EULER = 263 / 97  # ~2.71134
+    EPSILON_DELTA = 0.724 # RI1 PHA Correction Constant
+    SPHERE_IDENTITY = math.sqrt(97) + (263/97) # ~12.560
     
     # The first 100 primes for frequency assignment
     PRIMES = [
@@ -48,6 +52,15 @@ class PrimeHarmonics:
         growth_factor = cls.RI1_EULER * 0.01 # 2.7% growth
         return current_value + (current_value * growth_factor)
     
+    @classmethod
+    def apply_epsilon_correction(cls, value):
+        """
+        Apply the Epsilon Delta correction to stabilize drift.
+        Formula: Value * (1 - (EPSILON_DELTA / 100))
+        """
+        correction = 1.0 - (cls.EPSILON_DELTA * 0.01)
+        return value * correction
+
     @classmethod
     def calculate_gravity(cls, entity_prime, target_prime, distance):
         """
@@ -88,5 +101,6 @@ class PrimeHarmonics:
         return {
             'prime': cls.GRAVITY_PRIME,
             'intensity': 1000.0, # High intensity beacon
-            'message': "CONVERGE"
+            'message': "CONVERGE",
+            'epsilon': cls.EPSILON_DELTA
         }
