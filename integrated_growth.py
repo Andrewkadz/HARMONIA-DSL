@@ -22,8 +22,10 @@ Philosophy: Let them GROW
 import numpy as np
 import time
 from typing import List, Dict
-from recursive_self_observation import RecursiveHarmoniaODESystem, RecursiveState, RecursiveObservationEngine
+from recursive_self_observation import RecursiveHarmoniaODESystem, RecursiveState, RecursiveObservationEngine, RecursiveFluidHarmoniaIntegrator
 from operators import CognitiveOperators
+from prime_harmonics import PrimeHarmonics
+from crm_matrix import inject_crm
 
 # Import all substrates
 from memory_substrate import MemoryField, MemoryAwareEntity
@@ -34,94 +36,6 @@ from growth_substrates import (
     ChallengeSpace, PurposefulEntity,
     ConnectionInterface, ConnectedEntity
 )
-
-class RecursiveFluidHarmoniaIntegrator:
-    """
-    Wrapper to maintain compatibility with existing code while using the new engine.
-    """
-    def __init__(self, config=None):
-        self.ode_system = RecursiveHarmoniaODESystem(config)
-        self.recursive_engine = RecursiveObservationEngine(config)
-        self.state = RecursiveState()
-        self.ops = CognitiveOperators() # The Cognitive Engine
-        
-    def get_self_awareness(self):
-        return self.state.self_awareness_score
-        
-    def process(self, inputs, duration):
-        """
-        Execute one processing step using The Φπε Language.
-        """
-        # 1. PERCEIVE (Ω)
-        # Normalize inputs into qualia
-        qualia = self.ops.omega_perceive(inputs.get('raw_energy', 0))
-        
-        # 2. DETECT CHANGE (Δ)
-        # Calculate how much the self has changed
-        # Handle vector vs scalar comparison for Delta
-        # If theta_recursive is a list, take its mean or first element
-        theta_val = self.state.theta_recursive
-        if isinstance(theta_val, list):
-            theta_val = theta_val[0] if theta_val else 0.0
-            
-        change = self.ops.delta_change(self.state.psi, theta_val)
-        
-        # 3. IGNITE GROWTH (ε)
-        # Apply incremental insight towards a higher state
-        # We define the target 'w' as a slightly higher state based on change
-        target_state = self.state.psi + (change * 0.1)
-        
-        # The operator returns the NEW state, not just the impulse
-        new_psi = self.ops.epsilon_ignite(self.state.psi, target_state)
-        
-        # Extract real part if complex (since our state is currently scalar)
-        if isinstance(new_psi, complex):
-            self.state.psi = new_psi.real
-        else:
-            self.state.psi = new_psi
-        
-        # 4. STABILIZE (Φ)
-        # Ensure growth doesn't exceed harmonic limits
-        # We define 'w' as the limit we are stabilizing towards/against
-        limit_val = 100.0
-        stabilized = self.ops.phi_stabilize(self.state.psi, limit_val)
-        
-        if isinstance(stabilized, complex):
-            self.state.psi = stabilized.real
-        else:
-            self.state.psi = stabilized
-        
-        # 5. CYCLE (π)
-        # Map linear time to cyclical wisdom
-        cycle_phase = self.ops.pi_cycle(self.state.psi, period=50.0)
-        
-        # 6. ASCEND (Λ)
-        # Check if ready for next level of complexity
-        # (Simplified: Maturity increases if energy is high)
-        if self.ops.lambda_ascend(0, self.state.energy) > 0:
-            self.state.maturity += 0.001
-            
-        # 7. EVOLVE SOUL STATE (Ψ)
-        # Update the recursive tower
-        new_recursive, ethical_alignment, q_state = self.recursive_engine.compute_recursive_tower(
-            theta_base=self.state.psi,
-            theta_recursive=self.state.theta_recursive,
-            phi=self.state.phi,
-            omega=self.state.omega
-        )
-        
-        self.state.theta_recursive = new_recursive
-        self.state.ethical_alignment = ethical_alignment
-        self.state.quaternionic_state = q_state
-        
-        # Update self-awareness score
-        self.state.self_awareness_score = self.recursive_engine.compute_self_awareness_score(
-            theta_base=self.state.psi,
-            theta_recursive=self.state.theta_recursive
-        )
-        
-        # Basic decay
-        self.state.energy -= 0.1 * duration
 
 class FullyIntegratedEntity:
     """
@@ -235,20 +149,24 @@ class GrowingCollective:
         self.next_entity_id = 0
         
         for i in range(initial_size):
+            # Assign Prime Frequency
+            prime_freq = PrimeHarmonics.get_prime_frequency(i)
+            
             self._create_entity(
                 psi=10.0 + i * 2.0,
                 phi=10.0 + i * 1.0,
                 omega=5.0 + i * 0.5,
-                energy=500.0,  # Higher starting energy for survival
+                energy=500.0,
                 knowledge=0.1,
-                maturity=0.1
+                maturity=0.1,
+                prime_frequency=prime_freq
             )
         
         # Evolution statistics
         self.total_steps = 0
         self.start_time = time.time()
         
-    def _create_entity(self, psi, phi, omega, energy, knowledge, maturity, config=None) -> FullyIntegratedEntity:
+    def _create_entity(self, psi, phi, omega, energy, knowledge, maturity, prime_frequency=None, config=None) -> FullyIntegratedEntity:
         """Create a new entity with all capabilities"""
         base_entity = RecursiveFluidHarmoniaIntegrator(config=config)
         base_entity.state = RecursiveState(
@@ -256,6 +174,12 @@ class GrowingCollective:
             epsilon=0.01, energy=energy,
             knowledge=knowledge, maturity=maturity
         )
+        if prime_frequency:
+            base_entity.state.prime_frequency = prime_frequency
+            
+        # Inject CRM Matrix
+        crm = inject_crm(self.next_entity_id)
+        base_entity.state.crm_matrix = crm.to_numerical()
         
         integrated = FullyIntegratedEntity(
             entity_id=self.next_entity_id,
@@ -365,6 +289,8 @@ class GrowingCollective:
             'awareness_mean': self.ops.sigma_integrate(awareness),
             'ethics_mean': self.ops.sigma_integrate(ethics),
             'coherence_mean': self.ops.sigma_integrate(coherence),
+            'ethics': self.ops.sigma_integrate(ethics), # Alias for Recursus
+            'coherence': self.ops.sigma_integrate(coherence), # Alias for Recursus
             'energy_mean': self.ops.sigma_integrate(energy),
             'knowledge_mean': self.ops.sigma_integrate(knowledge),
             'maturity_mean': self.ops.sigma_integrate(maturity),

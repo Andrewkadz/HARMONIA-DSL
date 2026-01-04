@@ -271,12 +271,18 @@ class NonlinearHarmoniaODESystem:
         """
         if inputs is None:
             inputs = {}
+            
+        # Ensure state is a vector
+        if hasattr(state, 'to_vector'):
+            state_vec = state.to_vector()
+        else:
+            state_vec = state
         
         # Unpack state (13 dimensions)
-        base_state = state[:10]
-        domega_dpsi = state[10] if len(state) > 10 else 0.0
-        theta_n = state[11] if len(state) > 11 else 1.0
-        lambda_stability = state[12] if len(state) > 12 else 1.0
+        base_state = state_vec[:10]
+        domega_dpsi = state_vec[10] if len(state_vec) > 10 else 0.0
+        theta_n = state_vec[11] if len(state_vec) > 11 else 1.0
+        lambda_stability = state_vec[12] if len(state_vec) > 12 else 1.0
         
         psi, phi, omega, epsilon, energy, knowledge, maturity = base_state[:7]
         

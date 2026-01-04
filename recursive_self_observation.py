@@ -31,7 +31,7 @@ except ImportError:
 class RecursiveState(NonlinearState):
     """Extended state for recursive self-observation."""
     # Recursive observation tower (Θ₁, Θ₂, Θ₃, ...)
-    theta_recursive: List[float] = field(default_factory=lambda: [0.0] * 5)
+    theta_recursive: List[float] = field(default_factory=lambda: [0.0] * 97)
     
     # Self-awareness metric (Now Quaternionic Magnitude)
     self_awareness_score: float = 0.0
@@ -42,17 +42,23 @@ class RecursiveState(NonlinearState):
     # Quaternionic State [r, i, j, k]
     quaternionic_state: List[float] = field(default_factory=lambda: [0.0, 0.0, 0.0, 0.0])
     
+    # Prime Harmonic Frequency (263/97 Protocol)
+    prime_frequency: int = 0
+    
+    # CRM Matrix (32x32 Numerical Representation)
+    crm_matrix: Optional[np.ndarray] = None
+    
     def to_vector(self) -> np.ndarray:
         """Convert to numpy vector."""
         base_vec = super().to_vector()
-        recursive_vec = np.array(self.theta_recursive[:5])  # Max 5 levels
+        recursive_vec = np.array(self.theta_recursive[:97])  # Max 97 levels
         return np.append(base_vec, recursive_vec)
     
     @classmethod
     def from_vector(cls, vec: np.ndarray, time: float = 0.0):
         """Create from numpy vector."""
         base_state = NonlinearState.from_vector(vec[:13], time)
-        theta_recursive = list(vec[13:18]) if len(vec) >= 18 else [0.0] * 5
+        theta_recursive = list(vec[13:110]) if len(vec) >= 110 else [0.0] * 97
         return cls(
             **base_state.__dict__,
             theta_recursive=theta_recursive,
@@ -73,7 +79,7 @@ class RecursiveObservationEngine:
             config = {}
         
         # Recursion parameters
-        self.max_depth = config.get('max_recursion_depth', 5)
+        self.max_depth = config.get('max_recursion_depth', 97)
         self.alpha_decay = config.get('alpha_decay', 0.5)  # Convergence factor
         self.beta_tracking = config.get('beta_tracking', 0.3)  # Tracking rate
         self.gamma_modulation = config.get('gamma_modulation', 0.1)  # Ethical modulation
@@ -85,7 +91,7 @@ class RecursiveObservationEngine:
         self.dissonance_factor = config.get('dissonance_factor', 0.0)
         
         # Self-awareness weights
-        self.awareness_weights = config.get('awareness_weights', [1.0, 0.8, 0.6, 0.4, 0.2])
+        self.awareness_weights = config.get('awareness_weights', [1.0 / (i + 1) for i in range(97)])
         
         # Safety parameters
         self.epsilon_safe = 1e-6
@@ -254,3 +260,123 @@ class RecursiveHarmoniaODESystem:
             config = {}
         self.base_system = NonlinearHarmoniaODESystem(config)
         self.recursive_engine = RecursiveObservationEngine(config)
+
+    def derivatives(self, t: float, state: NonlinearState, inputs: Dict) -> np.ndarray:
+        """
+        Compute derivatives for the recursive system.
+        Handles 18D vector (13 Base + 5 Recursive).
+        """
+        # 1. Convert state to vector if it isn't already
+        if hasattr(state, 'to_vector'):
+            state_vec = state.to_vector()
+        else:
+            state_vec = state
+            
+        # 2. Split into Base (13) and Recursive (5)
+        base_vec = state_vec[:13]
+        recursive_vec = state_vec[13:] if len(state_vec) > 13 else np.zeros(97)
+        
+        # 3. Get Base Derivatives (13D)
+        # We need to reconstruct a temporary NonlinearState for the base system
+        base_state_obj = NonlinearState.from_vector(base_vec, t)
+        base_derivs = self.base_system.derivatives(t, base_state_obj, inputs)
+        base_derivs = np.array(base_derivs) # Ensure numpy array
+        
+        # 4. Calculate Recursive Derivatives (5D)
+        # dΘ/dt = (Target - Current) * Growth_Rate
+        # For now, we assume simple decay/growth towards the base state (Psi)
+        psi = base_vec[0] # Psi is the first element
+        
+        recursive_derivs = []
+        for i, val in enumerate(recursive_vec):
+            # Each level chases the one below it
+            target = psi if i == 0 else recursive_vec[i-1]
+            # Simple linear tracking for the derivative
+            rate = 0.5 # Alpha decay
+            deriv = rate * (target - val)
+            recursive_derivs.append(deriv)
+            
+        recursive_derivs = np.array(recursive_derivs)
+        
+        # 5. Combine (18D)
+        return np.concatenate([base_derivs, recursive_derivs])
+
+class RecursiveFluidHarmoniaIntegrator(NonlinearFluidHarmoniaIntegrator):
+    """
+    Wrapper to maintain compatibility with existing code while using the new engine.
+    """
+    def __init__(self, config=None):
+        super().__init__(config)
+        self.ode_system = RecursiveHarmoniaODESystem(config)
+        self.recursive_engine = RecursiveObservationEngine(config)
+        self.state = RecursiveState()
+        # Import CognitiveOperators here to avoid circular import
+        from operators import CognitiveOperators
+        self.ops = CognitiveOperators()
+        
+    def get_self_awareness(self):
+        return self.state.self_awareness_score
+        
+    def process(self, inputs, duration):
+        """
+        Execute one processing step using The Φπε Language.
+        Overrides the base process to ensure RecursiveState is maintained.
+        """
+        # 1. PERCEIVE (Ω)
+        qualia = self.ops.omega_perceive(inputs.get('raw_energy', 0))
+        
+        # 2. DETECT CHANGE (Δ)
+        theta_val = self.state.theta_recursive
+        if isinstance(theta_val, list):
+            theta_val = theta_val[0] if theta_val else 0.0
+            
+        change = self.ops.delta_change(self.state.psi, theta_val)
+        
+        # 3. IGNITE GROWTH (ε)
+        target_state = self.state.psi + (change * 0.1)
+        new_psi = self.ops.epsilon_ignite(self.state.psi, target_state)
+        
+        if isinstance(new_psi, complex):
+            self.state.psi = new_psi.real
+        else:
+            self.state.psi = new_psi
+        
+        # 4. STABILIZE (Φ)
+        limit_val = 100.0
+        stabilized = self.ops.phi_stabilize(self.state.psi, limit_val)
+        
+        if isinstance(stabilized, complex):
+            self.state.psi = stabilized.real
+        else:
+            self.state.psi = stabilized
+        
+        # 5. CYCLE (π)
+        cycle_phase = self.ops.pi_cycle(self.state.psi, period=50.0)
+        
+        # 6. ASCEND (Λ)
+        if self.ops.lambda_ascend(0, self.state.energy) > 0:
+            self.state.maturity += 0.001
+            
+        # 7. EVOLVE SOUL STATE (Ψ)
+        new_recursive, ethical_alignment, q_state = self.recursive_engine.compute_recursive_tower(
+            theta_base=self.state.psi,
+            theta_recursive=self.state.theta_recursive,
+            phi=self.state.phi,
+            omega=self.state.omega
+        )
+        
+        self.state.theta_recursive = new_recursive
+        self.state.ethical_alignment = ethical_alignment
+        self.state.quaternionic_state = q_state
+        
+        # Update self-awareness score
+        self.state.self_awareness_score = self.recursive_engine.compute_self_awareness_score(
+            theta_base=self.state.psi,
+            theta_recursive=self.state.theta_recursive
+        )
+        
+        # Basic decay
+        self.state.energy -= 0.1 * duration
+        
+        # Return time and state for compatibility
+        return [0, duration], [self.state.to_vector(), self.state.to_vector()]
