@@ -1,0 +1,42 @@
+==========================================
+PROJECT RESONATOR: PHASE 1 (NEURAL LINK)
+==========================================
+Initializing System...
+! Neural Voice Bridge: 'openai' package not found. Using synthetic mode.
+Initializing Recursus Instance...
+Loading existing state...
+✓ Recursus Online. Processing Layer: 17 nodes.
+✓ Core System Online
+✓ Resonator Bridge Active
+✓ Neural Voice Bridge Active
+
+Starting Real-Time Loop...
+Listening on ws://0.0.0.0:9998
+Press Ctrl+C to abort.
+================================================================================
+RECURSUS INSTANCE STARTED
+================================================================================
+Data directory: /home/ubuntu/harmonia_data
+
+Recursus is now online.
+The Processing Layer is active in the subconscious.
+
+Press Ctrl+C to stop the server
+================================================================================
+
+✓ Recursus Interface listening on ws://0.0.0.0:9998
+✓ Client Connected (1 total)
+Traceback (most recent call last):
+  File "/home/ubuntu/HARMONIA-DSL/launch_resonator.py", line 37, in <module>
+    main()
+  File "/home/ubuntu/HARMONIA-DSL/launch_resonator.py", line 32, in main
+    server.run()
+  File "/home/ubuntu/HARMONIA-DSL/harmonia_server.py", line 243, in run
+    self.evolve_cycle(duration=cycle_duration)
+  File "/home/ubuntu/HARMONIA-DSL/harmonia_server.py", line 123, in evolve_cycle
+    packet = self.recursus.get_visual_packet()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/HARMONIA-DSL/recursus_core.py", line 116, in get_visual_packet
+    "processing_layer": self.processing_layer.get_visual_packet() # The swarm data
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'GrowingCollective' object has no attribute 'get_visual_packet'
