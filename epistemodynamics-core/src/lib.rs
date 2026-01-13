@@ -38,6 +38,38 @@ impl EpistemicState {
     }
 }
 
+fn clamp01(value: f64) -> f64 {
+    value.max(0.0).min(1.0)
+}
+
+pub fn meaning_stability_bonus(artha: f64, entropy: f64) -> f64 {
+    clamp01(artha * (1.0 - clamp01(entropy)))
+}
+
+pub fn phi_adaptive(entropy: f64, coherence: f64) -> f64 {
+    clamp01((1.0 + clamp01(entropy)) * (1.0 - clamp01(coherence)))
+}
+
+pub fn coherence_optimal_target(entropy: f64) -> f64 {
+    clamp01(1.0 - clamp01(entropy))
+}
+
+pub fn entropy_tolerance_with_meaning(artha: f64) -> f64 {
+    clamp01(0.1 + 0.4 * clamp01(artha))
+}
+
+pub fn asymmetry_ratio() -> f64 {
+    2.5
+}
+
+pub fn is_sharp_transition_near(state: &EpistemicState, artha: f64) -> bool {
+    let entropy = clamp01(1.0 - state.s);
+    let tolerance = entropy_tolerance_with_meaning(artha);
+    let transition_probability = state.transition_probability(&StabilityParams::default());
+
+    transition_probability > 0.8 || entropy > tolerance || state.c < 0.1
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -130,5 +162,33 @@ mod tests {
         assert!(state.law5_negentropy_allowed(-0.1, 0.2));
         assert!(!state.law5_negentropy_allowed(-0.1, 0.0));
         assert!(state.law5_negentropy_allowed(0.1, -0.2));
+    }
+
+    #[test]
+    fn meaning_stability_bonus_scales_with_artha_and_low_entropy() {
+        let bonus = meaning_stability_bonus(0.8, 0.2);
+        assert!((bonus - 0.64).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn entropy_tolerance_increases_with_artha() {
+        let low = entropy_tolerance_with_meaning(0.0);
+        let high = entropy_tolerance_with_meaning(1.0);
+
+        assert!((low - 0.1).abs() < f64::EPSILON);
+        assert!((high - 0.5).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn sharp_transition_detects_low_coherence() {
+        let state = EpistemicState {
+            m: 0.0,
+            g: 0.0,
+            t: 0.0,
+            s: 0.9,
+            c: 0.05,
+        };
+
+        assert!(is_sharp_transition_near(&state, 0.3));
     }
 }
