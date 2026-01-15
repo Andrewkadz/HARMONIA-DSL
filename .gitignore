@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.DS_Store
+frontend/node_modules/
+SWARM RUNS/
+*.csv
+latest_lattice_path.json
