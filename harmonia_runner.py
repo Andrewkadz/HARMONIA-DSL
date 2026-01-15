@@ -118,6 +118,16 @@ class HarmoniaRunner:
                     perturbation = load * 0.5
                     for agent in self.swarm.agents:
                         agent.psi += np.random.uniform(-perturbation, perturbation)
+            
+            elif name == "SchismInjection":
+                # Logic: IF Step == 30: SPLIT_PHASE
+                step = self.swarm.iteration
+                if step == 30:
+                    print("!!! INJECTING SCHISM !!!")
+                    # Split agents into two groups
+                    for i, agent in enumerate(self.swarm.agents):
+                        if i % 2 == 0:
+                            agent.psi += 3.14159  # Shift half by Pi
 
         # 2. Step the Engine
         dt = float(self.config["SYSTEM"].get("DT", 0.05))
@@ -138,6 +148,17 @@ class HarmoniaRunner:
                     self.globals["MAX_CONCURRENCY"] = 4
                 else:
                     self.globals["MAX_CONCURRENCY"] = 100
+            
+            elif name == "AnimusHealing":
+                # Logic: WHEN COHERENCE < 0.5: BOOST PHI
+                if coherence < 0.5:
+                    events.append("CRITICAL_SCHISM")
+                    # Boost coupling strength (PHI) to heal
+                    # We implement this by temporarily increasing the mean field influence
+                    # In pure_harmonic_swarm, this is implicit in the response calculation
+                    # but we can simulate it by reducing epsilon (noise) or boosting omega alignment
+                    for agent in self.swarm.agents:
+                        agent.epsilon *= 0.5  # Reduce noise/exploration to focus on unity
 
         return {
             "step": self.swarm.iteration,

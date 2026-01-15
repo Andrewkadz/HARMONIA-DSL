@@ -1,0 +1,31 @@
+// HARMONIA SWARM PROGRAM
+// Experiment: Bifurcation & Recovery
+// Purpose: Test if ANIMUS can heal a deep schism in the swarm.
+
+SYSTEM BifurcationTest {
+    AGENTS: 100
+    TOPOLOGY: MeanField
+    DT: 0.05
+}
+
+DIMENSIONS {
+    PSI: 1.0   // Initial Awareness
+    PHI: 1.0   // Initial Ethics
+    OMEGA: 0.0 // Initial Coherence
+}
+
+LAW "SchismInjection" {
+    INPUT: Step
+    
+    // At step 30, force a split: Half go Left, Half go Right
+    IF Step == 30:
+        SPLIT_PHASE BY 3.14  // Pi shift (Maximum opposition)
+}
+
+CONSTRAINT "AnimusHealing" {
+    // When coherence drops, increase coupling strength (PHI)
+    // This simulates the swarm "trying harder" to understand each other.
+    WHEN COHERENCE < 0.5:
+        EMIT "CRITICAL_SCHISM"
+        BOOST PHI BY 2.0
+}
