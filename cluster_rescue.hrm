@@ -1,0 +1,29 @@
+// HARMONIA SWARM PROGRAM
+// Cluster Rescue: Animus-Gated Orchestration
+
+SYSTEM ClusterRescue {
+    AGENTS: 100
+    TOPOLOGY: MeanField
+    DT: 0.05
+}
+
+DIMENSIONS {
+    PSI: 1.0   // Initial Awareness
+    PHI: 1.0   // Initial Ethics
+    OMEGA: 0.0 // Initial Coherence
+}
+
+LAW "ThermalThrottling" {
+    INPUT: Temperature
+    
+    // If temperature rises, it adds noise to the system (decoherence)
+    IF Temperature > 80:
+        PERTURB PSI BY (Temperature - 80) * 0.02
+}
+
+CONSTRAINT "AnimusGate" {
+    // If coherence drops below 0.8, we must throttle the cluster
+    WHEN COHERENCE < 0.8:
+        EMIT "THROTTLE_ACTIVE"
+        SET_GLOBAL MAX_CONCURRENCY = 20
+}
