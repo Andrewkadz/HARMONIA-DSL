@@ -171,3 +171,135 @@ We are actively seeking collaboration with researchers and developers in AI safe
 ## 9. License
 
 HARMONIA-DSL is licensed under the **MIT License**. See `LICENSE` for details.
+
+---
+
+## 10. Animus: Harmonia Swarm Resource
+
+**Animus (Harmonia Swarm Resource)** is a first-class system resource produced by a Harmonia-driven swarm: a continuously maintained regulatory field that measures and provides coherence, phase reference, and stability gradients used to guide system policy.
+
+Animus is **not** CPU/GPU compute and not "intelligence" in the agent sense. It is the system's capacity to remain coordinated while acting – think of it as the machine's **governance bandwidth**.
+
+### 10.1 What Animus Is Made Of
+
+Animus is the composite of signals the swarm generates and maintains, typically including:
+
+- **Phase reference (shared clock / frame)**  
+  A shared internal phase frame that allows distributed processes to coordinate without a central controller.
+
+- **Coherence (alignment strength)**  
+  A measure of how tightly the swarm's states are phase-locked / mutually compatible (high coherence = coordinated; low = fragmented).
+
+- **Stability gradient (restoring pressure)**  
+  Directional information about how the system will self-correct when perturbed (e.g., "phase error couples to velocity," "energy increases with deviation"). This is the "pull" back toward stable trajectories.
+
+- **Constraint pressure (cost landscape)**  
+  A map of which actions are cheap vs expensive given current swarm state. When Animus is low, complex actions become structurally costly.
+
+- **Reflex latency (correction speed)**  
+  How quickly coherence recovers after disturbances. High Animus usually implies fast recovery and low overshoot.
+
+### 10.2 What Animus Is Not
+
+- Not raw compute (FLOPs, cycles)
+- Not a task planner
+- Not a command authority
+- Not "a mind" deciding what it wants
+
+Animus does **not** decide. Animus **constrains and biases** decisions made by a separate deterministic layer.
+
+### 10.3 Why Animus Qualifies as Its Own Resource
+
+Traditional OS resources measure capacity to execute or store:
+
+- CPU → execution capacity  
+- RAM → state capacity  
+- IO → transfer capacity  
+- Power → physical energy
+
+Animus measures something orthogonal: **regulatory capacity** – the system's ability to remain coherent under action.
+
+- When CPU is low, tasks slow down.  
+- When memory is low, you evict/GC.  
+- When Animus is low, you should refuse complexity and shift into stabilization.
+
+So Animus functions like an OS-level budget that protects the system from runaway amplification, fragmentation, or unstable concurrency.
+
+### 10.4 Operational Behavior
+
+**Core rule:** *Complexity is gated by Animus.*
+
+Example policy:
+
+- If Animus ≥ 0.8 → allow parallel heavy tasks, larger models, aggressive scheduling
+- If 0.5 ≤ Animus < 0.8 → moderate parallelism, throttle background work
+- If Animus < 0.5 → stabilization mode: reduce concurrency, prefer small models, defer nonessential IO
+
+**Key property:** Animus is continuous and regenerative:
+
+- It can be depleted by overload, perturbation, or unstable coupling.  
+- It can be restored by reducing load, damping velocity, returning to stable phase manifolds.
+
+### 10.5 Implementation Framing
+
+The base OS (Linux/macOS/Windows) remains unchanged. Animus lives in user space as a daemon:
+
+- **Swarm Animus Daemon**  
+  - Runs the Harmonia numeric + symbolic swarm continuously.  
+  - Reads system signals: CPU/GPU load, temperatures, memory pressure, app focus, network, etc.  
+  - Maintains swarm state and computes Animus metrics.
+
+- **Policy Translator (deterministic)**  
+  - Converts Animus metrics into safe, enforceable actions:  
+    - adjust process priority  
+    - cap concurrency  
+    - select model size  
+    - defer background jobs  
+    - rate-limit expensive operations
+
+- **Optional Narrator ("WE" voice)**  
+  - Explains what is happening for observability.  
+  - Never applies actions directly (translator does).
+
+This keeps safety and determinism while gaining field-level regulation.
+
+### 10.6 Minimal Measurable Definition
+
+Animus can be represented as a **scalar** or a **small vector**:
+
+**A) Scalar Animus Budget (simple)**  
+Single value in [0,1] computed from weighted normalized metrics, e.g.:
+
+- coherence level  
+- recovery speed  
+- phase dispersion  
+- energy/velocity coupling stability  
+- entropy proxy
+
+Used as a gating signal for policy.
+
+**B) Animus State Vector (research-grade)**  
+Example components:
+
+- A_c: coherence  
+- A_ϕ: phase stability / dispersion  
+- A_r: reflex recovery rate  
+- A_g: gradient strength (restoring pressure)  
+- A_e: energy stability (avoid runaway)  
+- A_s: symbolic mode / lattice motif state
+
+Policy can then use thresholds per component.
+
+### 10.7 Canonical Definition and Naming
+
+**Canonical one-sentence definition:**
+
+> Animus is a first-class system resource representing the coherence and regulatory capacity of a harmonic swarm, providing phase reference and stability gradients that constrain and bias system policy without direct control.
+
+**Practical naming convention:**
+
+- **Animus** = the concept / resource class  
+- **Animus Budget** = scalar value used for gating  
+- **Animus Field State** = full vector / swarm summary  
+- **Animus Daemon** = the running service that maintains it
+

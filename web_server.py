@@ -11,6 +11,7 @@ import threading
 from datetime import datetime
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 import os
+import time
 
 class HarmoniaWebHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
@@ -24,7 +25,8 @@ class HarmoniaWebHandler(SimpleHTTPRequestHandler):
 
 def run_web_server(port=8080):
     """Run the HTTP server"""
-    os.chdir('/home/ubuntu/HARMONIA-DSL')
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    os.chdir(base_dir)
     server = HTTPServer(('0.0.0.0', port), HarmoniaWebHandler)
     print(f"✓ Web server running on port {port}")
     server.serve_forever()
@@ -51,6 +53,6 @@ if __name__ == "__main__":
     
     try:
         while True:
-            asyncio.sleep(1)
+            time.sleep(1)
     except KeyboardInterrupt:
         print("\n\nShutting down...")

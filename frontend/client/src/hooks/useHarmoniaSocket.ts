@@ -27,7 +27,7 @@ export interface CollectiveState {
   entities: EntityState[];
 }
 
-export function useHarmoniaSocket(url: string = 'ws://localhost:9998') {
+export function useHarmoniaSocket(url: string = 'ws://localhost:10010') {
   const [data, setData] = useState<CollectiveState | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const socketRef = useRef<WebSocket | null>(null);

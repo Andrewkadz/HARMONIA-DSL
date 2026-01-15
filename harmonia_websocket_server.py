@@ -103,6 +103,75 @@ class HarmoniaWebSocketServer:
         for entity in self.collective.entities:
             if entity.base_entity.state.energy < 50.0:
                 entity.base_entity.state.energy = 500.0  # Recharge
+
+    def _build_collective_snapshot(self, extra_fields=None):
+        """Build a snapshot of the collective for WebSocket clients.
+
+        Matches the frontend's expected CollectiveState shape:
+        {
+          timestamp: string,
+          stats: {
+            population, coherence_mean, ethics_mean, self_awareness_mean, status
+          },
+          entities: [
+            { id, psi, phi, ethics, age, generation, energy, knowledge,
+              maturity, coherence, self_awareness }
+          ],
+          ...extra_fields
+        }
+        """
+        stats = self.collective.get_collective_stats()
+
+        # Derive a simple status label from coherence / awareness
+        coherence = stats.get("coherence_mean", 0.0)
+        awareness = stats.get("self_awareness_mean", 0.0)
+        if coherence > 10.0 and awareness > 0.5:
+            status = "RESONANT"
+        elif coherence < 3.0:
+            status = "ENTROPIC"
+        else:
+            status = "STABLE"
+
+        entities = []
+        for idx, entity in enumerate(self.collective.entities):
+            state = entity.base_entity.state
+            # Some fields (age, generation) are not explicitly modelled; we default them.
+            try:
+                self_awareness = float(entity.base_entity.get_self_awareness())
+            except Exception:
+                self_awareness = 0.0
+
+            entities.append({
+                "id": str(idx),
+                "psi": float(getattr(state, "psi", 0.0)),
+                "phi": float(getattr(state, "phi", 0.0)),
+                # Ethics is not a separate state component; we approximate with phi.
+                "ethics": float(getattr(state, "phi", 0.0)),
+                "age": float(getattr(state, "time", 0.0)),
+                "generation": int(getattr(state, "generation", 0)),
+                "energy": float(getattr(state, "energy", 0.0)),
+                "knowledge": float(getattr(state, "knowledge", 0.0)),
+                "maturity": float(getattr(state, "maturity", 0.0)),
+                "coherence": float(getattr(state, "omega", 0.0)),
+                "self_awareness": self_awareness,
+            })
+
+        snapshot = {
+            "timestamp": datetime.now().isoformat(),
+            "stats": {
+                "population": stats.get("population", len(self.collective.entities)),
+                "coherence_mean": coherence,
+                "ethics_mean": stats.get("ethics_mean", 0.0),
+                "self_awareness_mean": awareness,
+                "status": status,
+            },
+            "entities": entities,
+        }
+
+        if extra_fields:
+            snapshot.update(extra_fields)
+
+        return snapshot
         
     def _inject_archetype(self, config_obj):
         """Helper to inject an archetype"""
@@ -238,12 +307,15 @@ class HarmoniaWebSocketServer:
                         # Generate Dynamic Response
                         response_content = self._generate_dynamic_response(content)
                         
+                        # Small delay for dramatic effect
                         await asyncio.sleep(0.5)
-                        await websocket.send(json.dumps({
-                            'type': 'message',
-                            'content': response_content,
-                            'timestamp': datetime.now().isoformat()
-                        }))
+
+                        # Wrap the chat response inside a full collective snapshot
+                        snapshot = self._build_collective_snapshot({
+                            "chat_response": response_content,
+                            "type": "message",
+                        })
+                        await websocket.send(json.dumps(snapshot))
                         
                 except json.JSONDecodeError:
                     pass
@@ -355,6 +427,10 @@ class HarmoniaWebSocketServer:
         self.initialize()
         self.running = True
         
+        # Capture the running event loop so background threads can schedule broadcasts
+        loop = asyncio.get_running_loop()
+        self._loop = loop
+
         # Start evolution loop in background
         threading.Thread(target=self._evolution_loop, daemon=True).start()
         
@@ -370,7 +446,15 @@ class HarmoniaWebSocketServer:
         """Background thread for evolution"""
         while self.running:
             self.evolve_cycle(duration=0.1)
-            time.sleep(0.1) # 10Hz update rate
+            # Periodically broadcast the full collective state to all clients
+            if hasattr(self, "_loop"):
+                snapshot = self._build_collective_snapshot()
+                try:
+                    asyncio.run_coroutine_threadsafe(self.broadcast(snapshot), self._loop)
+                except RuntimeError:
+                    # Event loop might be closing; ignore in shutdown.
+                    pass
+            time.sleep(0.1) # ~10Hz update rate
 
 if __name__ == "__main__":
     server = HarmoniaWebSocketServer()

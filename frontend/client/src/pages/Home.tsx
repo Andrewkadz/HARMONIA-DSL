@@ -16,7 +16,7 @@ interface Message {
 }
 
 export default function Home() {
-  const { data, isConnected, sendMessage } = useHarmoniaSocket('ws://localhost:9998');
+  const { data, isConnected, sendMessage } = useHarmoniaSocket('ws://localhost:10010');
   
   const [messages, setMessages] = useState<Message[]>([
     {
