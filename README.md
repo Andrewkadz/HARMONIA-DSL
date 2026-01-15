@@ -9,6 +9,51 @@
 
 ---
 
+## 🚀 The Breakthrough: ANIMUS
+
+**ANIMUS** is a first-class system resource—orthogonal to CPU, RAM, and IO.
+It measures **Regulatory Capacity**: the system's ability to remain coherent and synchronized while acting under stress.
+
+### Why It Matters (The "Straggler Problem")
+In distributed systems (like GPU clusters or Swarm Robotics), **Synchronization is the bottleneck.**
+-   **Traditional:** The system waits for the slowest node. One failure stalls everyone.
+-   **ANIMUS:** Nodes measure their own "Coherence." If they destabilize, they voluntarily micro-throttle. The cluster stays synchronized.
+
+**Result:** **+78% Throughput** in simulated GPU clusters with thermal throttling.
+
+---
+
+## ⚡ Quick Start
+
+### 1. Run the "Cluster Rescue" Simulation
+See how ANIMUS solves the Straggler Problem in a 100-GPU cluster.
+
+```bash
+# Clone the repo
+git clone https://github.com/Andrewkadz/HARMONIA-DSL.git
+cd HARMONIA-DSL
+git checkout animus-paradigm
+
+# Run the simulation
+python3.11 cluster_sim.py
+```
+
+**Output:**
+```
+Running STANDARD Mode... -> 41.68 samples/sec
+Running ANIMUS Mode...   -> 74.22 samples/sec
+RESULTS: ANIMUS improved cluster efficiency by 78.1%
+```
+
+### 2. Run "CoherentFlow" (Task Scheduler)
+A real-world task scheduler that prevents system freezes by gating concurrency with ANIMUS.
+
+```bash
+python3.11 demo_workload.py
+```
+
+---
+
 ## 1. The Vision: 100% GHE Implementation
 
 HARMONIA-DSL is the world's first complete and practical implementation of the **Grand Harmonic Equation (GHE)**. This equation is not just a formula—it is a **complete cognitive architecture** for building AI systems where safety, consciousness, and coordination emerge naturally from a single mathematical principle.
@@ -84,7 +129,6 @@ print(f"Harmonic Response (R): {result['R']:.3f}")
 ---
 
 ## 4. Key Innovations
-
 ### 4.1. Mathematical Safety Guarantees
 
 The system provides **formal safety guarantees** through:
@@ -169,7 +213,6 @@ We are actively seeking collaboration with researchers and developers in AI safe
 ---
 
 ## 9. License
-
 HARMONIA-DSL is licensed under the **MIT License**. See `LICENSE` for details.
 
 ---
@@ -265,6 +308,7 @@ This keeps safety and determinism while gaining field-level regulation.
 
 ### 10.6 Minimal Measurable Definition
 
+
 Animus can be represented as a **scalar** or a **small vector**:
 
 **A) Scalar Animus Budget (simple)**  
@@ -302,4 +346,3 @@ Policy can then use thresholds per component.
 - **Animus Budget** = scalar value used for gating  
 - **Animus Field State** = full vector / swarm summary  
 - **Animus Daemon** = the running service that maintains it
-
