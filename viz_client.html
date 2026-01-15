@@ -63,15 +63,16 @@
         if (data.type === 'update') {
             // Update Stats
             const coherence = data.coherence.toFixed(3);
-            const energy = data.energy.toFixed(1);
-            statsText.setAttribute('value', `ANIMUS (Coherence): ${coherence}\nEnergy: ${energy}\nAgents: ${data.agents.length}`);
+            const resonance = data.energy.toFixed(2); // Server sends Resonance in 'energy' field
+            statsText.setAttribute('value', `ANIMUS (Coherence): ${coherence}\nRESONANCE: ${resonance}\nAgents: ${data.agents.length}`);
             
-            // Color Logic based on Coherence
-            // High Coherence = Gold/White
-            // Low Coherence = Red/Chaos
+            // Color Logic based on Resonance (Telekinetic Threshold > 3.0)
             let color = '#00FFFF'; // Default Cyan
-            if (data.coherence > 0.9) color = '#FFD700'; // Gold
-            else if (data.coherence < 0.6) color = '#FF0000'; // Red
+            if (data.energy > 3.0) {
+                color = '#FFD700'; // GOLD (Channeling State)
+            } else if (data.coherence < 0.6) {
+                color = '#FF0000'; // Red (Chaos)
+            }
             
             // Update Agents
             data.agents.forEach(agentData => {

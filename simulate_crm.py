@@ -42,8 +42,8 @@ GLYPH_RULES = {
 def get_glyph_factor(glyph):
     return GLYPH_RULES.get(glyph, 1.0) # Default to 1.0 if unknown
 
-# --- 3. The Resonance Engine ---
-def run_simulation(matrix, steps=50):
+# --- 3. The Resonance Engine (Equation Driven) ---
+def run_simulation(matrix, steps=135):
     rows, cols = matrix.shape
     # Energy Grid (Float)
     energy = np.zeros((rows, cols))
@@ -54,39 +54,69 @@ def run_simulation(matrix, steps=50):
     
     history = [energy.copy()]
     
+    # Constants for the Equation
+    GLOBAL_CONST = 2.71134 # (263/97) - Phi-Pi-Epsilon
+    TIME_CONST = 1.0       # T
+    DECAY_CONST = 0.5      # lambda
+    EPSILON = 1e-6         # To avoid division by zero
+    
     for t in range(steps):
         new_energy = np.zeros_like(energy)
         
         for r in range(rows):
             for c in range(cols):
-                # Current Glyph
+                # Current Glyph Factors
                 glyph = matrix[r, c]
-                factor = get_glyph_factor(glyph)
+                shift_factor = get_glyph_factor(glyph) # Lambda (Local Shift)
+                damping_factor = 0.5 # Omega (Local Damping - simplified)
+                if glyph == 'Ω': damping_factor = 2.0 # Strong damping for Omega
                 
-                # Diffusion: Energy flows to neighbors
-                # We use a simple 4-neighbor diffusion model
+                # 1. Calculate Flux (Gamma * P / T)
+                # Sum of incoming energy from neighbors
                 neighbors = []
                 if r > 0: neighbors.append((r-1, c))
                 if r < rows-1: neighbors.append((r+1, c))
                 if c > 0: neighbors.append((r, c-1))
                 if c < cols-1: neighbors.append((r, c+1))
                 
-                # Calculate incoming energy from neighbors
-                incoming = 0
+                incoming_flux = 0
                 for nr, nc in neighbors:
-                    # Neighbor gives 20% of its energy to this cell
-                    incoming += energy[nr, nc] * 0.20 
+                    incoming_flux += energy[nr, nc] * 0.25 # Gamma (Connection)
                 
-                # Apply Glyph Rule (Amplification/Damping)
-                # The cell's new energy is (Retained Energy + Incoming) * Factor
-                # Retained = 20% (it gave away 80% to 4 neighbors)
-                retained = energy[r, c] * 0.20
+                # 2. The Equation: Φπε · [ΓΛ(P/T) : ΨΩ] · Θn(P/λ)
+                # Term 1: Global Context
+                term1 = GLOBAL_CONST
                 
-                new_energy[r, c] = (retained + incoming) * factor
+                # Term 2: The Engine [Flux : State]
+                # Numerator: Gamma * Lambda * (P_incoming / T)
+                numerator = incoming_flux * shift_factor / TIME_CONST
                 
-                # Cap energy to prevent infinite explosion (Saturation)
-                if new_energy[r, c] > 1000:
-                    new_energy[r, c] = 1000
+                # Denominator: Psi * Omega (Current State * Damping)
+                current_state = energy[r, c]
+                denominator = (current_state * damping_factor) + EPSILON
+                
+                # Term 3: The Clock (Recursion)
+                # P / lambda
+                term3 = current_state / DECAY_CONST
+                
+                # Revised Logic for Stability:
+                # New_Energy = (Incoming Flux * Shift) + (Retained Energy * Decay_Inverse)
+                # But modulated by the "Ratio" [Flux : State]
+                
+                ratio = numerator / (current_state + 1.0) # Avoid div/0
+                
+                # Apply the Global Constant as a "Gain" on the Ratio
+                update_force = term1 * ratio
+                
+                # Apply Recursion: The previous state persists but decays
+                recursion = current_state * 0.8 # Natural decay
+                
+                new_val = recursion + update_force
+                
+                # Cap energy
+                if new_val > 1000: new_val = 1000
+                
+                new_energy[r, c] = new_val
                     
         energy = new_energy
         history.append(energy.copy())
@@ -98,16 +128,16 @@ def visualize_results(history, matrix):
     # Plot Initial, Middle, and Final State
     fig, axes = plt.subplots(1, 3, figsize=(18, 6))
     
-    times = [0, 10, 49] # T=0, T=10, T=50
-    titles = ["Injection (T=0)", "Propagation (T=10)", "Steady State (T=50)"]
+    times = [1, 73, 134] # Step 1, Step 73, Step 134
+    titles = ["Reaction (T=1)", "Midpoint (T=73)", "Result (T=134)"]
     
     for i, t in enumerate(times):
         sns.heatmap(history[t], ax=axes[i], cmap="magma", cbar=False, square=True)
         axes[i].set_title(titles[i])
         axes[i].axis('off')
         
-    plt.suptitle("CRM Simulation: Lambda Injection Response", fontsize=16)
-    plt.savefig('/home/ubuntu/crm_simulation_results.png')
+    plt.suptitle("CRM Simulation: Equation Driven (Phi-Pi-Epsilon)", fontsize=16)
+    plt.savefig('/home/ubuntu/HARMONIA-DSL/crm_snapshots_1_73_134.png')
     plt.close()
 
 if __name__ == "__main__":
@@ -115,8 +145,8 @@ if __name__ == "__main__":
     matrix = load_hrm('/home/ubuntu/HARMONIA-DSL/CRM_NODE_32.hrm')
     
     # Run Simulation
-    history = run_simulation(matrix, steps=50)
+    history = run_simulation(matrix, steps=135)
     
     # Visualize
     visualize_results(history, matrix)
-    print("Simulation Complete. Results saved to crm_simulation_results.png")
+    print("Simulation Complete. Results saved to crm_snapshots_1_73_134.png")

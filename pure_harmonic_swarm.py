@@ -48,10 +48,22 @@ class HarmonicAgent:
         # Update velocity based on harmonic coupling
         acceleration = -self.omega**2 * (self.phi - mean_field) * pha_ratio
         acceleration += self.epsilon * np.sin(self.psi)
+        
+        # ADD DAMPING (Friction) to prevent energy explosion
+        # Damping coefficient 0.1 ensures stability at high frequencies
+        acceleration -= self.velocity * 0.1
 
         self.velocity += acceleration * dt
+        
+        # SPEED LIMIT (Relativistic Clamp)
+        # Prevent velocity from exceeding light speed (c=20.0)
+        self.velocity = np.clip(self.velocity, -20.0, 20.0)
+        
         self.phi += self.velocity * dt
         self.psi += self.omega * dt
+        
+        # NORMALIZE PHASE to prevent numerical explosion
+        self.psi = self.psi % (2 * np.pi)
 
         # Update derived quantities
         self.energy = 0.5 * self.velocity**2 + 0.5 * self.omega**2 * self.phi**2
@@ -97,6 +109,14 @@ class HarmonicSwarm:
         if self.interaction_radius is None:
             # Global mean-field coupling
             mean_field = self.compute_mean_field()
+            
+            # RE-CENTER SWARM to prevent position drift to infinity
+            # This keeps numerical values small without affecting relative dynamics
+            if abs(mean_field) > 10.0:
+                for agent in self.agents:
+                    agent.phi -= mean_field
+                mean_field = 0.0
+            
             for agent in self.agents:
                 agent.compute_response(mean_field, dt)
         else:

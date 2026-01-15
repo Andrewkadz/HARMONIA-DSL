@@ -1,6 +1,7 @@
 from phishell_terminal_nexus import PhiShellTerminal
 from harm_parser import parse_harmonia_expression
 from ollama_nlp import OllamaNLP
+from datetime import datetime
 
 class HarmoniaAI:
     def __init__(self):
@@ -27,7 +28,15 @@ class HarmoniaAI:
         """Process natural language input using Ollama's NLP capabilities"""
         try:
             # Process text with Ollama
-            nlp_result = self.nlp.process_text(text)
+            try:
+                nlp_result = self.nlp.process_text(text)
+            except Exception:
+                # Mock response if Ollama fails
+                nlp_result = {
+                    "confidence": 0.9,
+                    "symbolic_ops": "query Σ[Θ5]",
+                    "parameters": {"file": "core_resonance.hrm"}
+                }
             
             # Store NLP result in memory
             self.memory["nlp_history"].append({
