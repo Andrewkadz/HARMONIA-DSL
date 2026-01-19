@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import cmath
 from tau_crystal_memory import TauMemoryField
 from swarm_homeostasis import SwarmHomeostasis
+from phi_code_physics import PhiCodePhysics
 
 # --- QUANTUM PHYSICS ENGINE ---
 class QuantumAgent:
@@ -52,6 +53,7 @@ class QuantumSwarm:
         self.entanglement_entropy = 0.0
         self.memory = TauMemoryField(capacity=5)
         self.homeostasis = SwarmHomeostasis()
+        self.phi_physics = PhiCodePhysics()
         
     def update(self, gamma, beta, theta):
         """
@@ -89,6 +91,16 @@ class QuantumSwarm:
             # Apply Temporal Gravity (Nudge towards crystal state)
             gravity = self.memory.get_temporal_gravity(agent.state)
             agent.state += gravity
+            
+            # --- PHI-CODE DYNAMICS ---
+            # Apply the Recursive Field Equations
+            agent.state = self.phi_physics.apply_phi_dynamics(
+                agent.state, 
+                self.global_coherence, 
+                self.entanglement_entropy, 
+                gamma
+            )
+            
             norm = np.linalg.norm(agent.state)
             agent.state = agent.state / (norm + 1e-9)
             
