@@ -27,7 +27,11 @@ class QuantumAgent:
         # Using QR decomposition or just normalizing the result
         self.state = np.dot(U, self.state)
         norm = np.linalg.norm(self.state)
-        self.state = self.state / (norm + 1e-9)
+        if norm < 1e-9:
+            # Reset if state collapses to zero
+            self.state = np.array([1/np.sqrt(2), 1/np.sqrt(2)], dtype=complex)
+        else:
+            self.state = self.state / norm
         
     def measure(self):
         """
@@ -49,8 +53,8 @@ class QuantumSwarm:
     def __init__(self, num_qubits=50):
         self.num_qubits = num_qubits
         self.agents = [QuantumAgent(i) for i in range(num_qubits)]
-        self.global_coherence = 0.0
-        self.entanglement_entropy = 0.0
+        self.global_coherence = 0.5 # Start with balanced coherence
+        self.entanglement_entropy = 0.5 # Start with balanced entropy
         self.memory = TauMemoryField(capacity=5)
         self.homeostasis = SwarmHomeostasis()
         self.phi_physics = PhiCodePhysics()
@@ -102,7 +106,10 @@ class QuantumSwarm:
             )
             
             norm = np.linalg.norm(agent.state)
-            agent.state = agent.state / (norm + 1e-9)
+            if norm < 1e-9:
+                agent.state = np.array([1/np.sqrt(2), 1/np.sqrt(2)], dtype=complex)
+            else:
+                agent.state = agent.state / norm
             
         # 3. Measurement (Collapse)
         # Beta determines the probability of "Looking" at the system
@@ -124,12 +131,20 @@ class QuantumSwarm:
         # 4. Calculate Global Coherence
         # Average of off-diagonal density matrix elements (Interference capability)
         coherence_sum = 0
+        valid_agents = 0
         for agent in self.agents:
+            if np.isnan(agent.state).any():
+                 agent.state = np.array([1/np.sqrt(2), 1/np.sqrt(2)], dtype=complex)
+            
             # Density matrix rho = |psi><psi|
             rho = np.outer(agent.state, np.conj(agent.state))
             coherence_sum += np.abs(rho[0, 1]) # Off-diagonal term
+            valid_agents += 1
             
-        self.global_coherence = coherence_sum / self.num_qubits
+        if valid_agents > 0:
+            self.global_coherence = coherence_sum / valid_agents
+        else:
+            self.global_coherence = 0.0
         
         # --- CRYSTALLIZATION LOGIC ---
         if self.global_coherence > 0.4:
@@ -171,7 +186,8 @@ def run_quantum_simulation():
         'time': [],
         'coherence': [],
         'entropy': [],
-        'gamma': []
+        'gamma': [],
+        'fusion': [] # Track Fusion Events
     }
     
     step_size = 10
@@ -185,6 +201,10 @@ def run_quantum_simulation():
         results['coherence'].append(swarm.global_coherence)
         results['entropy'].append(swarm.entanglement_entropy)
         results['gamma'].append(row['Gamma'])
+        
+        # Check if Fusion is active (Energy drop)
+        fusion_active = 1.0 if swarm.phi_physics.omega_integral > swarm.phi_physics.fusion_barrier else 0.0
+        results['fusion'].append(fusion_active)
         
         if i % 2000 == 0:
             print(f"Step {i} | Coherence: {swarm.global_coherence:.4f}")
@@ -209,6 +229,9 @@ def plot_quantum_results(results):
     
     # Plot Gamma Input (Magenta) for reference
     ax2.plot(results['time'], results['gamma'], color='magenta', label='Gamma Input (Energy)', alpha=0.3)
+    
+    # Plot Fusion Events (Yellow)
+    ax2.fill_between(results['time'], 0, 1, where=results['fusion'], color='yellow', alpha=0.2, label='Delta Fusion (Δ)')
     
     fig.legend(loc="upper left", bbox_to_anchor=(0.1, 0.9))
     plt.grid(True, alpha=0.2)
