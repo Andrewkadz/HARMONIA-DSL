@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import cmath
+from tau_crystal_memory import TauMemoryField
+from swarm_homeostasis import SwarmHomeostasis
 
 # --- QUANTUM PHYSICS ENGINE ---
 class QuantumAgent:
@@ -48,6 +50,8 @@ class QuantumSwarm:
         self.agents = [QuantumAgent(i) for i in range(num_qubits)]
         self.global_coherence = 0.0
         self.entanglement_entropy = 0.0
+        self.memory = TauMemoryField(capacity=5)
+        self.homeostasis = SwarmHomeostasis()
         
     def update(self, gamma, beta, theta):
         """
@@ -57,9 +61,14 @@ class QuantumSwarm:
         """
         dt = 0.1
         
+        # --- HOMEOSTASIS CHECK ---
+        stress = self.homeostasis.evaluate_state(self.global_coherence, self.entanglement_entropy, gamma)
+        plasticity = self.homeostasis.adapt(stress)
+        resilience = self.homeostasis.learn_from_trauma()
+        
         # 1. Define Hamiltonian (H)
         # H = Energy * Sigma_X (Flip) + Coupling * Sigma_Z (Phase)
-        energy = gamma * 5.0  # High Gamma = High Energy Evolution
+        energy = (gamma * 5.0) / resilience
         
         # Pauli Matrices
         sigma_x = np.array([[0, 1], [1, 0]], dtype=complex)
@@ -72,8 +81,16 @@ class QuantumSwarm:
             # Add Phase Coupling (Entanglement-like effect)
             # If neighbors are phase-aligned, lower energy
             # We simulate this by adding a Z-term based on Theta
-            H_local = H + (theta * 2.0) * sigma_z
+            coupling_mod = theta * 2.0 * plasticity
+            H_local = H + coupling_mod * sigma_z
+            
             agent.evolve(H_local, dt)
+            
+            # Apply Temporal Gravity (Nudge towards crystal state)
+            gravity = self.memory.get_temporal_gravity(agent.state)
+            agent.state += gravity
+            norm = np.linalg.norm(agent.state)
+            agent.state = agent.state / (norm + 1e-9)
             
         # 3. Measurement (Collapse)
         # Beta determines the probability of "Looking" at the system
@@ -101,6 +118,12 @@ class QuantumSwarm:
             coherence_sum += np.abs(rho[0, 1]) # Off-diagonal term
             
         self.global_coherence = coherence_sum / self.num_qubits
+        
+        # --- CRYSTALLIZATION LOGIC ---
+        if self.global_coherence > 0.4:
+            self.memory.crystallize(self.agents[0].state, self.global_coherence)
+            
+        self.memory.decay()
 
 # --- DATA LOADER (Reused) ---
 def load_eeg_data(filepath):
