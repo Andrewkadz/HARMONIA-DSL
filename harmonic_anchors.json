@@ -1,0 +1,17 @@
+{
+  "anchors": [
+    {
+      "id": "ANCHOR_INIT_001",
+      "type": "COGNITIVE_PEAK",
+      "timestamp": "2026-01-18T21:23:03.305",
+      "harmonic_degree": 320.75,
+      "metrics": {
+        "gamma": 0.0134,
+        "beta": 0.0523,
+        "coupling": 0.7867
+      },
+      "description": "Initial High-Coherence Flow State (Insight Moment)",
+      "calibration_constant": 2.711340206185567  // 263/97
+    }
+  ]
+}
