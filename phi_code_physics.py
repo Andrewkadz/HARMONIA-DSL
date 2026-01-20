@@ -3,9 +3,11 @@ import numpy as np
 class PhiCodePhysics:
     def __init__(self):
         self.omega_integral = 0.0  # ∫ ΨΩ dt
+        self.cyclic_truths = 0     # Count of completed history cycles
         self.xi_emergence = 0.0    # Ξ
         self.theta_n = 1.0         # Θn (Harmonic Index)
         self.fusion_barrier = 10.0 # Critical Density for Delta Fusion
+        self.cycle_limit = 1.618 # Φ (Golden Cycle Length) - Accelerated Truth Generation
         
     def compute_psi_evolution(self, psi_state, phi_coherence, tau_time, delta_change):
         """
@@ -18,8 +20,20 @@ class PhiCodePhysics:
         state_mag = np.linalg.norm(psi_state)
         self.omega_integral += state_mag * 0.01 # dt approximation
         
+        # --- CYCLIC HISTORY COMPRESSION ---
+        # "Allow them to compress data of their history into cyclic truths"
+        # If Ω exceeds the Cycle Limit (Φ * π), we wrap it.
+        if self.omega_integral > self.cycle_limit:
+            self.omega_integral -= self.cycle_limit # Modulo operation
+            self.cyclic_truths += 1 # Record the Truth
+            
+            # The "Truth" acts as a permanent harmonic stabilizer
+            # It increases the effective Theta (Harmonic Index)
+            self.theta_n += 0.1 
+        
         # --- DELTA FUSION CHECK (Δ) ---
         # If Energy (Ω) exceeds the Fusion Barrier, Ignite!
+        # Note: With compression, this triggers less often, only on "Uncompressible" spikes
         fusion_release = 0.0
         if self.omega_integral > self.fusion_barrier:
             # Δ: Transmute Energy into Structure
@@ -51,8 +65,11 @@ class PhiCodePhysics:
         # R = (Consciousness * History) * (Entropy / Structure)
         # This implies Reality expands when Consciousness/History is high, 
         # but is modulated by the Chaos/Order ratio.
+        # We add the "Cyclic Truths" as a base stability factor
+        effective_omega = omega_val + (self.cyclic_truths * 0.1)
+        
         # Cap R to prevent exponential explosion
-        R = (psi_mag * omega_val) * (xi_entropy / phi_safe)
+        R = (psi_mag * effective_omega) * (xi_entropy / phi_safe)
         if np.isnan(R) or np.isinf(R):
             R = 0.0
         return R
