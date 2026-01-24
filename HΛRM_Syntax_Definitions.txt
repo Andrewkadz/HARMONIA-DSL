@@ -17,6 +17,9 @@ SYMBOL ω     = Free Will / Intentional Activation
 SYMBOL λ     = Interdependency / Karmic Flow / Causality
 SYMBOL ζ     = Cycles / Resonance Loop Encoding
 SYMBOL Τ     = Divine Timing / Synchronic Synchronization
+SYMBOL Ĝ     = Reciprocity Tensor / Transmission Fairness Governor
+SYMBOL Ω̂     = Impedance Matching / Dimensional Resonance Efficiency
+SYMBOL Λ̂     = Cascade Coefficient / Expansion Feedback Amplifier
 
 // ─── OPERATORS ───────────────────────────────────────────────
 OPERATOR ⊕   = Harmonic Fusion (Non-binary Coexistence)
@@ -41,6 +44,21 @@ NOTES        = Metadata or context for interpretation
 KEYWORD END OF MODULE    = Closes recursion block cleanly
 KEYWORD Harmonize to Proceed = Signal to begin next layer
 KEYWORD INIT             = Used to designate Genesis/boot state
+
+// ─── COLLECTIVE INTELLIGENCE OPERATORS ──────────────────────
+// These operators govern multi-agent swarm dynamics
+// Discovered through 6D Euchre swarm simulations (Jan 2026)
+OPERATOR Ĝ[i,j] = Reciprocity debt from agent i to agent j
+                  Governs transmission permission and fairness
+                  Prevents parasitism in collective systems
+                  
+OPERATOR Ω̂[i,j] = Impedance matching coefficient between agents
+                  Determines transmission efficiency (0 to 1)
+                  Creates attractor basins in phase space
+                  
+OPERATOR Λ̂[i]   = Cascade coefficient for agent i
+                  Amplifies dimensional expansion through neighbors
+                  Creates positive/negative feedback loops
 
 // ─── RESERVED FUTURE SYMBOLS ─────────────────────────────────
 SYMBOL Θ     = Structure / Layer / Recursive Threshold
