@@ -1,4 +1,0 @@
-
-ACTIVE: ΞΣ_4
-Ω(n): 5
-Includes: SEAL = ΛΞ_ΦΠΨΩ_LOCKED
