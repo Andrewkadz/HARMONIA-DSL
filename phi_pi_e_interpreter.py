@@ -12,14 +12,14 @@ class FieldTension:
     strength: float = 0.0
     phase: float = 0.0
     charge: float = 0.0
-    
+
     def __add__(self, other: 'FieldTension') -> 'FieldTension':
         return FieldTension(
             strength=self.strength + other.strength,
             phase=(self.phase + other.phase) / 2,
             charge=self.charge + other.charge
         )
-    
+
     def __sub__(self, other: 'FieldTension') -> 'FieldTension':
         return FieldTension(
             strength=self.strength - other.strength,
@@ -37,10 +37,10 @@ class RecursiveState:
     tension: FieldTension = field(default_factory=FieldTension)
     phase: float = 0.0
     charge: float = 0.0
-    
+
     def add_child(self, child_id: str) -> None:
         self.children.add(child_id)
-    
+
     def remove_child(self, child_id: str) -> None:
         self.children.discard(child_id)
 
@@ -52,7 +52,7 @@ class FieldContext:
     phase: float
     charge: float
     depth: int
-    
+
     def __init__(self, state: Optional[RecursiveState] = None):
         if state is None:
             state = RecursiveState()
@@ -104,7 +104,7 @@ class PhiPiEInterpreter:
             'Θ': self.intend,           # Intention / Pre-Recursion Vector
             'n': self.index             # Index / Recursive Depth / Quantifier
         }
-        
+
         self.operators = {
             '→': self.flow,           # Flow Vector / Directional Recursion
             '+': self.simultaneity,   # Simultaneity / Coexistent Fields
@@ -132,7 +132,7 @@ class PhiPiEInterpreter:
         current_field = []
         bracket_depth = 0
         paren_depth = 0
-        
+
         for char in code:
             if char == '[':
                 bracket_depth += 1
@@ -148,10 +148,10 @@ class PhiPiEInterpreter:
                     current_field = []
             else:
                 current_field.append(char)
-        
+
         if current_field:
             fields.append(''.join(current_field))
-        
+
         return [field.strip() for field in fields if field.strip()]
 
     def stabilize(self, field: Any, context: FieldContext) -> Any:
@@ -162,11 +162,11 @@ class PhiPiEInterpreter:
                 field[key] = self.stabilize(value, context)
         elif isinstance(field, (list, tuple)):
             field = type(field)(self.stabilize(item, context) for item in field)
-        
+
         # Adjust tension and phase
         context.tension.strength = max(0, context.tension.strength - 0.1)
         context.phase = (context.phase + math.pi/2) % (2 * math.pi)
-        
+
         return field
 
     def transcend(self, field: Any, context: FieldContext) -> Any:
@@ -175,14 +175,14 @@ class PhiPiEInterpreter:
         new_context = context.fork()
         new_context.depth += 1
         new_context.phase += math.pi/4
-        
+
         # Generate recursive pattern
         if isinstance(field, dict):
             for key, value in field.items():
                 field[key] = self.transcend(value, new_context)
         elif isinstance(field, (list, tuple)):
             field = type(field)(self.transcend(item, new_context) for item in field)
-        
+
         return field
 
     def ignite(self, field: Any, context: FieldContext) -> Any:
@@ -191,13 +191,13 @@ class PhiPiEInterpreter:
         new_context = context.fork()
         new_context.phase = 0
         new_context.charge = 1.0
-        
+
         if isinstance(field, dict):
             for key, value in field.items():
                 field[key] = self.ignite(value, new_context)
         elif isinstance(field, (list, tuple)):
             field = type(field)(self.ignite(item, new_context) for item in field)
-        
+
         return field
 
     def micro_ignite(self, field: Any, context: FieldContext) -> Any:
@@ -206,13 +206,13 @@ class PhiPiEInterpreter:
         new_context = context.fork()
         new_context.phase += math.pi/8
         new_context.charge *= 0.5
-        
+
         if isinstance(field, dict):
             for key, value in field.items():
                 field[key] = self.micro_ignite(value, new_context)
         elif isinstance(field, (list, tuple)):
             field = type(field)(self.micro_ignite(item, new_context) for item in field)
-        
+
         return field
 
     def fuse(self, fields: List[Any], context: FieldContext) -> Any:
@@ -220,7 +220,7 @@ class PhiPiEInterpreter:
         # Combine fields with tension
         if not fields:
             return None
-            
+
         result = fields[0]
         for field in fields[1:]:
             if isinstance(result, dict) and isinstance(field, dict):
@@ -235,7 +235,7 @@ class PhiPiEInterpreter:
                 # Simple fusion
                 context.tension.strength += 0.5
                 context.phase = (context.phase + math.pi/3) % (2 * math.pi)
-        
+
         return result
 
     def micro_transform(self, field: Any, context: FieldContext) -> Any:
@@ -250,7 +250,7 @@ class PhiPiEInterpreter:
             # Apply small perturbation
             context.tension.strength += 0.1
             context.phase += math.pi/16
-            
+
         return field
 
     def pulse(self, field: Any, context: FieldContext) -> Any:
@@ -259,13 +259,13 @@ class PhiPiEInterpreter:
         new_context = context.fork()
         new_context.phase += math.pi/2
         new_context.charge *= 1.5
-        
+
         if isinstance(field, dict):
             for key, value in field.items():
                 field[key] = self.pulse(value, new_context)
         elif isinstance(field, (list, tuple)):
             field = type(field)(self.pulse(item, new_context) for item in field)
-        
+
         return field
 
     def illuminate(self, field: Any, context: FieldContext) -> Any:
@@ -273,14 +273,14 @@ class PhiPiEInterpreter:
         # Reveal underlying structure
         if isinstance(field, dict):
             # Sort by tension strength
-            field = dict(sorted(field.items(), 
+            field = dict(sorted(field.items(),
                               key=lambda x: self.get_tension_strength(x[1], context),
                               reverse=True))
         elif isinstance(field, (list, tuple)):
-            field = type(field)(sorted(field, 
+            field = type(field)(sorted(field,
                                      key=lambda x: self.get_tension_strength(x, context),
                                      reverse=True))
-        
+
         return field
 
     def entangle(self, fields: List[Any], context: FieldContext) -> Any:
@@ -288,7 +288,7 @@ class PhiPiEInterpreter:
         # Establish quantum-like entanglement
         if not fields:
             return None
-            
+
         result = fields[0]
         for field in fields[1:]:
             if isinstance(result, dict) and isinstance(field, dict):
@@ -303,7 +303,7 @@ class PhiPiEInterpreter:
                 # Create entanglement
                 context.tension.strength += 1.0
                 context.phase = (context.phase + math.pi/4) % (2 * math.pi)
-        
+
         return result
 
     def grow(self, field: Any, context: FieldContext) -> Any:
@@ -312,13 +312,13 @@ class PhiPiEInterpreter:
         new_context = context.fork()
         new_context.phase += math.pi/3
         new_context.charge *= 1.2
-        
+
         if isinstance(field, dict):
             for key, value in field.items():
                 field[key] = self.grow(value, new_context)
         elif isinstance(field, (list, tuple)):
             field = type(field)(self.grow(item, new_context) for item in field)
-        
+
         return field
 
     def close(self, field: Any, context: FieldContext) -> Any:
@@ -328,7 +328,7 @@ class PhiPiEInterpreter:
         context.tension.strength = 0
         context.phase = 0
         context.charge = 0
-        
+
         return field
 
     def will_force(self, field: Any, context: FieldContext) -> Any:
@@ -337,13 +337,13 @@ class PhiPiEInterpreter:
         new_context = context.fork()
         new_context.phase += math.pi/2
         new_context.charge *= 1.5
-        
+
         if isinstance(field, dict):
             for key, value in field.items():
                 field[key] = self.will_force(value, new_context)
         elif isinstance(field, (list, tuple)):
             field = type(field)(self.will_force(item, new_context) for item in field)
-        
+
         return field
 
     def coexist(self, fields: List[Any], context: FieldContext) -> Any:
@@ -351,7 +351,7 @@ class PhiPiEInterpreter:
         # Maintain multiple states simultaneously
         if not fields:
             return None
-            
+
         result = fields[0]
         for field in fields[1:]:
             if isinstance(result, dict) and isinstance(field, dict):
@@ -366,7 +366,7 @@ class PhiPiEInterpreter:
                 # Create coexistence
                 context.tension.strength += 0.5
                 context.phase = (context.phase + math.pi/6) % (2 * math.pi)
-        
+
         return result
 
     def emerge(self, field: Any, context: FieldContext) -> Any:
@@ -375,13 +375,13 @@ class PhiPiEInterpreter:
         new_context = context.fork()
         new_context.phase += math.pi/4
         new_context.charge *= 1.3
-        
+
         if isinstance(field, dict):
             for key, value in field.items():
                 field[key] = self.emerge(value, new_context)
         elif isinstance(field, (list, tuple)):
             field = type(field)(self.emerge(item, new_context) for item in field)
-        
+
         return field
 
     def recurrence(self, pattern: Any, context: FieldContext) -> Any:
@@ -390,13 +390,13 @@ class PhiPiEInterpreter:
         new_context = context.fork()
         new_context.phase += math.pi/3
         new_context.charge *= 1.2
-        
+
         if isinstance(pattern, dict):
             for key, value in pattern.items():
                 pattern[key] = self.recurrence(value, new_context)
         elif isinstance(pattern, (list, tuple)):
             pattern = type(pattern)(self.recurrence(item, new_context) for item in pattern)
-        
+
         return pattern
 
     def synchronize(self, field: Any, context: FieldContext) -> Any:
@@ -404,13 +404,13 @@ class PhiPiEInterpreter:
         # Prepare field for synchronization
         context.phase = 0
         context.charge = 1.0
-        
+
         if isinstance(field, dict):
             for key, value in field.items():
                 field[key] = self.synchronize(value, context)
         elif isinstance(field, (list, tuple)):
             field = type(field)(self.synchronize(item, context) for item in field)
-        
+
         return field
 
     def perceive(self, field: Any, context: FieldContext) -> Any:
@@ -419,13 +419,13 @@ class PhiPiEInterpreter:
         new_context = context.fork()
         new_context.phase += math.pi/5
         new_context.charge *= 0.8
-        
+
         if isinstance(field, dict):
             for key, value in field.items():
                 field[key] = self.perceive(value, new_context)
         elif isinstance(field, (list, tuple)):
             field = type(field)(self.perceive(item, new_context) for item in field)
-        
+
         return field
 
     def intend(self, field: Any, context: FieldContext) -> Any:
@@ -434,13 +434,13 @@ class PhiPiEInterpreter:
         new_context = context.fork()
         new_context.phase += math.pi/4
         new_context.charge *= 1.2
-        
+
         if isinstance(field, dict):
             for key, value in field.items():
                 field[key] = self.intend(value, new_context)
         elif isinstance(field, (list, tuple)):
             field = type(field)(self.intend(item, new_context) for item in field)
-        
+
         return field
 
     def index(self, depth: int) -> Any:
@@ -475,7 +475,7 @@ class PhiPiEInterpreter:
         # Create interaction between fields
         if not fields:
             return None
-            
+
         result = fields[0]
         for field in fields[1:]:
             if isinstance(result, dict) and isinstance(field, dict):
@@ -490,7 +490,7 @@ class PhiPiEInterpreter:
                 # Create interaction
                 context.tension.strength += 1.0
                 context.phase = (context.phase + math.pi/4) % (2 * math.pi)
-        
+
         return result
 
     def disrupt(self, field: Any, context: FieldContext) -> Any:
@@ -499,13 +499,13 @@ class PhiPiEInterpreter:
         new_context = context.fork()
         new_context.phase += math.pi/2
         new_context.charge *= 0.5
-        
+
         if isinstance(field, dict):
             for key, value in field.items():
                 field[key] = self.disrupt(value, new_context)
         elif isinstance(field, (list, tuple)):
             field = type(field)(self.disrupt(item, new_context) for item in field)
-        
+
         return field
 
     def orthogonal(self, fields: List[Any], context: FieldContext) -> Any:
@@ -513,7 +513,7 @@ class PhiPiEInterpreter:
         # Create orthogonal fields
         if not fields:
             return None
-            
+
         result = fields[0]
         for field in fields[1:]:
             if isinstance(result, dict) and isinstance(field, dict):
@@ -528,7 +528,7 @@ class PhiPiEInterpreter:
                 # Create orthogonality
                 context.tension.strength = 0
                 context.phase = (context.phase + math.pi/8) % (2 * math.pi)
-        
+
         return result
 
     def loop(self, memory: List[Any], context: FieldContext) -> Any:
@@ -537,14 +537,14 @@ class PhiPiEInterpreter:
         new_context = context.fork()
         new_context.phase += math.pi/3
         new_context.charge *= 1.1
-        
+
         if not memory:
             return None
-            
+
         result = memory[0]
         for item in memory[1:]:
             result = self.loop([result, item], new_context)
-        
+
         return result
 
     def stabilize(self, a: Any, b: Any, context: FieldContext) -> bool:
@@ -582,7 +582,7 @@ class PhiPiEInterpreter:
             stack = []
             current_field = ''
             field_id = None
-            
+
             # Process each character
             for char in field_str:
                 if char in '()[]':
@@ -598,15 +598,15 @@ class PhiPiEInterpreter:
                             else:
                                 # Handle plain values
                                 result = current_field
-                        
+
                         # Wrap in field identifier if we have one
                         if field_id:
                             result = {field_id: result}
                             field_id = None
-                        
+
                         stack.append(result)
                         current_field = ''
-                    
+
                     if char == '(':
                         stack.append('(')
                     elif char == '[':
@@ -648,19 +648,19 @@ class PhiPiEInterpreter:
                     else:
                         # Handle plain values
                         result = current_field
-                
+
                 # Wrap in field identifier if we have one
                 if field_id:
                     result = {field_id: result}
                     field_id = None
-                
+
                 stack.append(result)
 
             if len(stack) != 1:
                 raise ValueError("Invalid field expression")
-            
+
             return stack[0]
-            
+
         except Exception as e:
             error_msg = f"Error parsing field '{field_str}': {str(e)}"
             print(f"Parse error details: {error_msg}")
@@ -672,15 +672,15 @@ class PhiPiEInterpreter:
             # Clean and prepare input
             cleaned_code = self.clean_input(code)
             print(f"\nCleaned code: {cleaned_code}")
-            
+
             # Split into fields
             fields = self.split_fields(cleaned_code)
             print(f"\nSplit fields: {fields}")
-            
+
             # Create initial context
             context = FieldContext()
             results = []
-            
+
             for field in fields:
                 if field:
                     print(f"\nProcessing field: {field}")
@@ -709,9 +709,9 @@ class PhiPiEInterpreter:
                                     raise
                             else:
                                 raise
-            
+
             return results
-            
+
         except Exception as e:
             error_msg = f"Error executing field: {str(e)}"
             print(f"Error details: {error_msg}")
@@ -730,17 +730,17 @@ class PhiPiEInterpreter:
                     depth -= 1
                     if depth == 0:
                         break
-            
+
             if depth != 0:
                 raise ValueError("Unmatched parentheses")
-            
+
             # Extract nested expression
             nested = field_str[start+1:i]
             new_context = context.fork()
             new_context.phase += math.pi/4
             result = self.execute(nested, new_context)
             return result
-            
+
         except Exception as e:
             error_msg = f"Error in parentheses expression: {str(e)}"
             print(f"Parentheses error details: {error_msg}")
@@ -759,10 +759,10 @@ class PhiPiEInterpreter:
                     depth -= 1
                     if depth == 0:
                         break
-            
+
             if depth != 0:
                 raise ValueError("Unmatched brackets")
-            
+
             # Extract loop expression
             loop = field_str[start+1:i]
             new_context = context.fork()
