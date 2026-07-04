@@ -112,7 +112,7 @@ class PhiPiEInterpreter:
             '/': self.disrupt,        # Disruption / Recursive Instability
             '|': self.orthogonal,     # Orthogonality / Non-Interacting Fields
             '[]': self.loop,          # Loop / Cycle / Recursion Memory
-            '=': self.stabilize       # Stabilization / Final State Resolution
+            '=': self.resolve         # Stabilization / Final State Resolution
         }
 
     def clean_input(self, code: str) -> str:
@@ -122,7 +122,7 @@ class PhiPiEInterpreter:
         # Remove ASCII_OUTPUT_MODE marker
         code = code.replace('ASCII_OUTPUT_MODE', '').replace('[:ASCII:]', '')
         # Remove any other non-Φπε characters
-        allowed_chars = set('ΦΠΕεΔδΨΛλΓΩωΣΞζΤΡΘn→+::/|[]=()0123456789.,\n\t\r\s')
+        allowed_chars = set('ΦΠΕεΔδΨΛλΓΩωΣΞζΤΡΘn→+::/|[]=()0123456789.,\n\t\r ')
         code = ''.join(c for c in code if c in allowed_chars)
         return code
 
@@ -154,8 +154,10 @@ class PhiPiEInterpreter:
         
         return [field.strip() for field in fields if field.strip()]
 
-    def stabilize(self, field: Any, context: FieldContext) -> Any:
+    def stabilize(self, field: Any, context: Optional[FieldContext] = None) -> Any:
         """Apply harmonic equilibrium to a field"""
+        if context is None:
+            context = FieldContext()
         # Maintain tension without destructive interference
         if isinstance(field, dict):
             for key, value in field.items():
@@ -215,8 +217,10 @@ class PhiPiEInterpreter:
         
         return field
 
-    def fuse(self, fields: List[Any], context: FieldContext) -> Any:
+    def fuse(self, fields: List[Any], context: Optional[FieldContext] = None) -> Any:
         """Apply fusion transformation to fields"""
+        if context is None:
+            context = FieldContext()
         # Combine fields with tension
         if not fields:
             return None
@@ -253,8 +257,10 @@ class PhiPiEInterpreter:
             
         return field
 
-    def pulse(self, field: Any, context: FieldContext) -> Any:
+    def pulse(self, field: Any, context: Optional[FieldContext] = None) -> Any:
         """Initiate recursive pulse"""
+        if context is None:
+            context = FieldContext()
         # Create oscillation pattern
         new_context = context.fork()
         new_context.phase += math.pi/2
@@ -448,34 +454,24 @@ class PhiPiEInterpreter:
         # Should manage recursion index/quantifier
         return depth
 
-    def fuse(self, fields: List[Any]) -> Any:
-        """Apply fusion transformation to fields"""
-        return sum(fields)  # Placeholder for actual fusion logic
+    def flow(self, field: Any, context: FieldContext) -> Any:
+        """Direct recursive energy along a flow vector"""
+        new_context = context.fork()
+        new_context.phase += math.pi/6
 
-    def illuminate(self, field: Any) -> Any:
-        """Extract structural clarity from field"""
-        return field  # Placeholder for actual illumination logic
+        if isinstance(field, dict):
+            for key, value in field.items():
+                field[key] = self.flow(value, new_context)
+        elif isinstance(field, (list, tuple)):
+            field = type(field)(self.flow(item, new_context) for item in field)
 
-    def pulse(self, field: Any) -> Any:
-        """Initiate recursive pulse"""
-        return field  # Placeholder for actual pulse logic
+        return field
 
-    def close(self, field: Any) -> Any:
-        """Mark recursive closure"""
-        return field  # Placeholder for actual closure logic
-
-    def continue_recursion(self, field: Any) -> Any:
-        """Infinite recursive continuation"""
-        return field  # Placeholder for actual continuation logic
-
-    def sum(self, fields: List[Any]) -> Any:
-        """Recursive summation"""
-        return sum(fields)  # Placeholder for actual sum logic
-        """Create field tension interface"""
-        # Create interaction between fields
+    def interact(self, fields: List[Any], context: FieldContext) -> Any:
+        """Create field tension interface between fields"""
         if not fields:
             return None
-            
+
         result = fields[0]
         for field in fields[1:]:
             if isinstance(result, dict) and isinstance(field, dict):
@@ -490,7 +486,7 @@ class PhiPiEInterpreter:
                 # Create interaction
                 context.tension.strength += 1.0
                 context.phase = (context.phase + math.pi/4) % (2 * math.pi)
-        
+
         return result
 
     def disrupt(self, field: Any, context: FieldContext) -> Any:
@@ -531,29 +527,45 @@ class PhiPiEInterpreter:
         
         return result
 
-    def loop(self, memory: List[Any], context: FieldContext) -> Any:
+    def loop(self, memory: List[Any], context: Optional[FieldContext] = None) -> Any:
         """Create recursion memory"""
+        if context is None:
+            context = FieldContext()
         # Create recursive memory
+        if not memory:
+            return None
+
         new_context = context.fork()
         new_context.phase += math.pi/3
         new_context.charge *= 1.1
-        
-        if not memory:
-            return None
-            
+
         result = memory[0]
         for item in memory[1:]:
-            result = self.loop([result, item], new_context)
-        
+            result = self._combine_loop(result, item, new_context)
+
         return result
 
-    def stabilize(self, a: Any, b: Any, context: FieldContext) -> bool:
+    def _combine_loop(self, a: Any, b: Any, context: FieldContext) -> Any:
+        """Combine two loop elements, recursing only into nested structures."""
+        if isinstance(a, dict) and isinstance(b, dict):
+            merged = dict(a)
+            for key, value in b.items():
+                merged[key] = self._combine_loop(merged[key], value, context) if key in merged else value
+            return merged
+        if isinstance(a, (list, tuple)) and isinstance(b, (list, tuple)):
+            return type(a)(self._combine_loop(x, y, context) for x, y in zip(a, b))
+        # Scalars resonate into the most recent value
+        context.tension.strength += 0.2
+        context.phase = (context.phase + math.pi/6) % (2 * math.pi)
+        return b
+
+    def resolve(self, a: Any, b: Any, context: FieldContext) -> bool:
         """Check final state resolution"""
         # Check if fields are equivalent
         if isinstance(a, dict) and isinstance(b, dict):
-            return all(self.stabilize(a.get(key), b.get(key), context) for key in set(a.keys()) | set(b.keys()))
+            return all(self.resolve(a.get(key), b.get(key), context) for key in set(a.keys()) | set(b.keys()))
         elif isinstance(a, (list, tuple)) and isinstance(b, (list, tuple)):
-            return all(self.stabilize(x, y, context) for x, y in zip(a, b))
+            return all(self.resolve(x, y, context) for x, y in zip(a, b))
         else:
             # Compare tension and phase
             return abs(self.get_tension_strength(a, context) - self.get_tension_strength(b, context)) < 0.1
@@ -575,8 +587,10 @@ class PhiPiEInterpreter:
         """Equivalence check"""
         return a == b
 
-    def parse_field(self, field_str: str, context: FieldContext) -> Any:
+    def parse_field(self, field_str: str, context: Optional[FieldContext] = None) -> Any:
         """Parse a field expression"""
+        if context is None:
+            context = FieldContext()
         try:
             # Initialize stack and current field
             stack = []
@@ -666,7 +680,7 @@ class PhiPiEInterpreter:
             print(f"Parse error details: {error_msg}")
             raise ValueError(error_msg) from e
 
-    def execute(self, code: str) -> Any:
+    def execute(self, code: str, context: Optional[FieldContext] = None) -> Any:
         """Execute a complete Φπε program"""
         try:
             # Clean and prepare input
@@ -678,7 +692,8 @@ class PhiPiEInterpreter:
             print(f"\nSplit fields: {fields}")
             
             # Create initial context
-            context = FieldContext()
+            if context is None:
+                context = FieldContext()
             results = []
             
             for field in fields:
