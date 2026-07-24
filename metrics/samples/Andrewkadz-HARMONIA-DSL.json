@@ -1,0 +1,37 @@
+{
+    "baseline": {
+        "event_count": 28,
+        "event_type_counts": {
+            "PushEvent": 4,
+            "IssueCommentEvent": 4,
+            "PullRequestEvent": 6,
+            "CreateEvent": 6,
+            "PullRequestReviewEvent": 2,
+            "PullRequestReviewCommentEvent": 5,
+            "WatchEvent": 1
+        },
+        "weekly_activity": [
+            {
+                "week": "2026-07-05",
+                "events": 13
+            },
+            {
+                "week": "2026-07-12",
+                "events": 0
+            },
+            {
+                "week": "2026-07-19",
+                "events": 9
+            },
+            {
+                "week": "2026-07-26",
+                "events": 6
+            }
+        ]
+    },
+    "ri1": {
+        "version": "0.1.0",
+        "harmonic_coherence_index": 2.5,
+        "notes": "ratio of code events (Push/PullRequest) to discussion events (IssueComment)"
+    }
+}

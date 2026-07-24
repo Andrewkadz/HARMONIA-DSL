@@ -70,6 +70,9 @@ one page of events. Interactive docs are at `http://localhost:8000/docs`.
 }
 ```
 
+See [`COMPARISON.md`](COMPARISON.md) for these metrics run across four
+repositories, with the raw payloads in [`samples/`](samples/).
+
 ## Metric contracts
 
 ### `baseline.event_count`

@@ -1,0 +1,23 @@
+{
+    "baseline": {
+        "event_count": 94,
+        "event_type_counts": {
+            "ForkEvent": 19,
+            "WatchEvent": 60,
+            "PullRequestEvent": 9,
+            "IssueCommentEvent": 2,
+            "PullRequestReviewEvent": 4
+        },
+        "weekly_activity": [
+            {
+                "week": "2026-07-26",
+                "events": 94
+            }
+        ]
+    },
+    "ri1": {
+        "version": "0.1.0",
+        "harmonic_coherence_index": 4.5,
+        "notes": "ratio of code events (Push/PullRequest) to discussion events (IssueComment)"
+    }
+}
