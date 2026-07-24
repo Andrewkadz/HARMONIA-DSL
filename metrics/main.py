@@ -1,25 +1,58 @@
 """Print baseline and overlay metrics for a GitHub repository."""
 
+import argparse
+import os
+
 from github_events import fetch_repo_events
-from metrics_baseline import weekly_activity
-from ri1_overlay import harmonic_coherence_index
+from metrics_baseline import activity_to_json, weekly_activity
+from ri1_overlay import coherence_to_json, harmonic_coherence_index
+
+DEFAULT_OWNER = "Andrewkadz"
+DEFAULT_REPO = "HARMONIA-DSL"
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--owner",
+        default=os.environ.get("METRICS_OWNER", DEFAULT_OWNER),
+        help="repository owner (env: METRICS_OWNER)",
+    )
+    parser.add_argument(
+        "--repo",
+        default=os.environ.get("METRICS_REPO", DEFAULT_REPO),
+        help="repository name (env: METRICS_REPO)",
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="emit machine-readable JSON instead of formatted text",
+    )
+    return parser.parse_args()
 
 
 def main() -> None:
-    owner = "Andrewkadz"
-    repo = "HARMONIA-DSL"
+    args = parse_args()
+    token = os.environ.get("GITHUB_TOKEN")
 
-    events = fetch_repo_events(owner, repo, token=None)
-    print(f"Fetched {len(events)} events for {owner}/{repo}\n")
+    events = fetch_repo_events(args.owner, args.repo, token=token)
+    counts = weekly_activity(events)
+    coherence = harmonic_coherence_index(events)
+
+    if args.json:
+        print(activity_to_json(counts))
+        print(coherence_to_json(coherence))
+        return
+
+    print(f"Fetched {len(events)} events for {args.owner}/{args.repo}\n")
 
     print("Weekly activity:")
-    counts = weekly_activity(events)
     if counts.empty:
         print("  (no events)")
     for week, count in counts.items():
         print(f"  {week.date()}: {count}")
 
-    print(f"\nHarmonic coherence index: {harmonic_coherence_index(events):.4f}")
+    print(f"\nHarmonic coherence index: {coherence:.4f}")
 
 
 if __name__ == "__main__":
