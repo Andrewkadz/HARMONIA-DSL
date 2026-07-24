@@ -1,0 +1,57 @@
+{
+  "component-definition": {
+    "uuid": "6f2c6b1e-6b0e-53a1-9f1f-6a1a9b2d5c01",
+    "metadata": {
+      "title": "RI1 metrics service",
+      "last-modified": "2026-07-24T00:00:00+00:00",
+      "version": "0.1.0",
+      "oscal-version": "1.1.2",
+      "remarks": "Minimal, hand-written component definition. It describes what this service exports; it is not a validated OSCAL document."
+    },
+    "components": [
+      {
+        "uuid": "6f2c6b1e-6b0e-53a1-9f1f-6a1a9b2d5c02",
+        "type": "service",
+        "title": "harmonia-metrics",
+        "description": "Deterministic service computing baseline GitHub activity metrics and RI1 overlays for a repository.",
+        "purpose": "Emit machine-readable evidence about repository activity, coherence, and the single most out-of-band organisational lever.",
+        "props": [
+          { "name": "implementation-point", "value": "external" },
+          { "name": "data-source", "value": "https://api.github.com" },
+          { "name": "metrics-version", "value": "0.1.0" }
+        ],
+        "protocols": [
+          {
+            "uuid": "6f2c6b1e-6b0e-53a1-9f1f-6a1a9b2d5c03",
+            "name": "http",
+            "port-ranges": [{ "start": 8000, "end": 8000, "transport": "TCP" }]
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "6f2c6b1e-6b0e-53a1-9f1f-6a1a9b2d5c04",
+            "source": "#ri1-metrics-v0.1.0",
+            "description": "Metrics exported by this component.",
+            "implemented-requirements": [
+              {
+                "uuid": "6f2c6b1e-6b0e-53a1-9f1f-6a1a9b2d5c05",
+                "control-id": "ri1-baseline-activity",
+                "description": "Exports event_count, event_type_counts, and weekly_activity from GET /repos/{owner}/{repo}/events."
+              },
+              {
+                "uuid": "6f2c6b1e-6b0e-53a1-9f1f-6a1a9b2d5c06",
+                "control-id": "ri1-coherence",
+                "description": "Exports harmonic_coherence_index, the ratio of code events to discussion events."
+              },
+              {
+                "uuid": "6f2c6b1e-6b0e-53a1-9f1f-6a1a9b2d5c07",
+                "control-id": "ri1-lever",
+                "description": "Exports recommended_lever, the single tunable parameter furthest outside its target band, selected from review_throughput, issue_closure_ratio, and discussion_density."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

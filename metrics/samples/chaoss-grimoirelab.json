@@ -1,4 +1,7 @@
 {
+    "owner": "chaoss",
+    "repo": "grimoirelab",
+    "collected_at": "2026-07-24T23:26:08+00:00",
     "baseline": {
         "event_count": 23,
         "event_type_counts": {
@@ -33,6 +36,50 @@
     "ri1": {
         "version": "0.1.0",
         "harmonic_coherence_index": null,
-        "notes": "ratio of code events (Push/PullRequest) to discussion events (IssueComment)"
+        "notes": "ratio of code events (Push/PullRequest) to discussion events (IssueComment)",
+        "recommended_lever": {
+            "name": "discussion_density",
+            "description": "Raise recorded review/discussion per code event above 0.2",
+            "current_value": 0.0,
+            "target_value": 0.2,
+            "unit": "ratio",
+            "severity": 2.0,
+            "sample_size": 5,
+            "code_events": 5,
+            "discussion_events": 0
+        },
+        "candidate_levers": [
+            {
+                "name": "review_throughput",
+                "description": "Reduce median PR review time below 48h",
+                "current_value": 24.6686,
+                "target_value": 48.0,
+                "unit": "hours",
+                "severity": 0.5139,
+                "sample_size": 100
+            },
+            {
+                "name": "issue_closure_ratio",
+                "description": "Raise the share of recent issues that get closed above 50%",
+                "current_value": 0.3871,
+                "target_value": 0.5,
+                "unit": "ratio",
+                "severity": 1.2917,
+                "sample_size": 31,
+                "closed_issues": 12,
+                "open_issues": 19
+            },
+            {
+                "name": "discussion_density",
+                "description": "Raise recorded review/discussion per code event above 0.2",
+                "current_value": 0.0,
+                "target_value": 0.2,
+                "unit": "ratio",
+                "severity": 2.0,
+                "sample_size": 5,
+                "code_events": 5,
+                "discussion_events": 0
+            }
+        ]
     }
 }

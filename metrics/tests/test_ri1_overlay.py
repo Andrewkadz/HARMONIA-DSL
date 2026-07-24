@@ -1,6 +1,7 @@
 import math
 from typing import Any
 
+from levers import Lever
 from ri1_overlay import COHERENCE_NOTES, coherence_to_dict, harmonic_coherence_index
 from version import METRICS_VERSION
 
@@ -41,6 +42,26 @@ def test_coherence_to_dict_maps_infinity_to_null() -> None:
             "version": METRICS_VERSION,
             "harmonic_coherence_index": None,
             "notes": COHERENCE_NOTES,
+            "recommended_lever": None,
+            "candidate_levers": [],
         }
     }
     assert coherence_to_dict(2.0)["ri1"]["harmonic_coherence_index"] == 2.0
+
+
+def test_coherence_to_dict_includes_levers() -> None:
+    lever = Lever(
+        name="review_throughput",
+        description="Reduce median PR review time below 48h",
+        current_value=92.0,
+        target_value=48.0,
+        unit="hours",
+        severity=92.0 / 48.0,
+        sample_size=7,
+    )
+
+    block = coherence_to_dict(2.0, lever, [lever])["ri1"]
+
+    assert block["recommended_lever"]["name"] == "review_throughput"
+    assert block["recommended_lever"]["current_value"] == 92.0
+    assert [c["name"] for c in block["candidate_levers"]] == ["review_throughput"]

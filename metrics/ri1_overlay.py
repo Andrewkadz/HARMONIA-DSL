@@ -9,6 +9,7 @@ import json
 import math
 from typing import Any, Optional
 
+from levers import Lever
 from version import METRICS_VERSION
 
 CODE_EVENT_TYPES = frozenset({"PushEvent", "PullRequestEvent"})
@@ -34,10 +35,16 @@ def harmonic_coherence_index(events: list[dict[str, Any]]) -> float:
     return len(code_events) / len(social_events)
 
 
-def coherence_to_dict(coherence: float) -> dict[str, Any]:
-    """Return the JSON-serialisable ``ri1`` block for ``coherence``.
+def coherence_to_dict(
+    coherence: float,
+    lever: Optional[Lever] = None,
+    candidates: Optional[list[Lever]] = None,
+) -> dict[str, Any]:
+    """Return the JSON-serialisable ``ri1`` block.
 
     ``inf`` is mapped to ``None`` since JSON has no infinity literal.
+    ``lever`` is the single tunable parameter worth acting on, and
+    ``candidates`` the levers it was chosen from.
     """
     value: Optional[float] = None if math.isinf(coherence) else coherence
     return {
@@ -45,10 +52,16 @@ def coherence_to_dict(coherence: float) -> dict[str, Any]:
             "version": METRICS_VERSION,
             "harmonic_coherence_index": value,
             "notes": COHERENCE_NOTES,
+            "recommended_lever": lever.to_dict() if lever else None,
+            "candidate_levers": [c.to_dict() for c in candidates or []],
         }
     }
 
 
-def coherence_to_json(coherence: float) -> str:
+def coherence_to_json(
+    coherence: float,
+    lever: Optional[Lever] = None,
+    candidates: Optional[list[Lever]] = None,
+) -> str:
     """Return the ``ri1`` block as a JSON string."""
-    return json.dumps(coherence_to_dict(coherence))
+    return json.dumps(coherence_to_dict(coherence, lever, candidates))

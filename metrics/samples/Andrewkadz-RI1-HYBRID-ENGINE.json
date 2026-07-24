@@ -1,4 +1,7 @@
 {
+    "owner": "Andrewkadz",
+    "repo": "RI1-HYBRID-ENGINE",
+    "collected_at": "2026-07-24T23:26:04+00:00",
     "baseline": {
         "event_count": 0,
         "event_type_counts": {},
@@ -7,6 +10,30 @@
     "ri1": {
         "version": "0.1.0",
         "harmonic_coherence_index": 0.0,
-        "notes": "ratio of code events (Push/PullRequest) to discussion events (IssueComment)"
+        "notes": "ratio of code events (Push/PullRequest) to discussion events (IssueComment)",
+        "recommended_lever": {
+            "name": "issue_closure_ratio",
+            "description": "Raise the share of recent issues that get closed above 50%",
+            "current_value": 0.0,
+            "target_value": 0.5,
+            "unit": "ratio",
+            "severity": 3.0,
+            "sample_size": 3,
+            "closed_issues": 0,
+            "open_issues": 3
+        },
+        "candidate_levers": [
+            {
+                "name": "issue_closure_ratio",
+                "description": "Raise the share of recent issues that get closed above 50%",
+                "current_value": 0.0,
+                "target_value": 0.5,
+                "unit": "ratio",
+                "severity": 3.0,
+                "sample_size": 3,
+                "closed_issues": 0,
+                "open_issues": 3
+            }
+        ]
     }
 }
