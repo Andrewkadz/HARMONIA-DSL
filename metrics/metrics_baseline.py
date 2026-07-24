@@ -1,6 +1,11 @@
-"""Baseline activity metrics derived from GitHub events."""
+"""Baseline activity metrics derived from GitHub events.
+
+These are conventional, CHAOSS-style counts: they make no claims beyond what
+the GitHub events feed reports.
+"""
 
 import json
+from collections import Counter
 from typing import Any
 
 import pandas as pd
@@ -20,16 +25,25 @@ def weekly_activity(events: list[dict[str, Any]]) -> pd.Series:
     return frame.set_index("created_at").resample("W").size()
 
 
-def activity_to_dict(weekly_series: pd.Series) -> dict[str, Any]:
-    """Return weekly counts as a JSON-serialisable dict."""
+def event_type_counts(events: list[dict[str, Any]]) -> dict[str, int]:
+    """Return the number of events per GitHub event type."""
+    return dict(Counter(event.get("type", "UnknownEvent") for event in events))
+
+
+def activity_to_dict(events: list[dict[str, Any]]) -> dict[str, Any]:
+    """Return the JSON-serialisable ``baseline`` block for ``events``."""
     return {
-        "weekly_activity": [
-            {"week": week.strftime("%Y-%m-%d"), "events": int(count)}
-            for week, count in weekly_series.items()
-        ]
+        "baseline": {
+            "event_count": len(events),
+            "event_type_counts": event_type_counts(events),
+            "weekly_activity": [
+                {"week": week.strftime("%Y-%m-%d"), "events": int(count)}
+                for week, count in weekly_activity(events).items()
+            ],
+        }
     }
 
 
-def activity_to_json(weekly_series: pd.Series) -> str:
-    """Return weekly counts as a JSON string."""
-    return json.dumps(activity_to_dict(weekly_series))
+def activity_to_json(events: list[dict[str, Any]]) -> str:
+    """Return the ``baseline`` block as a JSON string."""
+    return json.dumps(activity_to_dict(events))

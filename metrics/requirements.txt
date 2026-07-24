@@ -2,3 +2,4 @@ requests
 pandas
 fastapi
 uvicorn
+pytest
