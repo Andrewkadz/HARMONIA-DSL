@@ -1,0 +1,32 @@
+# HRM ↔ Python Bridge (.1 Files)
+Author: Andrew J. Kadziolka
+Version: 0.1
+Created: 2025‑08‑09
+
+## Purpose
+
+This folder demonstrates how the `.1` universal container can be used
+to bridge between **Harmonia HRM scripts** and **Python modules**.  A
+`.1` file declares both the input and output formats in its header
+and carries the original content as its payload.  Converters can
+inspect the metadata to perform the appropriate transformation.
+
+## Files
+
+- **ConsoleModuleToPy.1** – Wraps the `Console.hrm` module (entry point
+  for the Harmonia OS console) with metadata indicating that it
+  should be converted from HRM to Python.
+- **InterpreterModuleToPy.1** – Wraps the `Interpreter.hrm` module
+  (specifying runtime integration) with metadata indicating
+  conversion to Python.
+- **InterpreterModulePyToHrm.1** – Contains a skeleton Python module
+  representing the interpreter component and instructs the converter
+  to translate it back into HRM format.
+
+## Usage
+
+A converter processes each `.1` file by reading the header and then
+parsing the payload using the specified `InputFormat`.  It then
+generates the result in the `OutputFormat`.  These examples show
+how the same content can be repackaged and connected across the
+Harmonia DSL and Python worlds using the `.1` format.
