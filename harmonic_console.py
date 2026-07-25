@@ -4,6 +4,7 @@ import numpy as np
 from harmonia_coder import HarmoniaCoder
 from simulate_crm import load_hrm, run_simulation
 from ai_agent import AIFileAgent
+from biosynth_loader import BiosynthLoader
 
 # --- The Hive Mind Bridge ---
 class HarmonicConsole:
@@ -14,7 +15,10 @@ class HarmonicConsole:
         # 2. Initialize the Core (CRM)
         self.matrix = load_hrm('/home/ubuntu/HARMONIA-DSL/CRM_NODE_32.hrm')
         
-        # 3. Initialize the Swarm (Processing Layer)
+        # 3. Initialize the Biosynth Loader (Genetic Layer)
+        self.biosynth_loader = BiosynthLoader()
+
+        # 4. Initialize the Swarm (Processing Layer)
         # We initialize with a flag to bypass legacy NEXUS routing for this console
         try:
             # Redirect stdout to suppress the legacy terminal banner
@@ -36,6 +40,18 @@ class HarmonicConsole:
         print("Ready for Input...\n")
 
     def speak(self, text):
+        # --- STEP 0: BIOSYNTH COMMAND CHECK ---
+        if text.upper().startswith("ACTIVATE BIOSYNTH"):
+            name = text.split(" ")[-1]
+            success, msg = self.biosynth_loader.load_biosynth(name)
+            print(f"\n[SYSTEM] >> {msg}")
+            if success:
+                # Inject the DNA into the Swarm's context (Mock injection for now)
+                prompt = self.biosynth_loader.get_system_prompt()
+                print(f"[GENETICS] >> DNA Sequence Loaded into Cognitive Context.")
+                # In a real LLM integration, we would do: self.swarm.set_system_prompt(prompt)
+            return
+
         # --- STEP 1: SWARM ANALYSIS (Pre-Processing) ---
         # The Swarm analyzes the intent before the Core processes it.
         print(f"\n[USER] >> {text}")
