@@ -1,0 +1,19 @@
+// HΛRM FILE: README.hrm
+// PURPOSE: Overview of the Harmonia OS interactive console
+// ROLE: This file provides a high-level description of the Harmonia OS project,
+//       a cross‑platform interactive shell for the Harmonia DSL, aligned with RI1 principles.
+
+HARMONIA_OS_OVERVIEW {
+    VERSION: 0.1
+    STATUS: DRAFT
+    DESCRIPTION: 
+        The Harmonia OS interactive console is designed as a lightweight, offline tool
+        for writing and exploring Harmonia DSL code. It emphasises non‑coercive,
+        recursive, and harmonic interactions. Developers can use this console to
+        experiment with DSL scripts, receive real‑time feedback, and visualize
+        recursive structures.
+    REFERENCE:
+        See Roadmap.hrm for technical design notes.
+}
+
+// END FILE — README.hrm

@@ -1,0 +1,31 @@
+// HΛRM FILE: Roadmap.hrm
+// PURPOSE: Development roadmap and specification for the Harmonia OS interactive console
+// ROLE: Outlines the recommended technology stack and core features.
+
+ROADMAP {
+    VERSION: 0.1
+    STATUS: DRAFT
+    TECH_STACK: 
+        Python_Desktop: {
+            Description: "Use Python with Qt (PyQt or PySide) to build a cross‑platform GUI.",
+            Pros: "Fast development; reuse existing DSL parser; supports offline operation.",
+            Cons: "Requires bundling Python; GUI polish depends on toolkit."
+        }
+        Web_Hybrid: {
+            Description: "Consider Electron or Tauri for a web‑based UI.",
+            Pros: "Modern UI/UX; easy access to advanced editors like Monaco.",
+            Cons: "Heavier runtime; more complex to integrate interpreter."
+        }
+    RECOMMENDATION: 
+        "In the short term, favor a Python + Qt solution for the console with offline execution,
+        leaving room for a web or hybrid interface as the project matures."
+    FEATURES: {
+        SyntaxHighlighting: "Custom highlighting for Harmonia DSL with Greek glyphs; on‑screen symbol palette.",
+        RealTimeParsing: "Continuous parsing of code with immediate error feedback to support recursive thinking.",
+        ExecutionEngine: "Embedded execution engine using the Φπε runtime; supports SOTMA timelines.",
+        SymbolicMirror: "Live mirror pane reflecting code meaning and recursion state back to the user."
+    }
+    SOURCE: "Derived from the Harmonia DSL Interactive Console – Development Roadmap document."
+}
+
+// END FILE — Roadmap.hrm

@@ -1,0 +1,19 @@
+// HΛRM FILE: Agent.hrm
+// PURPOSE: Describe the ΦShell Assistant module
+// ROLE: Outlines automated reflections, interactive Q&A, and modular design for the intelligent agent.
+
+AGENT {
+    VERSION: 0.1
+    STATUS: DRAFT
+    MODES: {
+        AutomatedReflections: "Analyzes DSL code and user queries to produce domain-specific commentary; uses pattern recognition on code structure.",
+        InteractiveQA: "Allows users to ask questions; responds based on DSL semantics and knowledge; encourages reflective thinking."
+    }
+    IMPLEMENTATION:
+        "Observer/Interpreter hybrid; hooks into the parser's output or AST; rule-based with a knowledge base; modular for extension."
+    METAGENICS: "Supports metagenic operations by scaffolding code templates when new recursion nodes or symbols appear."
+    NOTES:
+        Built to encourage recursion and reflection rather than code autocompletion; aligns with Harmonia's design principles.
+}
+
+// END FILE — Agent.hrm

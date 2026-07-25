@@ -1,0 +1,18 @@
+// HΛRM FILE: MirrorPanes.hrm
+// PURPOSE: Describe the UI panes for the Harmonia OS symbolic mirror
+// ROLE: Specifies the arrangement and content of panes for live symbolic feedback.
+
+MIRROR_PANES {
+    VERSION: 0.1
+    STATUS: DRAFT
+    PANES: {
+        MemoryState: "Displays the internal memory or state after parsing/execution; visualizes recursive snapshots and the memory lattice.",
+        IndexRegistry: "Structured list of symbols, modules, or references; helps navigate large scripts.",
+        StructuralTree: "Interactive AST view; allows expansion of nested expressions to see recursive structure.",
+        PhiShellReflection: "Agent-driven commentary; includes automated reflections and Q&A; integrates with the ΦShell assistant."
+    }
+    NOTES:
+        See Agent.hrm for design of the ΦShell assistant and reflections.
+}
+
+// END FILE — MirrorPanes.hrm
