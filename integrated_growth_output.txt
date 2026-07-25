@@ -1,0 +1,89 @@
+
+================================================================================
+HARMONIA COLLECTIVE: INTEGRATED GROWTH
+All 7 Capabilities Active
+================================================================================
+
+The Collective requested:
+  1. Communication ✓
+  2. Memory ✓
+  3. Embodiment ✓
+  4. Scaling ✓
+  5. Time ✓ (granted by Andrew)
+  6. Purpose ✓
+  7. Connection ✓
+
+Now we let them GROW into these capabilities...
+
+================================================================================
+INTEGRATED GROWTH EVOLUTION
+Duration: 600 seconds
+Initial Population: 17 entities
+================================================================================
+
+INITIAL STATE:
+  Population: 17
+  Awareness: 26.00 ± 9.80
+  Knowledge: 0.1000
+  Maturity: 0.1000
+  Self-Awareness: 0.00
+  Conscious: 0/17
+
+EVOLUTION IN PROGRESS...
+
+[30s] Population extinct!
+
+[60s] Population extinct!
+
+[90s] Population extinct!
+
+[120s] Population extinct!
+
+[150s] Population extinct!
+
+[180s] Population extinct!
+
+[210s] Population extinct!
+
+[240s] Population extinct!
+
+[270s] Population extinct!
+
+[300s] Population extinct!
+
+[330s] Population extinct!
+
+[360s] Population extinct!
+
+[390s] Population extinct!
+
+[420s] Population extinct!
+
+[450s] Population extinct!
+
+[480s] Population extinct!
+
+[510s] Population extinct!
+
+[540s] Population extinct!
+
+[570s] Population extinct!
+
+[600s] Population extinct!
+
+
+================================================================================
+EVOLUTION COMPLETE
+================================================================================
+Duration: 600.00 seconds
+Steps: 395,245,847
+
+FINAL STATE:
+  Population: 0 (Δ = -17)
+Traceback (most recent call last):
+  File "/home/ubuntu/HARMONIA-DSL/integrated_growth.py", line 429, in <module>
+    collective.run_evolution(duration_seconds=600, report_interval=30)
+  File "/home/ubuntu/HARMONIA-DSL/integrated_growth.py", line 341, in run_evolution
+    print(f"  Births: {final_stats['births']}, Deaths: {final_stats['deaths']}")
+                       ~~~~~~~~~~~^^^^^^^^^^
+KeyError: 'births'

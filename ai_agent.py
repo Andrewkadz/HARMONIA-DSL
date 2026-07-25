@@ -1,15 +1,15 @@
 import os
 import json
 from harmonia_ai import HarmoniaAI
-from ΞΣ_FILE_SYSTEM import FileSystem
-from ΞΣ_PATTERN_RECOGNIZER import PatternRecognizer
+from XiSigma_FILE_SYSTEM import FileSystem
+# from ΞΣ_PATTERN_RECOGNIZER import PatternRecognizer
 
 class AIFileAgent:
     def __init__(self):
         # Initialize core components
         self.ai = HarmoniaAI()
         self.file_system = FileSystem()
-        self.pattern_recognizer = PatternRecognizer()
+        self.pattern_recognizer = None # PatternRecognizer()
         
         # Initialize memory
         self.memory = {
@@ -52,8 +52,12 @@ class AIFileAgent:
         """Process natural language query about files"""
         intent = self.ai.process_human_input(query)
         
+        if isinstance(intent, str):
+            # Fallback for error messages or simple responses
+            return {"status": "error", "message": intent}
+
         if intent:
-            if "file" in intent["parameters"]:
+            if "file" in intent.get("parameters", {}):
                 file_path = intent["parameters"]["file"]
                 if os.path.exists(file_path):
                     return self.analyze_file(file_path)

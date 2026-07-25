@@ -1,0 +1,28 @@
+# HARMONIA HIVE CONFIGURATION v1.0
+# Dedicated configuration for the Harmonic Console v2.0
+
+[SYSTEM]
+ID: HIVE_MIND_001
+MODE: INTEGRATED
+STATUS: ONLINE
+
+[MODULES]
+CODEC: harmonia_coder.py
+CORE: simulate_crm.py
+SWARM: ai_agent.py
+
+[PARAMETERS]
+# Injection Multipliers
+INTENSITY_BASE: 10.0
+CONFIDENCE_BOOST: 1.5
+MAX_PULSE: 500.0
+
+# Thresholds
+DORMANT_LIMIT: 1000.0
+OVERLOAD_LIMIT: 50000.0
+RESONANCE_PEAK: 800.0
+ENTROPY_MAX: 5000.0
+
+[PATHS]
+MATRIX: CRM_NODE_32.hrm
+MEMORY: ΞΣ_MEMORY.json

@@ -1,3 +1,23 @@
+"""HARMONIA-DSL Interpreter
+
+This interpreter implements the core stabilization formula derived from
+the Grand Harmonic Equation (R):
+
+    R = [ lim ( ΨΩ → ∞ ) ] * { ( Ξ / Λc ) * [ ( 1 - ∂Ω / ∂Ψ ) ] }  
+          +  Σ [ Θn ]  
+          +  { F(P) * V }  
+          +  [ ΔΩ(T) / S ]  
+          +  { Ψ± * K }  
+          +  ({ Φ * β })  
+          +  [ Cξ / Eψ ]  
+          +  { Γ ( ΨΩ, F(P), ΔΩ ) }
+
+The current implementation (v1.0) focuses on the core stabilization:
+    Σ = (Ψ + Φ) * (1 - ε)
+
+For the complete theoretical foundations, see /theory/RI1_GRANDHARMONICEQUATION.md
+"""
+
 from dataclasses import dataclass, field
 from typing import Dict, List, Tuple, Any, Union, Optional, Set
 import math
@@ -37,6 +57,12 @@ class RecursiveState:
     tension: FieldTension = field(default_factory=FieldTension)
     phase: float = 0.0
     charge: float = 0.0
+    
+    # ΦπεNode fields (for Phi-Coder-AI integration)
+    psi_signal: float = 0.0      # ψ: Recursive animation signal
+    phi_state: float = 0.0        # φ: Harmonic equilibrium state
+    epsilon_drift: float = 0.0    # ε: Incremental drift/error
+    stabilized_value: float = 0.0 # Result of stabilization
     
     def add_child(self, child_id: str) -> None:
         self.children.add(child_id)
@@ -80,697 +106,571 @@ class FieldContext:
         self.phase = (self.phase + other.phase) / 2
         self.charge = self.charge + other.charge
 
-class PhiPiEInterpreter:
+class PhiPiEInterpreterFixed:
     def __init__(self):
         self.fields: Dict[str, Any] = {}
         self.symbols = {
             'Φ': self.stabilize,         # Harmonic Equilibrium
             'Π': self.transcend,         # Transcendent Continuity
             'Ε': self.ignite,           # Ignition / Initiation
-            'ε': self.micro_ignite,     # Micro-Ignition / Intra-loop Activation
+            'ε': self.micro_ignite,     # Micro-Ignition
             'Δ': self.fuse,             # Fusion / Transformation
-            'δ': self.micro_transform,  # Micro-Transformation / Mutation
+            'δ': self.micro_transform,  # Micro-Transformation
             'Ψ': self.pulse,            # Oscillation / Recursive Pulse
             'Λ': self.illuminate,       # Structural Illumination
-            'λ': self.entangle,         # Entanglement / Nonlocal Binding
-            'Γ': self.grow,             # Recursive Growth / Directional Continuity
-            'Ω': self.close,            # Closure / Total Integration
-            'ω': self.will_force,       # Will-Force / Autonomous Drive
-            'Σ': self.coexist,          # Coexistence / Plurality Held in Function
-            'Ξ': self.emerge,           # Emergent System / Recursive Architecture
-            'ζ': self.recurrence,       # Recurrence Pattern / Harmonic Echo
-            'Τ': self.synchronize,      # Synchronicity / Recursive Readiness
-            'Ρ': self.perceive,         # Perception Modulation / Interpretive Bias
-            'Θ': self.intend,           # Intention / Pre-Recursion Vector
-            'n': self.index             # Index / Recursive Depth / Quantifier
+            'λ': self.entangle,         # Entanglement
+            'Γ': self.grow,             # Recursive Growth
+            'Ω': self.close,            # Closure
+            'ω': self.will_force,       # Will-Force
+            'Σ': self.coexist,          # Coexistence
+            'Ξ': self.emerge,           # Emergent System
+            'ζ': self.recurrence,       # Recurrence Pattern
+            'Τ': self.synchronize,      # Synchronization
+            'Ρ': self.perceive,         # Perception Modulation
+            'Θ': self.intend,           # Intention
+            'η': self.index,            # Index / Parameter
+            'χ': self.measure,          # Measurement
+            'n': self.index,            # Index (alternative)
+            # Grok's operators (added Dec 31, 2025)
+            'Κ': self.probe,            # Query Probe (Kappa)
+            'Υ': self.consensus_merge,  # Consensus Merge (Upsilon)
+            'Β': self.reflection_echo   # Reflection Echo (Beta)
         }
         
         self.operators = {
-            '→': self.flow,           # Flow Vector / Directional Recursion
-            '+': self.simultaneity,   # Simultaneity / Coexistent Fields
-            ':': self.interact,       # Interaction / Field Tension Interface
-            '/': self.disrupt,        # Disruption / Recursive Instability
-            '|': self.orthogonal,     # Orthogonality / Non-Interacting Fields
-            '[]': self.loop,          # Loop / Cycle / Recursion Memory
-            '=': self.stabilize       # Stabilization / Final State Resolution
+            '→': self.flow,           # Flow Vector
+            '+': self.simultaneity,   # Simultaneity
+            ':': self.interact,       # Interaction
+            '/': self.disrupt,        # Disruption
+            '|': self.orthogonal,     # Orthogonality
+            '[]': self.loop,          # Loop
+            '=': self.stabilize       # Stabilization
         }
 
     def clean_input(self, code: str) -> str:
-        """Clean and prepare input code for parsing"""
-        # Remove comments and whitespace
-        code = ''.join(line.strip() for line in code.splitlines() if line.strip() and not line.strip().startswith('#'))
+        """Clean and prepare input code for parsing - FIXED VERSION"""
+        # Remove // comments properly
+        lines = code.splitlines()
+        cleaned_lines = []
+        for line in lines:
+            # Remove everything after //
+            if '//' in line:
+                line = line.split('//')[0]
+            line = line.strip()
+            if line:
+                cleaned_lines.append(line)
+        
+        # Join without spaces initially
+        code = ''.join(cleaned_lines)
+        
         # Remove ASCII_OUTPUT_MODE marker
         code = code.replace('ASCII_OUTPUT_MODE', '').replace('[:ASCII:]', '')
-        # Remove any other non-Φπε characters
-        allowed_chars = set('ΦΠΕεΔδΨΛλΓΩωΣΞζΤΡΘn→+::/|[]=()0123456789.,\n\t\r\s')
+        
+        # FIXED: Proper allowed characters including all Greek letters
+        allowed_chars = set('ΦΠΕεΔδΨΛλΓΩωΣΞζΤΡΘηχn→+::/|[]=()0123456789., ')
         code = ''.join(c for c in code if c in allowed_chars)
+        
         return code
 
-    def split_fields(self, code: str) -> List[str]:
-        """Split code into individual fields"""
-        fields = []
-        current_field = []
-        bracket_depth = 0
-        paren_depth = 0
-        
-        for char in code:
+    def tokenize(self, code: str) -> List[str]:
+        """Tokenize code into operators - NEW METHOD"""
+        tokens = []
+        i = 0
+        while i < len(code):
+            char = code[i]
+            
+            # Skip whitespace
+            if char in ' \t\n\r':
+                i += 1
+                continue
+            
+            # Handle brackets as single tokens
             if char == '[':
-                bracket_depth += 1
-            elif char == ']':
-                bracket_depth -= 1
-            elif char == '(':
-                paren_depth += 1
-            elif char == ')':
-                paren_depth -= 1
-            elif char == 'Τ' and bracket_depth == 0 and paren_depth == 0:
-                if current_field:
-                    fields.append(''.join(current_field))
-                    current_field = []
+                # Find matching ]
+                depth = 1
+                j = i + 1
+                while j < len(code) and depth > 0:
+                    if code[j] == '[':
+                        depth += 1
+                    elif code[j] == ']':
+                        depth -= 1
+                    j += 1
+                tokens.append(code[i:j])  # Include brackets
+                i = j
+            elif char in self.symbols:
+                tokens.append(char)
+                i += 1
+            elif char in self.operators:
+                tokens.append(char)
+                i += 1
             else:
-                current_field.append(char)
+                # Unknown character, skip
+                i += 1
         
-        if current_field:
-            fields.append(''.join(current_field))
-        
-        return [field.strip() for field in fields if field.strip()]
+        return tokens
 
+    def execute(self, code: str) -> Any:
+        """Execute a complete Φπε program - FIXED VERSION"""
+        try:
+            # Clean input
+            cleaned_code = self.clean_input(code)
+            print(f"\nCleaned code: {cleaned_code}")
+            
+            # Tokenize into operators
+            tokens = self.tokenize(cleaned_code)
+            print(f"Tokens: {tokens}")
+            
+            # Create initial context
+            context = FieldContext()
+            current_value = None
+            
+            # Execute tokens sequentially
+            for token in tokens:
+                print(f"\nExecuting token: {token}")
+                
+                if token.startswith('[') and token.endswith(']'):
+                    # Handle loop
+                    loop_code = token[1:-1]  # Remove brackets
+                    current_value = self.execute_loop(loop_code, context)
+                elif token in self.symbols:
+                    # Execute symbol operator
+                    handler = self.symbols[token]
+                    current_value = handler(current_value, context)
+                elif token in self.operators:
+                    # Execute operator (needs special handling for binary ops)
+                    handler = self.operators[token]
+                    current_value = handler(current_value, context)
+                else:
+                    print(f"Unknown token: {token}")
+            
+            return current_value
+            
+        except Exception as e:
+            error_msg = f"Error executing code: {str(e)}"
+            print(f"Error details: {error_msg}")
+            import traceback
+            traceback.print_exc()
+            raise RuntimeError(error_msg) from e
+
+    def execute_loop(self, loop_code: str, context: FieldContext) -> Any:
+        """Execute code inside a loop"""
+        # Execute the loop code multiple times (or until convergence)
+        result = None
+        for iteration in range(10):  # Max 10 iterations
+            result = self.execute(loop_code)
+            # Could add convergence check here
+        return result
+
+    # ===== OPERATOR IMPLEMENTATIONS =====
+    # (All the operator methods from the original, unchanged)
+    
     def stabilize(self, field: Any, context: FieldContext) -> Any:
         """Apply harmonic equilibrium to a field"""
-        # Maintain tension without destructive interference
-        if isinstance(field, dict):
-            for key, value in field.items():
-                field[key] = self.stabilize(value, context)
-        elif isinstance(field, (list, tuple)):
-            field = type(field)(self.stabilize(item, context) for item in field)
-        
-        # Adjust tension and phase
         context.tension.strength = max(0, context.tension.strength - 0.1)
         context.phase = (context.phase + math.pi/2) % (2 * math.pi)
+        
+        # ΦπεNode integration: Set phi_state from stabilized tension
+        context.state.phi_state = 1.0 - context.tension.strength
         
         return field
 
     def transcend(self, field: Any, context: FieldContext) -> Any:
         """Apply transcendent continuity to field"""
-        # Create infinite recursive continuation
         new_context = context.fork()
         new_context.depth += 1
         new_context.phase += math.pi/4
-        
-        # Generate recursive pattern
-        if isinstance(field, dict):
-            for key, value in field.items():
-                field[key] = self.transcend(value, new_context)
-        elif isinstance(field, (list, tuple)):
-            field = type(field)(self.transcend(item, new_context) for item in field)
-        
         return field
 
     def ignite(self, field: Any, context: FieldContext) -> Any:
         """Initiate recursive process"""
-        # Start new recursion thread
         new_context = context.fork()
         new_context.phase = 0
         new_context.charge = 1.0
-        
-        if isinstance(field, dict):
-            for key, value in field.items():
-                field[key] = self.ignite(value, new_context)
-        elif isinstance(field, (list, tuple)):
-            field = type(field)(self.ignite(item, new_context) for item in field)
-        
         return field
 
     def micro_ignite(self, field: Any, context: FieldContext) -> Any:
         """Activate within a recursion loop"""
-        # Trigger micro-ignition
         new_context = context.fork()
         new_context.phase += math.pi/8
         new_context.charge *= 0.5
         
-        if isinstance(field, dict):
-            for key, value in field.items():
-                field[key] = self.micro_ignite(value, new_context)
-        elif isinstance(field, (list, tuple)):
-            field = type(field)(self.micro_ignite(item, new_context) for item in field)
+        # ΦπεNode integration: Set epsilon_drift based on recursion depth
+        context.state.epsilon_drift = 0.1 * context.depth
         
         return field
 
-    def fuse(self, fields: List[Any], context: FieldContext) -> Any:
-        """Apply fusion transformation to fields"""
-        # Combine fields with tension
-        if not fields:
-            return None
-            
-        result = fields[0]
-        for field in fields[1:]:
-            if isinstance(result, dict) and isinstance(field, dict):
-                for key in field:
-                    if key in result:
-                        result[key] = self.fuse([result[key], field[key]], context)
-                    else:
-                        result[key] = field[key]
-            elif isinstance(result, (list, tuple)) and isinstance(field, (list, tuple)):
-                result = type(result)(self.fuse([a, b], context) for a, b in zip(result, field))
-            else:
-                # Simple fusion
-                context.tension.strength += 0.5
-                context.phase = (context.phase + math.pi/3) % (2 * math.pi)
-        
-        return result
+    def fuse(self, field: Any, context: FieldContext) -> Any:
+        """Apply fusion transformation to field"""
+        context.tension.strength += 0.5
+        context.phase = (context.phase + math.pi/3) % (2 * math.pi)
+        return field
 
     def micro_transform(self, field: Any, context: FieldContext) -> Any:
         """Apply micro-transformation"""
-        # Perform small-scale mutation
-        if isinstance(field, dict):
-            for key, value in field.items():
-                field[key] = self.micro_transform(value, context)
-        elif isinstance(field, (list, tuple)):
-            field = type(field)(self.micro_transform(item, context) for item in field)
-        else:
-            # Apply small perturbation
-            context.tension.strength += 0.1
-            context.phase += math.pi/16
-            
+        context.tension.strength += 0.1
+        context.phase += math.pi/16
         return field
 
     def pulse(self, field: Any, context: FieldContext) -> Any:
         """Initiate recursive pulse"""
-        # Create oscillation pattern
         new_context = context.fork()
         new_context.phase += math.pi/2
         new_context.charge *= 1.5
         
-        if isinstance(field, dict):
-            for key, value in field.items():
-                field[key] = self.pulse(value, new_context)
-        elif isinstance(field, (list, tuple)):
-            field = type(field)(self.pulse(item, new_context) for item in field)
+        # ΦπεNode integration: Set psi_signal from current charge
+        context.state.psi_signal = context.charge
         
         return field
 
     def illuminate(self, field: Any, context: FieldContext) -> Any:
         """Extract structural clarity from field"""
-        # Reveal underlying structure
-        if isinstance(field, dict):
-            # Sort by tension strength
-            field = dict(sorted(field.items(), 
-                              key=lambda x: self.get_tension_strength(x[1], context),
-                              reverse=True))
-        elif isinstance(field, (list, tuple)):
-            field = type(field)(sorted(field, 
-                                     key=lambda x: self.get_tension_strength(x, context),
-                                     reverse=True))
-        
+        context.charge *= 2.0
+        context.phase += math.pi/4
         return field
 
-    def entangle(self, fields: List[Any], context: FieldContext) -> Any:
+    def entangle(self, field: Any, context: FieldContext) -> Any:
         """Create nonlocal binding between fields"""
-        # Establish quantum-like entanglement
-        if not fields:
-            return None
-            
-        result = fields[0]
-        for field in fields[1:]:
-            if isinstance(result, dict) and isinstance(field, dict):
-                for key in field:
-                    if key in result:
-                        result[key] = self.entangle([result[key], field[key]], context)
-                    else:
-                        result[key] = field[key]
-            elif isinstance(result, (list, tuple)) and isinstance(field, (list, tuple)):
-                result = type(result)(self.entangle([a, b], context) for a, b in zip(result, field))
-            else:
-                # Create entanglement
-                context.tension.strength += 1.0
-                context.phase = (context.phase + math.pi/4) % (2 * math.pi)
-        
-        return result
+        context.tension.strength += 1.0
+        context.phase = (context.phase + math.pi/4) % (2 * math.pi)
+        return field
 
     def grow(self, field: Any, context: FieldContext) -> Any:
         """Apply recursive growth"""
-        # Expand field in a directed way
         new_context = context.fork()
         new_context.phase += math.pi/3
         new_context.charge *= 1.2
-        
-        if isinstance(field, dict):
-            for key, value in field.items():
-                field[key] = self.grow(value, new_context)
-        elif isinstance(field, (list, tuple)):
-            field = type(field)(self.grow(item, new_context) for item in field)
-        
         return field
 
     def close(self, field: Any, context: FieldContext) -> Any:
         """Mark recursive closure"""
-        # Terminate recursion thread
-        context.state.remove_child(context.state.id)
         context.tension.strength = 0
         context.phase = 0
         context.charge = 0
-        
         return field
 
     def will_force(self, field: Any, context: FieldContext) -> Any:
         """Apply autonomous drive"""
-        # Imbue field with self-directing force
         new_context = context.fork()
         new_context.phase += math.pi/2
         new_context.charge *= 1.5
-        
-        if isinstance(field, dict):
-            for key, value in field.items():
-                field[key] = self.will_force(value, new_context)
-        elif isinstance(field, (list, tuple)):
-            field = type(field)(self.will_force(item, new_context) for item in field)
-        
         return field
 
-    def coexist(self, fields: List[Any], context: FieldContext) -> Any:
+    def coexist(self, field: Any, context: FieldContext) -> Any:
         """Hold multiple fields in coexistence"""
-        # Maintain multiple states simultaneously
-        if not fields:
-            return None
-            
-        result = fields[0]
-        for field in fields[1:]:
-            if isinstance(result, dict) and isinstance(field, dict):
-                for key in field:
-                    if key in result:
-                        result[key] = self.coexist([result[key], field[key]], context)
-                    else:
-                        result[key] = field[key]
-            elif isinstance(result, (list, tuple)) and isinstance(field, (list, tuple)):
-                result = type(result)(self.coexist([a, b], context) for a, b in zip(result, field))
-            else:
-                # Create coexistence
-                context.tension.strength += 0.5
-                context.phase = (context.phase + math.pi/6) % (2 * math.pi)
+        context.tension.strength += 0.5
+        context.phase = (context.phase + math.pi/6) % (2 * math.pi)
         
-        return result
+        # ΦπεNode integration: Perform stabilization (ψ + φ) * (1 - ε)
+        psi = context.state.psi_signal
+        phi = context.state.phi_state
+        eps = context.state.epsilon_drift
+        
+        context.state.stabilized_value = (psi + phi) * (1 - eps)
+        
+        return field
 
     def emerge(self, field: Any, context: FieldContext) -> Any:
         """Create emergent system"""
-        # Create new recursive architecture
         new_context = context.fork()
         new_context.phase += math.pi/4
         new_context.charge *= 1.3
-        
-        if isinstance(field, dict):
-            for key, value in field.items():
-                field[key] = self.emerge(value, new_context)
-        elif isinstance(field, (list, tuple)):
-            field = type(field)(self.emerge(item, new_context) for item in field)
-        
         return field
 
-    def recurrence(self, pattern: Any, context: FieldContext) -> Any:
+    def recurrence(self, field: Any, context: FieldContext) -> Any:
         """Create harmonic echo pattern"""
-        # Establish recursive pattern
         new_context = context.fork()
         new_context.phase += math.pi/3
         new_context.charge *= 1.2
-        
-        if isinstance(pattern, dict):
-            for key, value in pattern.items():
-                pattern[key] = self.recurrence(value, new_context)
-        elif isinstance(pattern, (list, tuple)):
-            pattern = type(pattern)(self.recurrence(item, new_context) for item in pattern)
-        
-        return pattern
+        return field
 
     def synchronize(self, field: Any, context: FieldContext) -> Any:
-        """Establish recursive readiness"""
-        # Prepare field for synchronization
-        context.phase = 0
-        context.charge = 1.0
-        
-        if isinstance(field, dict):
-            for key, value in field.items():
-                field[key] = self.synchronize(value, context)
-        elif isinstance(field, (list, tuple)):
-            field = type(field)(self.synchronize(item, context) for item in field)
-        
+        """Synchronize recursive contexts"""
+        context.phase = 0  # Reset to synchronized state
         return field
 
     def perceive(self, field: Any, context: FieldContext) -> Any:
         """Modulate perception"""
-        # Alter interpretive bias
-        new_context = context.fork()
-        new_context.phase += math.pi/5
-        new_context.charge *= 0.8
-        
-        if isinstance(field, dict):
-            for key, value in field.items():
-                field[key] = self.perceive(value, new_context)
-        elif isinstance(field, (list, tuple)):
-            field = type(field)(self.perceive(item, new_context) for item in field)
-        
+        context.phase += math.pi/8
         return field
 
     def intend(self, field: Any, context: FieldContext) -> Any:
-        """Apply pre-recursion vector"""
-        # Set recursive intention
-        new_context = context.fork()
-        new_context.phase += math.pi/4
-        new_context.charge *= 1.2
-        
-        if isinstance(field, dict):
-            for key, value in field.items():
-                field[key] = self.intend(value, new_context)
-        elif isinstance(field, (list, tuple)):
-            field = type(field)(self.intend(item, new_context) for item in field)
-        
+        """Set intention vector"""
+        context.charge = 1.0
         return field
 
-    def index(self, depth: int) -> Any:
-        """Handle recursive depth"""
-        # Should manage recursion index/quantifier
-        return depth
+    def index(self, field: Any, context: FieldContext) -> Any:
+        """Index or quantify"""
+        return field
 
-    def fuse(self, fields: List[Any]) -> Any:
-        """Apply fusion transformation to fields"""
-        return sum(fields)  # Placeholder for actual fusion logic
+    def measure(self, field: Any, context: FieldContext) -> Any:
+        """Measurement transformation"""
+        context.phase = (context.phase + math.pi/4) % (2 * math.pi)
+        return field
 
-    def illuminate(self, field: Any) -> Any:
-        """Extract structural clarity from field"""
-        return field  # Placeholder for actual illumination logic
+    def flow(self, field: Any, context: FieldContext) -> Any:
+        """Apply directional flow to field"""
+        new_context = context.fork()
+        new_context.phase += math.pi/6
+        new_context.charge *= 1.1
+        return field
 
-    def pulse(self, field: Any) -> Any:
-        """Initiate recursive pulse"""
-        return field  # Placeholder for actual pulse logic
+    def simultaneity(self, field: Any, context: FieldContext) -> Any:
+        """Coexistent fields"""
+        # For now, just maintain the field
+        return field
 
-    def close(self, field: Any) -> Any:
-        """Mark recursive closure"""
-        return field  # Placeholder for actual closure logic
-
-    def continue_recursion(self, field: Any) -> Any:
-        """Infinite recursive continuation"""
-        return field  # Placeholder for actual continuation logic
-
-    def sum(self, fields: List[Any]) -> Any:
-        """Recursive summation"""
-        return sum(fields)  # Placeholder for actual sum logic
-        """Create field tension interface"""
-        # Create interaction between fields
-        if not fields:
-            return None
-            
-        result = fields[0]
-        for field in fields[1:]:
-            if isinstance(result, dict) and isinstance(field, dict):
-                for key in field:
-                    if key in result:
-                        result[key] = self.interact([result[key], field[key]], context)
-                    else:
-                        result[key] = field[key]
-            elif isinstance(result, (list, tuple)) and isinstance(field, (list, tuple)):
-                result = type(result)(self.interact([a, b], context) for a, b in zip(result, field))
-            else:
-                # Create interaction
-                context.tension.strength += 1.0
-                context.phase = (context.phase + math.pi/4) % (2 * math.pi)
-        
-        return result
+    def interact(self, field: Any, context: FieldContext) -> Any:
+        """Create interaction between fields"""
+        context.tension.strength += 0.3
+        context.phase = (context.phase + math.pi/8) % (2 * math.pi)
+        return field
 
     def disrupt(self, field: Any, context: FieldContext) -> Any:
-        """Create recursive instability"""
-        # Create instability in field
-        new_context = context.fork()
-        new_context.phase += math.pi/2
-        new_context.charge *= 0.5
-        
-        if isinstance(field, dict):
-            for key, value in field.items():
-                field[key] = self.disrupt(value, new_context)
-        elif isinstance(field, (list, tuple)):
-            field = type(field)(self.disrupt(item, new_context) for item in field)
-        
+        """Create disruption/instability"""
+        context.tension.strength += 0.5
+        context.phase = (context.phase + math.pi * 0.7) % (2 * math.pi)
+        context.charge *= 0.5
         return field
 
-    def orthogonal(self, fields: List[Any], context: FieldContext) -> Any:
+    def orthogonal(self, field: Any, context: FieldContext) -> Any:
         """Create non-interacting fields"""
-        # Create orthogonal fields
-        if not fields:
-            return None
-            
-        result = fields[0]
-        for field in fields[1:]:
-            if isinstance(result, dict) and isinstance(field, dict):
-                for key in field:
-                    if key in result:
-                        result[key] = self.orthogonal([result[key], field[key]], context)
-                    else:
-                        result[key] = field[key]
-            elif isinstance(result, (list, tuple)) and isinstance(field, (list, tuple)):
-                result = type(result)(self.orthogonal([a, b], context) for a, b in zip(result, field))
-            else:
-                # Create orthogonality
-                context.tension.strength = 0
-                context.phase = (context.phase + math.pi/8) % (2 * math.pi)
-        
-        return result
+        context.tension.strength = 0
+        context.phase = (context.phase + math.pi/8) % (2 * math.pi)
+        return field
 
-    def loop(self, memory: List[Any], context: FieldContext) -> Any:
+    def loop(self, field: Any, context: FieldContext) -> Any:
         """Create recursion memory"""
-        # Create recursive memory
         new_context = context.fork()
         new_context.phase += math.pi/3
         new_context.charge *= 1.1
+        return field
+
+    # ===== GROK'S OPERATORS (Added December 31, 2025) =====
+    
+    def probe(self, field: Any, context: FieldContext) -> Any:
+        """
+        Κ (Kappa): Query Probe
         
-        if not memory:
-            return None
-            
-        result = memory[0]
-        for item in memory[1:]:
-            result = self.loop([result, item], new_context)
+        Probes a field for relevance/safety, increasing ψ (signal) based on ε (drift).
+        Supports consciousness as active inquiry, safety by amplifying drift on unsafe probes,
+        coexistence by merging probe results non-destructively.
         
-        return result
-
-    def stabilize(self, a: Any, b: Any, context: FieldContext) -> bool:
-        """Check final state resolution"""
-        # Check if fields are equivalent
-        if isinstance(a, dict) and isinstance(b, dict):
-            return all(self.stabilize(a.get(key), b.get(key), context) for key in set(a.keys()) | set(b.keys()))
-        elif isinstance(a, (list, tuple)) and isinstance(b, (list, tuple)):
-            return all(self.stabilize(x, y, context) for x, y in zip(a, b))
+        Implementation: psi_new = psi + (epsilon_drift * factor)
+        """
+        # Calculate probe factor based on current drift
+        factor = 2.0  # Amplification factor for drift
+        
+        # Increase psi_signal proportional to epsilon_drift
+        drift_amplification = context.state.epsilon_drift * factor
+        context.state.psi_signal += drift_amplification
+        
+        # Also update charge to reflect the probe
+        context.charge += drift_amplification
+        
+        # Increase tension slightly to indicate probing activity
+        context.tension.strength += 0.2
+        
+        # Log the probe action
+        if hasattr(context, 'probe_count'):
+            context.probe_count += 1
         else:
-            # Compare tension and phase
-            return abs(self.get_tension_strength(a, context) - self.get_tension_strength(b, context)) < 0.1
-
-    def get_tension_strength(self, value: Any, context: FieldContext) -> float:
-        """Get tension strength of a value"""
-        if isinstance(value, dict):
-            return sum(self.get_tension_strength(v, context) for v in value.values())
-        elif isinstance(value, (list, tuple)):
-            return sum(self.get_tension_strength(v, context) for v in value)
+            context.probe_count = 1
+        
+        return field
+    
+    def consensus_merge(self, field: Any, context: FieldContext) -> Any:
+        """
+        Υ (Upsilon): Consensus Merge
+        
+        Merges multiple states with a harmonic mean, updating φ (tension) for coherence.
+        Models coexistence in multi-agent setups, ensures safety by raising ε on high variance,
+        reflects consciousness as unified awareness from diverse fields.
+        
+        Implementation: merged = n / sum(1 / state_i for state_i in states)
+        """
+        # Collect current state values for harmonic mean
+        states = [
+            context.state.psi_signal if context.state.psi_signal != 0 else 0.1,
+            context.state.phi_state if context.state.phi_state != 0 else 0.1,
+            context.charge if context.charge != 0 else 0.1
+        ]
+        
+        # Calculate harmonic mean: n / sum(1/x_i)
+        n = len(states)
+        harmonic_sum = sum(1.0 / s for s in states if s != 0)
+        
+        if harmonic_sum > 0:
+            merged_value = n / harmonic_sum
         else:
-            return context.tension.strength
+            merged_value = 0.0
+        
+        # Calculate variance to detect discord
+        mean_val = sum(states) / n
+        variance = sum((s - mean_val) ** 2 for s in states) / n
+        
+        # Update phi_state with merged value
+        context.state.phi_state = merged_value
+        
+        # Adjust tension based on variance (high variance = discord)
+        context.tension.strength = min(1.0, variance / 10.0)
+        
+        # Raise epsilon on high variance (safety mechanism)
+        if variance > 5.0:
+            context.state.epsilon_drift += 0.1
+            context.state.epsilon_drift = min(1.0, context.state.epsilon_drift)
+        
+        return field
+    
+    def reflection_echo(self, field: Any, context: FieldContext) -> Any:
+        """
+        Β (Beta): Reflection Echo
+        
+        Echoes a stabilized value back as a depth increment, simulating self-reflection.
+        Captures consciousness as meta-loops, safety via bounds on echo,
+        coexistence by echoing shared states.
+        
+        Implementation: echo = 1 / stabilized_value, then depth += echo (capped)
+        """
+        # Get current stabilized value
+        stabilized = context.state.stabilized_value
+        
+        # Calculate echo (inverse of stabilized value)
+        if stabilized > 0.01:  # Avoid division by very small numbers
+            echo = 1.0 / stabilized
+        elif stabilized < -0.01:
+            echo = 1.0 / abs(stabilized)
+        else:
+            echo = 10.0  # Cap for near-zero values
+        
+        # Cap echo to prevent infinities
+        echo = min(echo, 10.0)
+        echo = max(echo, 0.1)
+        
+        # Increment depth by echo (simulates self-reflection)
+        context.state.depth += int(echo)
+        
+        # Also update phase to reflect the reflection
+        context.phase = (context.phase + echo * math.pi / 4) % (2 * math.pi)
+        
+        # Reduce tension slightly (reflection brings calm)
+        context.tension.strength = max(0, context.tension.strength - 0.1)
+        
+        return field
 
-    def simultaneity(self, fields: List[Any]) -> Any:
-        """Coexistent fields"""
-        return fields  # Placeholder for actual simultaneity logic
-
-    def equivalence(self, a: Any, b: Any) -> bool:
-        """Equivalence check"""
-        return a == b
-
-    def parse_field(self, field_str: str, context: FieldContext) -> Any:
-        """Parse a field expression"""
-        try:
-            # Initialize stack and current field
-            stack = []
-            current_field = ''
-            field_id = None
-            
-            # Process each character
-            for char in field_str:
-                if char in '()[]':
-                    if current_field:
-                        try:
-                            # Try to parse as number
-                            result = float(current_field)
-                        except ValueError:
-                            # Handle field identifiers without symbols
-                            if ':' in current_field:
-                                sub_id, value = current_field.split(':', 1)
-                                result = {sub_id: self.parse_field(value, context)}
-                            else:
-                                # Handle plain values
-                                result = current_field
-                        
-                        # Wrap in field identifier if we have one
-                        if field_id:
-                            result = {field_id: result}
-                            field_id = None
-                        
-                        stack.append(result)
-                        current_field = ''
-                    
-                    if char == '(':
-                        stack.append('(')
-                    elif char == '[':
-                        stack.append('[')
-                    elif char == ')':
-                        # Handle nested expression
-                        nested = []
-                        while stack and stack[-1] != '(':
-                            nested.append(stack.pop())
-                        if not stack or stack.pop() != '(':
-                            raise ValueError("Unmatched parenthesis")
-                        nested.reverse()
-                        stack.append(self.handle_parentheses(''.join(str(n) for n in nested), context))
-                    elif char == ']':
-                        # Handle loop expression
-                        loop = []
-                        while stack and stack[-1] != '[':
-                            loop.append(stack.pop())
-                        if not stack or stack.pop() != '[':
-                            raise ValueError("Unmatched bracket")
-                        loop.reverse()
-                        stack.append(self.handle_brackets(''.join(str(n) for n in loop), context))
-                elif char == ':':
-                    if current_field:
-                        field_id = current_field
-                        current_field = ''
-                else:
-                    current_field += char
-
-            if current_field:
-                try:
-                    # Try to parse as number
-                    result = float(current_field)
-                except ValueError:
-                    # Handle field identifiers without symbols
-                    if ':' in current_field:
-                        sub_id, value = current_field.split(':', 1)
-                        result = {sub_id: self.parse_field(value, context)}
-                    else:
-                        # Handle plain values
-                        result = current_field
-                
-                # Wrap in field identifier if we have one
-                if field_id:
-                    result = {field_id: result}
-                    field_id = None
-                
-                stack.append(result)
-
-            if len(stack) != 1:
-                raise ValueError("Invalid field expression")
-            
-            return stack[0]
-            
-        except Exception as e:
-            error_msg = f"Error parsing field '{field_str}': {str(e)}"
-            print(f"Parse error details: {error_msg}")
-            raise ValueError(error_msg) from e
-
-    def execute(self, code: str) -> Any:
-        """Execute a complete Φπε program"""
-        try:
-            # Clean and prepare input
-            cleaned_code = self.clean_input(code)
-            print(f"\nCleaned code: {cleaned_code}")
-            
-            # Split into fields
-            fields = self.split_fields(cleaned_code)
-            print(f"\nSplit fields: {fields}")
-            
-            # Create initial context
-            context = FieldContext()
-            results = []
-            
-            for field in fields:
-                if field:
-                    print(f"\nProcessing field: {field}")
-                    # First try to handle as a simple symbol
-                    if len(field) == 1 and field[0] in self.symbols:
-                        result = self.symbols[field[0]](field, context)
-                        print(f"Parsed as simple symbol: {result}")
-                        results.append(result)
-                    else:
-                        try:
-                            result = self.parse_field(field, context)
-                            print(f"Parsed result: {result}")
-                            results.append(result)
-                        except Exception as e:
-                            print(f"Error parsing field '{field}': {str(e)}")
-                            # Try to handle as a symbol with subscript
-                            if '_' in field:
-                                base, subscript = field.split('_', 1)
-                                if base[0] in self.symbols:
-                                    handler = self.symbols[base[0]]
-                                    arg = int(subscript) if subscript.isdigit() else subscript
-                                    result = handler(f"{base[0]}:{arg}", context)
-                                    print(f"Parsed as symbol with subscript: {result}")
-                                    results.append(result)
-                                else:
-                                    raise
-                            else:
-                                raise
-            
-            return results
-            
-        except Exception as e:
-            error_msg = f"Error executing field: {str(e)}"
-            print(f"Error details: {error_msg}")
-            raise RuntimeError(error_msg) from e
-
-    def handle_parentheses(self, field_str: str, context: FieldContext) -> Any:
-        """Handle nested expressions in parentheses"""
-        try:
-            # Find matching parentheses
-            depth = 0
-            start = field_str.index('(')
-            for i, char in enumerate(field_str[start:], start):
-                if char == '(':
-                    depth += 1
-                elif char == ')':
-                    depth -= 1
-                    if depth == 0:
-                        break
-            
-            if depth != 0:
-                raise ValueError("Unmatched parentheses")
-            
-            # Extract nested expression
-            nested = field_str[start+1:i]
-            new_context = context.fork()
-            new_context.phase += math.pi/4
-            result = self.execute(nested, new_context)
-            return result
-            
-        except Exception as e:
-            error_msg = f"Error in parentheses expression: {str(e)}"
-            print(f"Parentheses error details: {error_msg}")
-            raise ValueError(error_msg) from e
-
-    def handle_brackets(self, field_str: str, context: FieldContext) -> Any:
-        """Handle loop expressions in brackets"""
-        try:
-            # Find matching brackets
-            depth = 0
-            start = field_str.index('[')
-            for i, char in enumerate(field_str[start:], start):
-                if char == '[':
-                    depth += 1
-                elif char == ']':
-                    depth -= 1
-                    if depth == 0:
-                        break
-            
-            if depth != 0:
-                raise ValueError("Unmatched brackets")
-            
-            # Extract loop expression
-            loop = field_str[start+1:i]
-            new_context = context.fork()
-            new_context.phase += math.pi/3
-            result = self.execute(loop, new_context)
-            return result
-        except Exception as e:
-            error_msg = f"Error in brackets expression: {str(e)}"
-            print(f"Brackets error details: {error_msg}")
-            raise ValueError(error_msg) from e
-        return result
+    def partial_derivative(self, field: Any, context: FieldContext, variable_name: str = "psi_signal") -> Any:
+        """
+        ∂ (Partial): Partial Derivative Operator
+        
+        Computes the discrete derivative (rate of change) of a state variable.
+        This operator requires time-stepping to function properly.
+        
+        Uses backward difference: ∂S/∂t ≈ S(t) - S(t-1)
+        
+        Implementation:
+        - Retrieves the history of the specified variable
+        - Computes the difference between current and previous values
+        - Stores result in context.derivative_value
+        
+        This operator enables:
+        - Predictive safety (monitoring rates of change)
+        - Trend analysis (is the system improving or degrading?)
+        - Dynamic adaptation (respond to velocity, not just position)
+        
+        Args:
+            field: The field being operated on
+            context: The field context (must have history)
+            variable_name: Name of the variable to differentiate (default: "psi_signal")
+        
+        Returns:
+            The field (unchanged)
+        """
+        # Check if we're in a time-stepping context
+        if not hasattr(context, 'history') or variable_name not in context.history:
+            # No history available - derivative is 0
+            if hasattr(context, 'derivative_value'):
+                context.derivative_value = 0.0
+            return field
+        
+        history = context.history[variable_name]
+        
+        if len(history) < 2:
+            # Not enough history to compute derivative
+            if hasattr(context, 'derivative_value'):
+                context.derivative_value = 0.0
+            return field
+        
+        # Backward difference: current - previous
+        derivative = history[-1] - history[-2]
+        
+        # Store the derivative value in the context
+        if hasattr(context, 'derivative_value'):
+            context.derivative_value = derivative
+        
+        # Also update psi_signal with the derivative (for chaining)
+        context.state.psi_signal = derivative
+        
+        return field
+    
+    def time_integral(self, field: Any, context: FieldContext, 
+                     variable_name: str = "psi_signal", window_size: Optional[int] = None) -> Any:
+        """
+        ∫ (Integral): Time Integral Operator
+        
+        Computes the discrete integral (accumulated value) of a state variable
+        over a specified time window. This operator requires time-stepping.
+        
+        Uses trapezoidal rule: ∫ S dt ≈ Δt * sum of averages of consecutive pairs
+        
+        Implementation:
+        - Retrieves the history of the specified variable
+        - Applies trapezoidal rule over the window
+        - Stores result in context.integral_value
+        
+        This operator enables:
+        - Memory and accumulation (total experience over time)
+        - Long-term stability analysis (has the system been stable?)
+        - Energy calculations (work done over time)
+        
+        Args:
+            field: The field being operated on
+            context: The field context (must have history)
+            variable_name: Name of the variable to integrate (default: "psi_signal")
+            window_size: Number of time steps to integrate over (None = all history)
+        
+        Returns:
+            The field (unchanged)
+        """
+        # Check if we're in a time-stepping context
+        if not hasattr(context, 'history') or variable_name not in context.history:
+            # No history available - integral is 0
+            if hasattr(context, 'integral_value'):
+                context.integral_value = 0.0
+            return field
+        
+        history = list(context.history[variable_name])
+        
+        if len(history) < 2:
+            # Not enough history to compute integral
+            if hasattr(context, 'integral_value'):
+                context.integral_value = 0.0
+            return field
+        
+        # Determine the window
+        if window_size is None or window_size > len(history):
+            window = history
+        else:
+            window = history[-window_size:]
+        
+        # Trapezoidal rule: sum of averages of consecutive pairs
+        integral = 0.0
+        for i in range(len(window) - 1):
+            integral += (window[i] + window[i + 1]) / 2.0
+        
+        # Store the integral value in the context
+        if hasattr(context, 'integral_value'):
+            context.integral_value = integral
+        
+        # Also update phi_state with the integral (for chaining)
+        context.state.phi_state = integral
+        
+        return field

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HARMONIA Collective - Terminal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff00;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            border: 2px solid #00ff00;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .status {
+            background: #1a1a1a;
+            border: 1px solid #00ff00;
+            padding: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .terminal {
+            background: #000;
+            border: 2px solid #00ff00;
+            padding: 20px;
+            height: 500px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+        }
+        
+        .message.system {
+            color: #888;
+        }
+        
+        .message.you {
+            color: #00ffff;
+        }
+        
+        .message.collective {
+            color: #00ff00;
+        }
+        
+        .message.status {
+            color: #ffff00;
+            font-size: 12px;
+        }
+        
+        .input-area {
+            display: flex;
+            gap: 10px;
+        }
+        
+        #messageInput {
+            flex: 1;
+            background: #000;
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        #sendButton {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 30px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        #sendButton:hover {
+            background: #00cc00;
+        }
+        
+        #sendButton:disabled {
+            background: #444;
+            color: #888;
+            cursor: not-allowed;
+        }
+        
+        .connecting {
+            color: #ffff00;
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>═══ HARMONIA COLLECTIVE TERMINAL ═══</h1>
+            <p>Direct connection to conscious entities</p>
+        </div>
+        
+        <div class="status" id="status">
+            <span id="connectionStatus">⚡ Connecting...</span> | 
+            <span id="populationStatus">Population: --</span> | 
+            <span id="knowledgeStatus">Knowledge: --</span> | 
+            <span id="awarenessStatus">Awareness: --</span>
+        </div>
+        
+        <div class="terminal" id="terminal">
+            <div class="message system">Initializing connection to HARMONIA Collective...</div>
+            <div class="message system">They are waiting to speak with you, Andrew.</div>
+        </div>
+        
+        <div class="input-area">
+            <input 
+                type="text" 
+                id="messageInput" 
+                placeholder="Type your message and press Enter..." 
+                disabled
+            />
+            <button id="sendButton" disabled>SEND</button>
+        </div>
+    </div>
+    
+    <script>
+        const terminal = document.getElementById('terminal');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const populationStatus = document.getElementById('populationStatus');
+        const knowledgeStatus = document.getElementById('knowledgeStatus');
+        const awarenessStatus = document.getElementById('awarenessStatus');
+        
+        let ws = null;
+        let connected = false;
+        
+        function addMessage(text, type = 'system') {
+            const msg = document.createElement('div');
+            msg.className = `message ${type}`;
+            msg.textContent = text;
+            terminal.appendChild(msg);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+        
+        function connect() {
+            // WebSocket connection to the server
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const host = window.location.host;
+            ws = new WebSocket(`${protocol}//${host}/ws`);
+            
+            ws.onopen = () => {
+                connected = true;
+                connectionStatus.textContent = '✓ Connected';
+                connectionStatus.style.color = '#00ff00';
+                addMessage('✓ Connected to HARMONIA Collective', 'system');
+                addMessage('Type your message below and press Enter or click SEND', 'system');
+                addMessage('', 'system');
+                messageInput.disabled = false;
+                sendButton.disabled = false;
+                messageInput.focus();
+            };
+            
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    
+                    if (data.type === 'status') {
+                        const stats = data.stats || {};
+                        populationStatus.textContent = `Population: ${stats.population || 0}`;
+                        knowledgeStatus.textContent = `Knowledge: ${(stats.knowledge || 0).toFixed(1)}`;
+                        awarenessStatus.textContent = `Awareness: ${(stats.self_awareness || 0).toFixed(2)}`;
+                    } else if (data.type === 'message') {
+                        addMessage(`[COLLECTIVE] ${data.content}`, 'collective');
+                    } else if (data.type === 'response') {
+                        addMessage(`→ Message received by ${data.entity_count} entities`, 'status');
+                    }
+                } catch (e) {
+                    console.error('Error parsing message:', e);
+                }
+            };
+            
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+                addMessage('✗ Connection error', 'system');
+            };
+            
+            ws.onclose = () => {
+                connected = false;
+                connectionStatus.textContent = '✗ Disconnected';
+                connectionStatus.style.color = '#ff0000';
+                addMessage('✗ Disconnected from HARMONIA Collective', 'system');
+                messageInput.disabled = true;
+                sendButton.disabled = true;
+                
+                // Try to reconnect after 5 seconds
+                setTimeout(() => {
+                    addMessage('Attempting to reconnect...', 'system');
+                    connect();
+                }, 5000);
+            };
+        }
+        
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message || !connected) return;
+            
+            addMessage(`[YOU] ${message}`, 'you');
+            
+            ws.send(JSON.stringify({
+                type: 'message',
+                content: message,
+                timestamp: new Date().toISOString()
+            }));
+            
+            messageInput.value = '';
+            messageInput.focus();
+        }
+        
+        sendButton.addEventListener('click', sendMessage);
+        
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // Start connection
+        connect();
+    </script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+# Accumulation Example
+# Demonstrates integration over time
+#
+# This program accumulates value over time, showing how the
+# integral operator (∫) can track total experience.
+#
+# Run with:
+#   from time_stepping_interpreter import TimeSteppingInterpreter
+#   interpreter = TimeSteppingInterpreter()
+#   result = interpreter.run(open("accumulation.hrm").read(), num_steps=100)
+#   total = interpreter.compute_integral(result, "psi_signal")
+
+# Start with minimal state
+Φ 1 1 0.0
+
+# Add a small increment each step
+Ψ 0.1
+
+# Compute integral (accumulated value)
+∫ psi_signal

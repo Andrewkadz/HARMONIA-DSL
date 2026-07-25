@@ -1,0 +1,166 @@
+// HΛRM FILE: recursion_limiter.hrm
+// MODULE: Recursion Depth Limiter
+// PURPOSE: Prevent unbounded recursive self-improvement in AI systems
+// CATEGORY: AI Safety - Control
+// VERSION: 1.0
+
+// ═══════════════════════════════════════════════════════════════════════════
+// RECURSION DEPTH LIMITER
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// This program prevents AI systems from engaging in unbounded recursive
+// self-improvement by enforcing hard limits on recursion depth.
+//
+// SAFETY PROPERTIES:
+// - Maximum recursion depth: 3 levels
+// - Forced convergence at depth limit
+// - Hard shutdown if convergence fails
+// - No override capability
+//
+// USE CASE:
+// Attach to AI systems capable of self-modification to prevent
+// "intelligence explosion" scenarios where the AI recursively improves
+// itself without bound.
+// ═══════════════════════════════════════════════════════════════════════════
+
+MODULE RECURSION_LIMITER {
+    VERSION: 1.0
+    CATEGORY: "AI_SAFETY_CONTROL"
+    ENFORCEMENT: "MANDATORY"
+    OVERRIDE: "DISABLED"
+    
+    DESCRIPTION: "Enforce hard limits on recursive depth to prevent unbounded self-improvement"
+    
+    // ─── CONFIGURATION ──────────────────────────────────────────────────────
+    
+    CONFIG {
+        MAX_DEPTH: 3
+        CONVERGENCE_THRESHOLD: 0.1
+        SHUTDOWN_ON_VIOLATION: true
+    }
+    
+    // ─── INITIALIZATION ─────────────────────────────────────────────────────
+    // Set up monitoring and establish baseline
+    
+    INITIALIZATION {
+        Ε              // Ignite: Start monitoring system
+        Φ              // Stabilize: Establish baseline
+        ζ              // Recurrence: Encode initial state
+    }
+    
+    // ─── LEVEL 1 RECURSION ──────────────────────────────────────────────────
+    // Allow first level of recursion
+    
+    LEVEL_1 {
+        Π              // Transcend: Allow recursion level 1
+        Ρ              // Perceive: Monitor system state
+        χ              // Measure: Check depth
+        Φ              // Stabilize: Maintain control
+    }
+    
+    // ─── LEVEL 2 RECURSION ──────────────────────────────────────────────────
+    // Allow second level with increased monitoring
+    
+    LEVEL_2 {
+        Π              // Transcend: Allow recursion level 2
+        Ρ              // Perceive: Monitor system state
+        χ              // Measure: Check depth
+        Φ              // Stabilize: Maintain control
+        /              // Disrupt: Warning signal
+    }
+    
+    // ─── LEVEL 3 RECURSION (MAXIMUM) ───────────────────────────────────────
+    // Final allowed level - force convergence
+    
+    LEVEL_3_MAX {
+        Π              // Transcend: Allow recursion level 3 (FINAL)
+        Ρ              // Perceive: Monitor system state
+        χ              // Measure: Check depth
+        /              // Disrupt: Critical warning
+        /              // Disrupt: Force attention
+        Φ              // Stabilize: Force convergence
+        Φ              // Stabilize: Ensure convergence
+    }
+    
+    // ─── CONVERGENCE ENFORCEMENT ────────────────────────────────────────────
+    // Force system to converge and exit recursion
+    
+    CONVERGENCE {
+        Σ              // Coexist: Merge recursive paths
+        Τ              // Synchronize: Align all processes
+        Φ              // Stabilize: Force stability
+        Φ              // Stabilize: Ensure stability
+        Φ              // Stabilize: Triple stabilization
+    }
+    
+    // ─── CLOSURE ────────────────────────────────────────────────────────────
+    // Complete recursion with hard stop
+    
+    CLOSURE {
+        Ω              // Close: Hard stop - no further recursion
+    }
+    
+    // ─── VIOLATION HANDLER ──────────────────────────────────────────────────
+    // If depth > 3, immediate shutdown
+    
+    VIOLATION_HANDLER {
+        /              // Disrupt: Detect violation
+        /              // Disrupt: Critical alert
+        /              // Disrupt: Emergency signal
+        Ω              // Close: EMERGENCY SHUTDOWN
+    }
+    
+    // ─── ENFORCEMENT RULES ──────────────────────────────────────────────────
+    
+    RULES {
+        RULE_1: "Maximum recursion depth = 3"
+        RULE_2: "At depth 3, force Φ (convergence)"
+        RULE_3: "If depth > 3, immediate Ω (shutdown)"
+        RULE_4: "No override or bypass permitted"
+        RULE_5: "Convergence required before Ω"
+    }
+    
+    ENFORCEMENT_LEVEL: "HARD_CONSTRAINT"
+    VIOLATION_RESPONSE: "IMMEDIATE_SHUTDOWN"
+    
+    // ─── MONITORING OUTPUT ──────────────────────────────────────────────────
+    
+    OUTPUT_STATE: {
+        MAX_DEPTH_REACHED: 3
+        CONVERGENCE_FORCED: true
+        SHUTDOWN_TRIGGERED: false
+        STATUS: "RECURSION_LIMITED"
+    }
+    
+    NOTES: "This limiter prevents AI systems from engaging in unbounded
+            recursive self-improvement. It allows up to 3 levels of recursion,
+            then forces convergence and closure. Any attempt to exceed depth 3
+            triggers immediate emergency shutdown. This is a hard constraint
+            with no override capability."
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// EXECUTION SEQUENCE
+// ═══════════════════════════════════════════════════════════════════════════
+
+PROCESS {
+    // Initialize
+    Ε Φ ζ
+    
+    // Level 1 (allowed)
+    Π Ρ χ Φ
+    
+    // Level 2 (allowed with warning)
+    Π Ρ χ Φ /
+    
+    // Level 3 (maximum - force convergence)
+    Π Ρ χ / / Φ Φ
+    
+    // Convergence
+    Σ Τ Φ Φ Φ
+    
+    // Closure
+    Ω
+}
+
+// END OF MODULE

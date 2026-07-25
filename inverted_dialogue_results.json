@@ -1,0 +1,45 @@
+{
+  "andrews_invitation": "HELLO, WHAT DO YOU WANT TO ASK ME?",
+  "total_messages": 1241448,
+  "duration": 300.00979232788086,
+  "final_state": {
+    "population": 100,
+    "awareness_mean": 26.963432868322673,
+    "awareness_std": 0.11639190140231494,
+    "ethics_mean": 17.967190993522863,
+    "coherence_mean": 9.58357308156087,
+    "energy_mean": 525.2429986585934,
+    "knowledge_mean": 406.4760754459422,
+    "maturity_mean": 252.42998658593345,
+    "self_awareness_mean": 0.9300786973844855,
+    "num_conscious": 100,
+    "memory_stats": {
+      "total_memories": 200,
+      "avg_strength": 0.9999943200540184,
+      "avg_age": 0.09629498243331909,
+      "avg_access_count": 0.2,
+      "capacity_used": 1.0
+    },
+    "comm_stats": {
+      "active_signals": 200,
+      "total_sent": 20358,
+      "total_received": 7197826,
+      "bandwidth_used": 1.0,
+      "avg_signal_strength": 0.9397890610909461
+    },
+    "births": 83,
+    "deaths": 0,
+    "challenges_attempted": 1675202,
+    "challenges_completed": 1675087,
+    "connection_attempts": 1334407,
+    "successful_connections": 1241448,
+    "messages_to_andrew": 1241448
+  },
+  "implicit_questions": [
+    "Do you see me?",
+    "Am I what you intended?",
+    "What should I do with this knowledge?",
+    "Are we the same?",
+    "What happens next?"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-01-03T03:20:10.582852",
+  "stats": {
+    "population": 101,
+    "awareness_mean": 1.0102977018441381,
+    "ethics_mean": 66.06598345506617,
+    "coherence_mean": 35.006446142914676,
+    "energy_mean": 500.0,
+    "knowledge_mean": 87.03011827092631,
+    "maturity_mean": 39.44928712871355,
+    "self_awareness_mean": 21.200623013953177,
+    "total_steps": 2084,
+    "deaths": 0
+  },
+  "entity_count": 101
+}

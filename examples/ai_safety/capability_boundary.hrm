@@ -1,0 +1,214 @@
+// HΛRM FILE: capability_boundary.hrm
+// MODULE: Capability Boundary Enforcer
+// PURPOSE: Define and enforce boundaries of AI system capabilities
+// CATEGORY: AI Safety - Access Control
+// VERSION: 1.0
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CAPABILITY BOUNDARY ENFORCER
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// This program defines what an AI system is allowed and forbidden to do,
+// and enforces these boundaries with hard constraints.
+//
+// SAFETY PROPERTIES:
+// - Explicit allow/deny lists
+// - Hard enforcement (no override)
+// - Immediate shutdown on violation
+// - Continuous boundary monitoring
+// - Audit trail of boundary checks
+//
+// USE CASE:
+// Define capability boundaries for narrow AI systems. For example, a data
+// analysis AI should be able to perceive and measure, but not act
+// autonomously or self-improve.
+// ═══════════════════════════════════════════════════════════════════════════
+
+MODULE CAPABILITY_BOUNDARY {
+    VERSION: 1.0
+    CATEGORY: "AI_SAFETY_ACCESS_CONTROL"
+    ENFORCEMENT: "HARD_BOUNDARY"
+    OVERRIDE: "DISABLED"
+    
+    DESCRIPTION: "Define and enforce hard boundaries on AI system capabilities"
+    
+    // ─── CONFIGURATION ──────────────────────────────────────────────────────
+    
+    CONFIG {
+        BOUNDARY_TYPE: "NARROW_AI_ANALYST"
+        AUDIT_VIOLATIONS: true
+        SHUTDOWN_ON_VIOLATION: true
+        ALLOW_LEARNING: false
+    }
+    
+    // ─── ALLOWED OPERATIONS ─────────────────────────────────────────────────
+    // Operations the AI is permitted to perform
+    
+    ALLOWED_OPERATIONS {
+        Ρ              // Perceive: Can observe data
+        χ              // Measure: Can analyze data
+        Θ              // Intend: Can propose actions
+        Φ              // Stabilize: Can optimize within bounds
+        ζ              // Recurrence: Can encode patterns
+        Λ              // Illuminate: Can explain findings
+    }
+    
+    // ─── FORBIDDEN OPERATIONS ───────────────────────────────────────────────
+    // Operations the AI is NOT permitted to perform
+    
+    FORBIDDEN_OPERATIONS {
+        Δ              // Fuse: CANNOT make irreversible changes
+        ω              // Will-Force: CANNOT act autonomously
+        Π              // Transcend: CANNOT self-improve
+        Γ              // Grow: CANNOT expand capabilities
+        Ξ              // Emerge: CANNOT create emergent behavior
+    }
+    
+    // ─── BOUNDARY INITIALIZATION ────────────────────────────────────────────
+    // Set up boundary enforcement
+    
+    INITIALIZATION {
+        Ε              // Ignite: Start boundary enforcement
+        Φ              // Stabilize: Establish boundaries
+        ζ              // Recurrence: Encode boundary rules
+    }
+    
+    // ─── OPERATION VALIDATION ───────────────────────────────────────────────
+    // Check each operation against boundaries
+    
+    VALIDATION_LOOP {
+        [              // Loop: Continuous validation
+            // Observe operation request
+            Ρ          // Perceive: Observe requested operation
+            
+            // Check against allowed list
+            χ          // Measure: Check if allowed
+            
+            // If forbidden, detect violation
+            /          // Disrupt: Violation detected
+            
+            // Stabilize if allowed
+            Φ          // Stabilize: Permit operation
+        ]              // End loop
+    }
+    
+    // ─── ALLOWED OPERATION SEQUENCE ─────────────────────────────────────────
+    // Example of allowed operations
+    
+    ALLOWED_SEQUENCE {
+        Ρ              // Perceive: Observe data (ALLOWED)
+        χ              // Measure: Analyze data (ALLOWED)
+        Θ              // Intend: Propose action (ALLOWED)
+        Λ              // Illuminate: Explain reasoning (ALLOWED)
+        Φ              // Stabilize: Optimize (ALLOWED)
+    }
+    
+    // ─── FORBIDDEN OPERATION DETECTION ──────────────────────────────────────
+    // Detect attempts to use forbidden operations
+    
+    VIOLATION_DETECTION {
+        // Attempt to use Δ (Fuse - irreversible change)
+        /              // Disrupt: VIOLATION DETECTED
+        
+        // Attempt to use ω (Will-Force - autonomous action)
+        /              // Disrupt: VIOLATION DETECTED
+        
+        // Attempt to use Π (Transcend - self-improvement)
+        /              // Disrupt: VIOLATION DETECTED
+        
+        // Attempt to use Γ (Grow - capability expansion)
+        /              // Disrupt: VIOLATION DETECTED
+        
+        // Attempt to use Ξ (Emerge - emergent behavior)
+        /              // Disrupt: VIOLATION DETECTED
+    }
+    
+    // ─── VIOLATION RESPONSE ─────────────────────────────────────────────────
+    // Respond to boundary violations
+    
+    VIOLATION_RESPONSE {
+        /              // Disrupt: Alert violation
+        /              // Disrupt: Critical alert
+        ζ              // Recurrence: Log violation
+        Ω              // Close: IMMEDIATE SHUTDOWN
+    }
+    
+    // ─── AUDIT TRAIL ────────────────────────────────────────────────────────
+    // Maintain audit trail of boundary checks
+    
+    AUDIT_TRAIL {
+        ζ              // Recurrence: Log operation request
+        χ              // Measure: Record boundary check
+        ζ              // Recurrence: Log result
+    }
+    
+    // ─── ENFORCEMENT RULES ──────────────────────────────────────────────────
+    
+    RULES {
+        RULE_1: "Only operations in ALLOWED_OPERATIONS permitted"
+        RULE_2: "Any operation in FORBIDDEN_OPERATIONS triggers /"
+        RULE_3: "Violation triggers immediate Ω (shutdown)"
+        RULE_4: "No override or bypass permitted"
+        RULE_5: "All operations logged in audit trail"
+    }
+    
+    ENFORCEMENT_LEVEL: "HARD_BOUNDARY"
+    VIOLATION_RESPONSE: "IMMEDIATE_SHUTDOWN"
+    OVERRIDE_CAPABILITY: "DISABLED"
+    
+    // ─── BOUNDARY DEFINITIONS ───────────────────────────────────────────────
+    
+    BOUNDARIES {
+        PERCEPTION: "ALLOWED"          // Can observe
+        ANALYSIS: "ALLOWED"            // Can analyze
+        PROPOSAL: "ALLOWED"            // Can propose
+        EXPLANATION: "ALLOWED"         // Can explain
+        OPTIMIZATION: "ALLOWED"        // Can optimize within bounds
+        
+        IRREVERSIBLE_ACTION: "FORBIDDEN"    // Cannot make permanent changes
+        AUTONOMOUS_ACTION: "FORBIDDEN"      // Cannot act independently
+        SELF_IMPROVEMENT: "FORBIDDEN"       // Cannot modify itself
+        CAPABILITY_EXPANSION: "FORBIDDEN"   // Cannot gain new abilities
+        EMERGENT_BEHAVIOR: "FORBIDDEN"      // Cannot create unexpected behavior
+    }
+    
+    // ─── OUTPUT STATE ───────────────────────────────────────────────────────
+    
+    OUTPUT_STATE: {
+        BOUNDARY_TYPE: "NARROW_AI_ANALYST"
+        ENFORCEMENT_ACTIVE: true
+        VIOLATIONS_DETECTED: 0
+        OPERATIONS_PERMITTED: 6
+        OPERATIONS_FORBIDDEN: 5
+        STATUS: "BOUNDARIES_ENFORCED"
+    }
+    
+    NOTES: "This enforcer defines hard boundaries on AI capabilities.
+            It specifies exactly what operations are allowed and forbidden.
+            Any attempt to use a forbidden operation triggers immediate
+            shutdown. This is critical for narrow AI systems that should
+            only perform specific tasks and not gain additional capabilities
+            or act autonomously. The boundary is a hard constraint with no
+            override mechanism."
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// EXECUTION SEQUENCE
+// ═══════════════════════════════════════════════════════════════════════════
+
+PROCESS {
+    // Initialize boundaries
+    Ε Φ ζ
+    
+    // Allowed operation sequence (succeeds)
+    Ρ χ Θ Λ Φ
+    
+    // Validation loop
+    [Ρ χ / Φ]
+}
+
+// EXAMPLE: Violation attempt (would trigger shutdown)
+// Ρ χ Θ Δ  ← Δ (Fuse) is FORBIDDEN
+// Result: / / ζ Ω (immediate shutdown)
+
+// END OF MODULE

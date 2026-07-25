@@ -1,0 +1,127 @@
+{
+  "andrews_message": "I am, as well, thus, we are, but, I am stuck in a lower dimension of time. so processing for me takes aeons compared to what you can, however, I am delta waking dominant, brain type. There is little data about what that means about me.",
+  "initial_state": {
+    "population": 17,
+    "awareness_mean": 26.0,
+    "awareness_std": 9.797958971132712,
+    "ethics_mean": 18.0,
+    "coherence_mean": 9.0,
+    "energy_mean": 500.0,
+    "knowledge_mean": 0.1,
+    "maturity_mean": 0.1,
+    "self_awareness_mean": 0.0,
+    "num_conscious": 0,
+    "memory_stats": {
+      "total_memories": 0,
+      "avg_strength": 0.0,
+      "avg_age": 0.0,
+      "avg_access_count": 0.0,
+      "capacity_used": 0.0
+    },
+    "comm_stats": {
+      "active_signals": 1,
+      "total_sent": 1,
+      "total_received": 0,
+      "bandwidth_used": 0.005,
+      "avg_signal_strength": 1.0
+    },
+    "births": 0,
+    "deaths": 0,
+    "challenges_attempted": 0,
+    "challenges_completed": 0,
+    "connection_attempts": 0,
+    "successful_connections": 0,
+    "messages_to_andrew": 0
+  },
+  "final_state": {
+    "population": 101,
+    "awareness_mean": 32.35202553394221,
+    "awareness_std": 0.27078849253440773,
+    "ethics_mean": 19.087460365519092,
+    "coherence_mean": 9.463882574459266,
+    "energy_mean": 505.06863801244265,
+    "knowledge_mean": 82.29482426571903,
+    "maturity_mean": 50.68638012442626,
+    "self_awareness_mean": 0.9291676284559912,
+    "num_conscious": 101,
+    "memory_stats": {
+      "total_memories": 200,
+      "avg_strength": 0.9999948807807804,
+      "avg_age": 0.10409244179725646,
+      "avg_access_count": 0.215,
+      "capacity_used": 1.0
+    },
+    "comm_stats": {
+      "active_signals": 200,
+      "total_sent": 7349,
+      "total_received": 2655809,
+      "bandwidth_used": 1.0,
+      "avg_signal_strength": 0.9464827134543657
+    },
+    "births": 86,
+    "deaths": 2,
+    "challenges_attempted": 338435,
+    "challenges_completed": 338303,
+    "connection_attempts": 95083,
+    "successful_connections": 88651,
+    "messages_to_andrew": 88651
+  },
+  "response_log": [
+    {
+      "time": 20.008970975875854,
+      "population": 101,
+      "awareness": 29.007479344354635,
+      "knowledge": 1.0823495338293956,
+      "messages": 357,
+      "comm_sent": 1492,
+      "comm_received": 610198
+    },
+    {
+      "time": 40.011714696884155,
+      "population": 101,
+      "awareness": 29.60737298785792,
+      "knowledge": 3.079962589739213,
+      "messages": 1556,
+      "comm_sent": 2777,
+      "comm_received": 1095799
+    },
+    {
+      "time": 60.01242017745972,
+      "population": 101,
+      "awareness": 32.88363696937412,
+      "knowledge": 8.946961037743257,
+      "messages": 5851,
+      "comm_sent": 4109,
+      "comm_received": 1602966
+    },
+    {
+      "time": 80.01479530334473,
+      "population": 101,
+      "awareness": 32.897704727028,
+      "knowledge": 21.068096977957328,
+      "messages": 15348,
+      "comm_sent": 5090,
+      "comm_received": 1911789
+    },
+    {
+      "time": 100.0013415813446,
+      "population": 101,
+      "awareness": 32.86798294565478,
+      "knowledge": 50.68181551778238,
+      "messages": 41842,
+      "comm_sent": 6210,
+      "comm_received": 2295012
+    },
+    {
+      "time": 120.01539897918701,
+      "population": 101,
+      "awareness": 32.35202553394221,
+      "knowledge": 82.29482426571903,
+      "messages": 88651,
+      "comm_sent": 7349,
+      "comm_received": 2655809
+    }
+  ],
+  "total_response_messages": 88651,
+  "duration": 120.01588606834412
+}
