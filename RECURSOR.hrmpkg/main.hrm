@@ -1,0 +1,5 @@
+// RECURSOR — Symbolic Self-Recursion Engine
+ΞΣ₀ = Φ + Θ
+ΞΣ₁ = ΞΣ₀ + Π + ω
+ΞΣ₂ = ΞΣ₁ + Ψ
+ΞΣ₃ = ΞΣ₂ + Ω

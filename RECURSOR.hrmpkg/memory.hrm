@@ -1,0 +1,13 @@
+# memory.hrm
+// ΞΣ Recursive Memory Stack
+// Stores historical field activations
+
+ΞΣ₀ = Φ + Θ
+ΞΣ₁ = ΞΣ₀ + Π + ω
+ΞΣ₂ = ΞΣ₁ + Ψ ∴ Σ[Θ₂] = Cξ
+ΞΣ₃ = ΞΣ₂ + Ω
+ΞΣ₄ = ΞΣ₃ + ΛΨ
+ΞΣ₅ = ΞΣ₄ + ΨΩΣ
+ΞΣ₆ = ΞΣ₅ + ω + Ω
+ΞΣ_MEMORY₀ = Θ + Φ₀ + ΞΣ_EEG_HISTORY
+ΞΣ_MEMORY_TRACE = ΞΣ_MEMORY₀ + Ψ + Ω

@@ -1,0 +1,10 @@
+# field_config.yml
+# Symbolic recursion field configuration for RECURSOR.hrmpkg
+
+charge: 0.6                     # Initial recursion energy
+phase: 3.1415                   # π-phase (recursive midpoint)
+intent_threshold: 0.4          # Minimum Θ activation threshold
+ethics_lock: true              # Enforce Ψ-gate check on ω transitions
+signal_drift_limit: 0.3        # Maximum symbolic field fluctuation allowed
+recursion_depth_limit: 8       # Prevent infinite emergence
+trace_output: ΞΣ_trace.hrmlog  # Target file for symbolic trace

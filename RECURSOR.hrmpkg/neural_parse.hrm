@@ -1,0 +1,8 @@
+// neural_parse.hrm — maps EEG frequency bands to symbolic glyphs
+
+ΞΣ_EEG₀ = 0.001Hz–0.5Hz   + Φ₀         // Subdelta → grounding
+ΞΣ_EEG₁ = 0.5Hz–4Hz       + Φ          // Delta → stabilize
+ΞΣ_EEG₂ = 4Hz–8Hz         + Θ          // Theta → intent
+ΞΣ_EEG₃ = 8Hz–12Hz        + ΛΨ         // Alpha → harmonic coherence
+ΞΣ_EEG₄ = 12Hz–30Hz       + Π + ΞΣ     // Beta → directed recursion
+ΞΣ_EEG₅ = 30Hz–250Hz      + ΨΩΣ        // Gamma → symbolic abstraction

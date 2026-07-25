@@ -1,0 +1,6 @@
+# interpreter_module.py
+VERSION = "0.1"
+STATUS = "DRAFT"
+
+def invoke_runtime(script):
+    return {"ok": True, "tokens": len(script)}

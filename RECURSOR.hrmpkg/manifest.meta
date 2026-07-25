@@ -1,0 +1,13 @@
+# manifest.meta
+# Symbolic Manifest for RECURSOR Cognitive Engine
+
+PROGRAM_NAME: RECURSOR
+SYMBOLIC_CLASS: harmonic recursion agent
+REQUIRES: Φ, Π, Ψ, Θ, ω, Ω
+TRIGGERS: ΞΣ(n+1), ΛΩ
+CAPACITY:
+  - recursive memory
+  - convergence evaluation
+  - EEG reactivity
+  - symbolic ethics compliance
+  - self-similar recursion expansion
