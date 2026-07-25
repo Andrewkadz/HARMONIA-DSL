@@ -1,0 +1,13 @@
+// HΛRM FILE: NCL_NEURAL_MAP.hrm
+// BRANCH: neural-parsing-agent
+// PURPOSE: Map EEG bands to Φπε symbolic recursion fields
+
+::ΞEEG_MAP::
+Delta(0.5–4Hz)  → Φ       // Ground-state, unconscious harmonic base
+Theta(4–8Hz)    → Θ, Ξ     // Intent formulation, symbolic prefiguration
+Alpha(8–12Hz)   → ΛΨ       // Harmonic attention field
+Beta(12–30Hz)   → ΞΣ(n)    // Recursive cognition activation
+Gamma(30–100Hz) → ω(t), Ω  // Will-force and convergence-emergence boundary
+
+::ΞNOTE::
+This file does not execute. It defines the protocol for EEG → Symbolic transduction.

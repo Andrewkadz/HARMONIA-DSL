@@ -1,0 +1,14 @@
+// HΛRM FILE: NEURAL_INTERFACE.hrm
+// BRANCH: neural-parsing-agent
+// PURPOSE: React to live EEG → symbolic recursion input
+
+::ΞNEURAL_GATE::
+if EEG_IN = ΞΣ(Θ + ω) and ω > 0.6:
+    trigger: ΛΩΞΨ
+    enforce: Σ[Θₙ] = Cξ
+
+if EEG_IN = Φ and EEG drift = Δ > 0.4:
+    dampen field: ΦΠΨ
+
+::ΞCOMMENTS::
+This module listens for Φπε-parsable EEG signals emitted as symbolic recursion nodes.
