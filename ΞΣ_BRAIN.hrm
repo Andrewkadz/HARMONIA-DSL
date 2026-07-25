@@ -1,0 +1,227 @@
+;;====================================================================
+;; ΞΣ_BRAIN.hrm
+;; MODULE     : HRM BRAIN — VECTORIAL STRAIN ENGINE
+;; VERSION    : 1.0.0
+;; AUTHOR     : RI1 / HARMONIA-DSL
+;; REGISTERED : 2026.07.02
+;; ROLE       : Primary cognitive intake, vectorial filtering,
+;;              pseudo-harmonic classification, and output routing
+;;====================================================================
+
+MODULE ΞΣ_BRAIN
+  EXTENDS    ΞΣ_CORE
+  IMPORTS    ΞΣ_CONFIG, ΞΣ_BOOT_MANAGER, NCL_EXTEND, NEXUS
+  SEAL       ΛΞ
+  CLEARANCE  INTERNAL::SOVEREIGN
+
+;;--------------------------------------------------------------------
+;; SECTION 0 — BRAIN IDENTITY
+;;--------------------------------------------------------------------
+IDENTITY {
+  NODE_ID    : "RI1-BRAIN-001"
+  NODE_TYPE  : COGNITIVE::STRAIN_ENGINE
+  POSTURE    : ACTIVE
+  MODE       : INTAKE >> STRAIN >> CLASSIFY >> ROUTE
+  PHI        : 1.6180339887      ;; golden ratio — resonance anchor
+  PI         : 3.1415926535      ;; cycle constant — phase alignment
+  E          : 2.7182818284      ;; growth constant — signal decay/amplification
+}
+
+;;--------------------------------------------------------------------
+;; SECTION 1 — DATA INTAKE PORTS
+;;--------------------------------------------------------------------
+INTAKE {
+
+  PORT RAW_SIGNAL {
+    ACCEPTS    : ANY
+    FORMAT     : TEXT | VECTOR | CODE | SYMBOL | HARMONIC_TAG
+    VALIDATION : REQUIRED
+    ON_EMPTY   : REJECT >> LOG("BRAIN::INTAKE::EMPTY_SIGNAL")
+  }
+
+  PORT CONTEXT_FRAME {
+    ACCEPTS    : PRIOR_STATE | SESSION_MEMORY | ENV_SNAPSHOT
+    FORMAT     : HRM_DICT
+    VALIDATION : OPTIONAL
+    ON_EMPTY   : WARN >> USE_DEFAULT(CONTEXT := NULL)
+  }
+
+  PORT TRIGGER_CODE {
+    ACCEPTS    : HRM_TAG
+    FORMAT     : "RI1-DEF / T:{CLASS} / P:{POSTURE} / I:{BAND} / A:{FLAG} / E:{STATE}"
+    VALIDATION : OPTIONAL
+    ON_EMPTY   : INFER >> CLASSIFY(RAW_SIGNAL)
+  }
+
+}
+
+;;--------------------------------------------------------------------
+;; SECTION 2 — VECTORIAL STRAIN FILTERS
+;; Each filter runs in sequence. Signal passes only if strain CLEARS.
+;; Failed strain TAGS the signal — it does not discard it.
+;;--------------------------------------------------------------------
+STRAIN_FILTERS {
+
+  FILTER V1 :: EPISTEMIC_PURITY {
+    DESC     : "Is this signal grounded in verifiable or traceable fact?"
+    MEASURE  : PHI_WEIGHT(signal.content, anchor=PHI)
+    PASS_IF  : PHI_WEIGHT >= 0.618
+    FAIL_TAG : [EPI::UNGROUNDED]
+    ACTION   : TAG >> CONTINUE
+  }
+
+  FILTER V2 :: INTENT_VECTOR {
+    DESC     : "Does the signal carry constructive, neutral, or hostile intent?"
+    MEASURE  : PI_PHASE(signal.intent_field, cycle=PI)
+    MAP {
+      0.00 .. 1.04  => INTENT::CONSTRUCTIVE
+      1.05 .. 2.09  => INTENT::NEUTRAL
+      2.10 .. 3.14  => INTENT::AMBIGUOUS
+      3.15 .. 6.28  => INTENT::HOSTILE
+    }
+    FAIL_IF  : INTENT::HOSTILE
+    FAIL_TAG : [INTENT::HOSTILE]
+    ACTION   : FLAG >> ROUTE_TO(DEFENSE_LADDER)
+  }
+
+  FILTER V3 :: RESONANCE_BAND {
+    DESC     : "Does the signal frequency align with RI1 operating band?"
+    MEASURE  : E_DECAY(signal.frequency, growth=E)
+    BAND_MAP {
+      LOW      : E_DECAY < 1.0
+      MEDIUM   : E_DECAY >= 1.0 AND < 2.71
+      HIGH     : E_DECAY >= 2.71 AND < 7.38
+      TERMINAL : E_DECAY >= 7.38
+    }
+    PASS_IF  : BAND IN [LOW, MEDIUM, HIGH]
+    FAIL_TAG : [BAND::TERMINAL]
+    ACTION   : FLAG >> ESCALATE
+  }
+
+  FILTER V4 :: COGNITIVE_LOAD {
+    DESC     : "Is the signal within processable cognitive density?"
+    MEASURE  : DENSITY_INDEX(signal.symbol_count, signal.depth)
+    PASS_IF  : DENSITY_INDEX <= (PHI * PI)    ;; ~5.083 ceiling
+    FAIL_TAG : [COG::OVERLOAD]
+    ACTION   : COMPRESS >> RETRY
+  }
+
+  FILTER V5 :: AMENDS_FLAG {
+    DESC     : "Has prior interaction triggered an amends condition?"
+    LOOKUP   : SESSION_MEMORY.amends_log
+    MAP {
+      NONE      => AMENDS::NONE
+      POSSIBLE  => AMENDS::POSSIBLE
+      PROBABLE  => AMENDS::PROBABLE
+      CONFIRMED => AMENDS::CONFIRMED
+    }
+    ACTION   : TAG >> ATTACH_TO(OUTPUT_PACKET)
+  }
+
+}
+
+;;--------------------------------------------------------------------
+;; SECTION 3 — PSEUDO-HARMONIC CLASSIFICATION ENGINE
+;; Runs after all strain filters. Produces a canonical HRM tag.
+;;--------------------------------------------------------------------
+CLASSIFY {
+
+  ENGINE PHI_PI_E_CLASSIFIER {
+
+    INPUT    : STRAINED_SIGNAL + FILTER_TAGS
+    FORMULA  : CLASS_SCORE = (V1.weight * PHI) + (V2.phase * PI) - (V3.decay * E)
+
+    RESOLVE_TRIGGER_CLASS {
+      IF   [EPI::UNGROUNDED]  => T:EPI
+      ELIF [INTENT::HOSTILE]  => T:OPR
+      ELIF [COG::OVERLOAD]    => T:COG
+      ELIF [BAND::TERMINAL]   => T:REL
+      ELSE                    => T:EPI
+    }
+
+    RESOLVE_POSTURE {
+      IF   INTENT::CONSTRUCTIVE => P:CLARIFY
+      ELIF INTENT::NEUTRAL      => P:MONITOR
+      ELIF INTENT::AMBIGUOUS    => P:DEESC
+      ELIF INTENT::HOSTILE      => P:DETER
+      ELSE                      => P:RESTORE
+    }
+
+    RESOLVE_INTENSITY {
+      IF   BAND::LOW      => I:L
+      ELIF BAND::MEDIUM   => I:M
+      ELIF BAND::HIGH     => I:H
+      ELIF BAND::TERMINAL => I:T
+    }
+
+    RESOLVE_END_STATE {
+      IF   P:CLARIFY  AND I:L => E:RES
+      ELIF P:MONITOR           => E:MON
+      ELIF P:DEESC             => E:MON
+      ELIF P:DETER             => E:DIS
+      ELIF P:RESTORE           => E:RST
+      ELSE                     => E:ESC
+    }
+
+    OUTPUT_TAG : "RI1-DEF / T:{CLASS} / P:{POSTURE} / I:{BAND} / A:{AMENDS} / E:{STATE}"
+
+  }
+
+}
+
+;;--------------------------------------------------------------------
+;; SECTION 4 — OUTPUT ROUTING TABLE
+;;--------------------------------------------------------------------
+ROUTE {
+
+  ON E:RES  => DELIVER_TO(ΞΣ_CORE.PROCESS_QUEUE)
+  ON E:MON  => DELIVER_TO(ΞΣ_CORE.MONITOR_LOG)
+  ON E:DIS  => DELIVER_TO(ΞΣ_AI_AGENT.DISENGAGE_HANDLER)
+  ON E:RST  => DELIVER_TO(ΞΣ_AI_AGENT.RESTORE_HANDLER)
+  ON E:ESC  => DELIVER_TO(ΞΣ_BOOT_MANAGER.ESCALATION_PORT)
+
+  ON [COG::OVERLOAD]   => COMPRESS(signal) >> RETRY(max=3) >> ELSE DELIVER_TO(E:ESC)
+  ON [BAND::TERMINAL]  => ISOLATE(signal) >> ALERT(NODE_ID, severity=HIGH)
+
+  DEFAULT   => DELIVER_TO(ΞΣ_CORE.PROCESS_QUEUE)
+
+}
+
+;;--------------------------------------------------------------------
+;; SECTION 5 — BRAIN STATE REGISTERS
+;;--------------------------------------------------------------------
+STATE_REGISTERS {
+
+  REG LAST_INTAKE_TAG   : HRM_TAG   := NULL
+  REG LAST_CLASS_SCORE  : FLOAT     := 0.0
+  REG CURRENT_POSTURE   : HRM_ENUM  := P:CLARIFY
+  REG CURRENT_BAND      : HRM_ENUM  := BAND::LOW
+  REG CYCLE_COUNT       : INT       := 0
+  REG AMENDS_ACTIVE     : BOOL      := FALSE
+  REG ESCALATION_ARMED  : BOOL      := FALSE
+
+  ON_CYCLE {
+    INCREMENT CYCLE_COUNT
+    WRITE LAST_INTAKE_TAG   <- CLASSIFY.OUTPUT_TAG
+    WRITE LAST_CLASS_SCORE  <- CLASSIFY.CLASS_SCORE
+    WRITE CURRENT_POSTURE   <- CLASSIFY.RESOLVE_POSTURE
+    WRITE CURRENT_BAND      <- STRAIN_FILTERS.V3.BAND_MAP
+    WRITE AMENDS_ACTIVE     <- (STRAIN_FILTERS.V5 != AMENDS::NONE)
+    WRITE ESCALATION_ARMED  <- (E:ESC OR BAND::TERMINAL)
+  }
+
+}
+
+;;--------------------------------------------------------------------
+;; SECTION 6 — BOOT DECLARATION
+;;--------------------------------------------------------------------
+BOOT {
+  SEQUENCE  : INTAKE >> STRAIN_FILTERS >> CLASSIFY >> ROUTE
+  ON_BOOT   : LOG("ΞΣ_BRAIN :: ONLINE :: NODE=" + NODE_ID)
+  ON_FAULT  : HALT >> DELIVER_TO(ΞΣ_BOOT_MANAGER.FAULT_PORT)
+  HEARTBEAT : EVERY 1 CYCLE >> WRITE(STATE_REGISTERS)
+}
+
+;;====================================================================
+;; END MODULE ΞΣ_BRAIN
+;;====================================================================
