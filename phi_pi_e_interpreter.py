@@ -93,8 +93,12 @@ class FieldContext:
         # Complex registers for the Φπε math core. STRICTLY isolated
         # from the real scalars: nothing in this dict may read or write
         # psi_signal / phi_state / epsilon_drift / stabilized_value.
-        # No DSL syntax touches this yet (syntax is Step 2).
+        # Populated by @name syntax (Step 2) and math-core register ops.
         self.zfield: Dict[str, complex] = zfield if zfield is not None else {}
+        # Dedicated Λ-reduction observable (BRIDGE_DESIGN resolved item 3).
+        # Real-valued; the ONLY landing site for ℂ→ℝ reduction. Never
+        # aliased to pinned scalars.
+        self.lambda_obs: float = 0.0
 
     def write_register(self, name: str, value: complex) -> None:
         """Write a complex value to a named shadow register.
@@ -125,7 +129,9 @@ class FieldContext:
             charge=self.charge
         )
         self.state.add_child(new_state.id)
-        return FieldContext(new_state, zfield=self.zfield)
+        child = FieldContext(new_state, zfield=self.zfield)
+        child.lambda_obs = self.lambda_obs  # carried like phase/charge
+        return child
 
     def merge(self, other: 'FieldContext') -> None:
         """Merge another context into this one"""
@@ -231,19 +237,29 @@ class PhiPiEInterpreterFixed:
         # Remove ASCII_OUTPUT_MODE marker
         code = code.replace('ASCII_OUTPUT_MODE', '').replace('[:ASCII:]', '')
 
-        # Proper allowed characters including all Greek letters, newline, and '-'
-        allowed_chars = set('ΦΠΕεΔδΨΛλΓΩωΣΞζΤΡΘηχn→+::/|[]=()0123456789.,- \n')
+        # Proper allowed characters including all Greek letters, newline, '-',
+        # and (Step 2) '@' + ascii letters/underscore for register identifiers.
+        allowed_chars = set('ΦΠΕεΔδΨΛλΓΩωΣΞζΤΡΘηχn→+::/|[]=()0123456789.,- \n@_'
+                            'abcdefghijklmnopqrstuvwxyz'
+                            'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
         code = ''.join(c for c in code if c in allowed_chars)
 
         return code
 
     # Matches an int or float literal, optionally negative (e.g. 5, 5.0, -0.2)
     _NUMBER_RE = re.compile(r'-?(\d+\.\d*|\.\d+|\d+)')
+    # Matches a register identifier (BRIDGE_DESIGN Step 2): @name
+    _REGISTER_RE = re.compile(r'@[A-Za-z_][A-Za-z0-9_]*')
 
     @classmethod
     def is_number_token(cls, token: str) -> bool:
         """True if the token is a numeric literal produced by tokenize()."""
         return bool(cls._NUMBER_RE.fullmatch(token))
+
+    @classmethod
+    def is_register_token(cls, token: str) -> bool:
+        """True if the token is a register identifier (e.g. '@z')."""
+        return bool(cls._REGISTER_RE.fullmatch(token))
 
     def tokenize(self, code: str) -> List[str]:
         """Tokenize code into operators and NUMBER literals.
@@ -259,6 +275,16 @@ class PhiPiEInterpreterFixed:
             # Skip whitespace
             if char in ' \t\n\r':
                 i += 1
+                continue
+
+            # Register identifier (Step 2): @name
+            if char == '@':
+                m = self._REGISTER_RE.match(code, i)
+                if m:
+                    tokens.append(m.group(0))
+                    i = m.end()
+                    continue
+                i += 1  # bare '@' with no valid name: skip
                 continue
 
             # NUMBER literal (int/float, optional leading '-')
@@ -333,7 +359,50 @@ class PhiPiEInterpreterFixed:
                     # Handle loop
                     loop_code = token[1:-1]  # Remove brackets
                     current_value = self.execute_loop(loop_code, context)
+                elif self.is_register_token(token):
+                    # Register initialization: @name RE IM  (exactly two
+                    # numeric args — BRIDGE_DESIGN resolved item 2)
+                    following = tokens[i + 1:i + 4]
+                    nums = []
+                    for t in following:
+                        if self.is_number_token(t):
+                            nums.append(t)
+                        else:
+                            break
+                    if len(nums) != 2:
+                        raise SyntaxError(
+                            f"register initialization requires exactly two "
+                            f"numeric arguments: '{token} RE IM' "
+                            f"(got {len(nums)})")
+                    context.write_register(
+                        token, complex(float(nums[0]), float(nums[1])))
+                    i += 2
+                elif token == 'Λ' and i + 1 < len(tokens) \
+                        and self.is_register_token(tokens[i + 1]):
+                    # Λ register reduction: Λ @z @w -> lambda_obs
+                    # (BRIDGE_DESIGN resolved item 3; math-core Λ is binary)
+                    operands = tokens[i + 1:i + 3]
+                    if len(operands) != 2 or \
+                            not all(self.is_register_token(t) for t in operands):
+                        raise SyntaxError(
+                            "Λ register reduction requires exactly two "
+                            "register operands: 'Λ @z @w' — mixed or "
+                            "partial forms are forbidden")
+                    from phi_pi_e_math_core import structural_illumination
+                    z = context.read_register(operands[0])
+                    w = context.read_register(operands[1])
+                    context.lambda_obs = structural_illumination(z, w).real
+                    current_value = context.lambda_obs
+                    i += 2
                 elif token in self.symbols:
+                    # Guard: no other symbol accepts register operands yet
+                    # (binary Φ/Ψ/ε register forms are Step 3, and mixed
+                    # forms are forbidden outright per BRIDGE_DESIGN)
+                    if i + 1 < len(tokens) and self.is_register_token(tokens[i + 1]):
+                        raise SyntaxError(
+                            f"'{token}' does not accept register operands "
+                            f"in Step 2 (only Λ reduces registers; binary "
+                            f"register forms arrive in Step 3)")
                     handler = self.symbols[token]
                     # Φ with three numeric args is a full state initialization:
                     #   Φ ψ φ ε   (e.g. "Φ 5 3 0.1" -> psi=5, phi=3, eps=0.1)
