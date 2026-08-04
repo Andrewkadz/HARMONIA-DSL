@@ -86,18 +86,37 @@ different operations. Resolution:
 Each step lands only with its tests; full suite green throughout;
 INVARIANTS.md checked at every step.
 
-## Open items (settle during step 2, before syntax freezes)
+## Resolved items (ratified for Step 2, 2026-08-03)
 
-These items must be resolved during Step 2 of the implementation plan.
-Until then, they are considered provisional and must not be
-implemented implicitly.
+Formerly the "open items." All three are now fixed contract:
 
-- Register naming syntax (proposal: `@name`; must not collide with
-  existing allowed-character set — parser change required either way).
-- How registers are initialized from DSL source (complex literal
-  syntax vs. loading two reals; leaning: load form `@z 1.0 2.0`
-  = 1+2i, avoiding a new literal class).
-- Whether Λ-reduction writes to a chosen real scalar or to a
-  dedicated observable slot (leaning: dedicated slot first —
-  writing into pinned scalars touches the corridor and needs its own
-  invariant review).
+1. **Register naming: `@name`.** Any token of the form `@name` is a
+   register identifier referring to `context.zfield["@name"]`. The
+   `@` prefix is reserved for complex registers only. The tokenizer
+   treats `@name` as a distinct operand kind ("register identifier"),
+   which is the basis for operand-kind dispatch. Register access never
+   touches pinned scalars.
+2. **Register initialization: `@z 1.0 2.0`** (bare command form; no
+   complex literal class). First token names the register, second is
+   the real part, third the imaginary part: sets
+   `zfield["@z"] = 1.0+2.0j`. **Exactly two numeric arguments** —
+   fewer or more is a hard error, never silently coerced.
+   Re-initialization overwrites cleanly. Unset registers still read
+   as 0j (Step-1 plumbing). A future `load` verb, if introduced, must
+   be a strict superset of this form.
+3. **Λ-reduction target: dedicated observable slot
+   `context.lambda_obs`** (real-valued, 0.0 default). `Λ @z @w`
+   applies the math-core Λ to the two registers and writes the real
+   result to `lambda_obs`. Λ NEVER writes to pinned scalars
+   (psi_signal / phi_state / epsilon_drift / stabilized_value);
+   mirroring `lambda_obs` into a scalar, if ever wanted, is a
+   separate explicit future operation. `lambda_obs` participates in
+   context persistence and forking like other context fields. The
+   math-core Λ is binary, so the register form takes exactly two
+   register operands.
+
+Dispatch consequences, restated as syntax rules: unary/literal Φ/Ψ/ε
+keep pinned DSL semantics; `Λ @z @w` is the first math-core register
+form; mixed forms (`Λ @z 1.0`, `Φ @z 1.0`, …) are rejected outright;
+binary register forms for Φ/Ψ/ε are NOT part of Step 2 and may only be
+added (Step 3) after Step-2 tests are green.
