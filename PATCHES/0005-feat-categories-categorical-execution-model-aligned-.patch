@@ -1,0 +1,217 @@
+From f9d1a4f045a3d2d3b479ed171971475fbd84a474 Mon Sep 17 00:00:00 2001
+From: Andrew Kadziolka <andrewkadziolka@gmail.com>
+Date: Mon, 3 Aug 2026 21:45:07 -0600
+Subject: [PATCH 5/8] =?UTF-8?q?feat(categories):=20categorical=20execution?=
+ =?UTF-8?q?=20model=20aligned=20with=20=CE=A6=CF=80=CE=B5=20architecture?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- categories: setter {Φ,Ψ,ε} / reducer {Σ,Κ,Υ,Β} / modulator (rest)
+- uniform argument rule: setters consume literals; reducers return
+  scalars; modulators act on context and pass values through
+- dispatcher consults categories (replaces per-symbol special cases)
+- Φπε proofs traceability TODOs: Φ boundedness (unclamped today),
+  ε micro-ignition convergence (unbounded today), π spiral recursion
+  (ceremonial today) — roadmap markers, not implementations
+- 7 category tests: completeness, disjointness, per-category dispatch
+---
+ phi_pi_e_interpreter.py           | 69 ++++++++++++++++++++++++++++--
+ tests/test_operator_categories.py | 70 +++++++++++++++++++++++++++++++
+ 2 files changed, 135 insertions(+), 4 deletions(-)
+ create mode 100644 tests/test_operator_categories.py
+
+diff --git a/phi_pi_e_interpreter.py b/phi_pi_e_interpreter.py
+index 78732c4..4e8f463 100644
+--- a/phi_pi_e_interpreter.py
++++ b/phi_pi_e_interpreter.py
+@@ -148,6 +148,36 @@ class PhiPiEInterpreterFixed:
+             '=': self.stabilize       # Stabilization
+         }
+ 
++        # ===== OPERATOR CATEGORIES (feat/operator-categories) =====
++        # Categorical execution model aligned with the Φπε operator
++        # architecture (Φ→π→ε→Λ→Δ→Ω→Ψ→Ξ→Γ→Σ→ζ→λ→ω→Τ→Ρ→δ→Θ).
++        # Uniform argument rule per category:
++        #   SETTERS    consume adjacent numeric literals into semantic
++        #              state (psi_signal / phi_state / epsilon_drift).
++        #   REDUCERS   take no literal arguments; read semantic state and
++        #              return a scalar observation/result.
++        #   MODULATORS operate on context mechanics (phase/charge/depth);
++        #              they never consume literals and return no scalar.
++        # This replaces per-symbol special-casing in the dispatcher and is
++        # the seed of a future AST. Full semantics for modulators are
++        # intentionally NOT implemented yet — see SYMBOL_COVERAGE.md.
++        self.categories = {
++            'setter': {'Φ', 'Ψ', 'ε'},
++            'reducer': {'Σ', 'Κ', 'Υ', 'Β'},
++            # Γ (growth) and ζ (recurrence) are candidate reducers per the
++            # Φπε architecture, but currently only touch phase/charge, so
++            # they stay modulators until given real read-state semantics.
++            'modulator': {'Π', 'Ε', 'Δ', 'δ', 'Λ', 'λ', 'Γ', 'Ω', 'ω',
++                          'Ξ', 'ζ', 'Τ', 'Ρ', 'Θ', 'η', 'χ', 'n'},
++        }
++
++    def category_of(self, symbol: str) -> Optional[str]:
++        """Return the execution category of a symbol, or None."""
++        for category, members in self.categories.items():
++            if symbol in members:
++                return category
++        return None
++
+     def clean_input(self, code: str) -> str:
+         """Clean and prepare input code for parsing.
+ 
+@@ -264,8 +294,8 @@ class PhiPiEInterpreterFixed:
+             self.last_context = context  # exposed for inspection/testing
+             current_value = None
+ 
+-            # Symbols that consume an adjacent NUMBER argument
+-            arg_binding_symbols = {'Φ', 'Ψ', 'ε'}
++            # Category rule: only SETTERS consume adjacent NUMBER args
++            arg_binding_symbols = self.categories['setter']
+ 
+             # Execute tokens sequentially, binding NUMBER args to symbols
+             i = 0
+@@ -299,7 +329,14 @@ class PhiPiEInterpreterFixed:
+                     if arg is not None:
+                         current_value = handler(current_value, context, arg)
+                     else:
+-                        current_value = handler(current_value, context)
++                        result = handler(current_value, context)
++                        # Category rule: REDUCERS return scalar observations;
++                        # MODULATORS act on context only and pass the
++                        # current value through unchanged.
++                        if self.category_of(token) == 'modulator':
++                            pass  # keep current_value
++                        else:
++                            current_value = result
+                 elif token in self.operators:
+                     # Execute operator (needs special handling for binary ops)
+                     handler = self.operators[token]
+@@ -346,6 +383,14 @@ class PhiPiEInterpreterFixed:
+ 
+         If a numeric argument is supplied (e.g. 'Φ 5.0'), it is bound
+         directly to phi_state instead of the derived default.
++
++        Φπε proofs alignment: Φ is proven NON-FUSIONAL (applying Φ must
++        never merge distinct fields) and BOUNDED (phi_state must remain
++        within the harmonic envelope). The non-fusional property holds
++        here trivially (single-field operation); boundedness is NOT yet
++        enforced — arg is accepted unclamped.
++        # TODO: enforce Φ boundedness per Φπε proofs (clamp/reject args
++        # outside the proven harmonic envelope instead of accepting any float)
+         """
+         context.tension.strength = max(0, context.tension.strength - 0.1)
+         context.phase = (context.phase + math.pi/2) % (2 * math.pi)
+@@ -359,7 +404,15 @@ class PhiPiEInterpreterFixed:
+         return field
+ 
+     def transcend(self, field: Any, context: FieldContext) -> Any:
+-        """Apply transcendent continuity to field"""
++        """Apply transcendent continuity to field.
++
++        Φπε proofs alignment: this handler is where π's SPIRAL RECURSION
++        belongs — phase-coherent non-terminating recursion (each cycle
++        advances phase without ever closing). The current implementation
++        only forks and bumps phase/depth; it is ceremonial.
++        # TODO: implement π(z,w) per Φπε proofs (spiral non-termination,
++        # phase coherence across recursion depths)
++        """
+         new_context = context.fork()
+         new_context.depth += 1
+         new_context.phase += math.pi/4
+@@ -377,6 +430,14 @@ class PhiPiEInterpreterFixed:
+ 
+         If a numeric argument is supplied (e.g. 'ε 0.2'), it is bound
+         directly to epsilon_drift instead of the depth-derived default.
++
++        Φπε proofs alignment: ε is the micro-ignition operator with a
++        proven CONVERGENCE property — repeated micro-ignitions settle
++        below a threshold rather than diverging. Currently drift
++        accumulates without bound.
++        # TODO: use ε(z,w) as micro-ignition threshold in drift detection —
++        # convergence check should gate accumulation and drive loop exit
++        # (see execute_loop TODO) per Φπε proofs
+         """
+         new_context = context.fork()
+         new_context.phase += math.pi/8
+diff --git a/tests/test_operator_categories.py b/tests/test_operator_categories.py
+new file mode 100644
+index 0000000..54c72c2
+--- /dev/null
++++ b/tests/test_operator_categories.py
+@@ -0,0 +1,70 @@
++# Tests for feat/operator-categories
++#
++# Encodes the categorical execution model (setters / reducers / modulators)
++# aligned with the Φπε operator architecture. These tests pin the category
++# structure and the uniform argument rule per category — NOT full semantics
++# for every symbol (deliberately deferred; see SYMBOL_COVERAGE.md).
++
++import contextlib
++import io
++import sys
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).parent.parent))
++
++from phi_pi_e_interpreter import PhiPiEInterpreterFixed
++
++
++def run(program):
++    interp = PhiPiEInterpreterFixed()
++    with contextlib.redirect_stdout(io.StringIO()):
++        result = interp.execute(program)
++    return interp, result
++
++
++class TestCategoryStructure:
++    def test_every_symbol_is_categorized(self):
++        """No symbol may be dispatch-reachable without a category."""
++        interp = PhiPiEInterpreterFixed()
++        categorized = set().union(*interp.categories.values())
++        assert set(interp.symbols.keys()) == categorized
++
++    def test_categories_are_disjoint(self):
++        interp = PhiPiEInterpreterFixed()
++        cats = list(interp.categories.values())
++        for i in range(len(cats)):
++            for j in range(i + 1, len(cats)):
++                assert not (cats[i] & cats[j])
++
++    def test_category_of(self):
++        interp = PhiPiEInterpreterFixed()
++        assert interp.category_of('Φ') == 'setter'
++        assert interp.category_of('Σ') == 'reducer'
++        assert interp.category_of('Λ') == 'modulator'
++        assert interp.category_of('☃') is None
++
++
++class TestCategoryDispatchRules:
++    def test_setters_consume_numeric_args(self):
++        interp, _ = run("Φ 5.0\nΨ 3.0\nε 0.2")
++        s = interp.last_context.state
++        assert (s.phi_state, s.psi_signal, s.epsilon_drift) == (5.0, 3.0, 0.2)
++
++    def test_modulators_do_not_consume_numeric_args(self):
++        """'Λ -1': the modulator must NOT swallow the literal — it stays
++        a bare value. Semantic state remains untouched by Λ."""
++        interp, result = run("Λ -1")
++        assert result == -1.0  # literal survived as current value
++        s = interp.last_context.state
++        assert s.phi_state == 0.0 and s.psi_signal == 0.0
++
++    def test_reducers_read_state_and_return_scalar(self):
++        interp, result = run("Φ 5.0\nΨ 3.0\nε 0.2\nΣ")
++        assert isinstance(result, float)
++        assert abs(result - 6.4) < 1e-9
++
++    def test_modulators_pass_value_through(self):
++        """A modulator between a reducer and the program end must not
++        destroy the reducer's scalar result."""
++        interp, result = run("Φ 5.0\nΨ 3.0\nε 0.2\nΣ\nΛ")
++        assert abs(result - 6.4) < 1e-9  # Λ passed 6.4 through
+-- 
+2.34.1
+

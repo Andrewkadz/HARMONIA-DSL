@@ -143,45 +143,62 @@ class TimeSteppingInterpreter:
         # Initialize context
         ts_context = TimeSteppingContext(history_maxlen=self.history_maxlen)
         ts_context.num_steps = num_steps
-        
-        # Track state across time steps
-        current_psi = initial_psi
-        current_phi = initial_phi
-        current_epsilon = initial_epsilon
-        current_stabilized = 0.0
-        
+
+        # FIXED (fix/time-history-semantics): one interpreter and ONE
+        # persistent FieldContext for the whole run, so state genuinely
+        # evolves across time steps. The old code created a fresh
+        # interpreter each step and read state from interpreter.fields
+        # ['context'], which never existed -> history recorded only zeros.
+        interpreter = PhiPiEInterpreterFixed()
+        context = FieldContext()
+        context.state.psi_signal = initial_psi
+        context.state.phi_state = initial_phi
+        context.state.epsilon_drift = initial_epsilon
+
+        # 'Φ a b c' (three numeric args) is an INITIAL-CONDITIONS statement:
+        # it seeds (psi, phi, eps) at t=0 only. For t>0 those lines are
+        # removed so per-step dynamics (Ψ x, ε x accumulation) are not
+        # reset every step.
+        steady_program = self._strip_init_lines(interpreter, program)
+
         # Time-stepping loop
+        import sys
+        from io import StringIO
         for t in range(num_steps):
             ts_context.current_time = t
-            
-            # Create a new interpreter for this time step
-            interpreter = PhiPiEInterpreterFixed()
-            
+
+            step_program = program if t == 0 else steady_program
+
             # Execute the program (silently - suppress debug output)
-            import sys
-            from io import StringIO
             old_stdout = sys.stdout
             sys.stdout = StringIO()
-            
             try:
-                result = interpreter.execute(program)
+                interpreter.execute(step_program, context)
             finally:
                 sys.stdout = old_stdout
-            
-            # Extract state from the interpreter's context
-            # The interpreter creates a context internally
-            if hasattr(interpreter, 'fields') and 'context' in interpreter.fields:
-                context = interpreter.fields['context']
-                if hasattr(context, 'state'):
-                    current_psi = context.state.psi_signal
-                    current_phi = context.state.phi_state
-                    current_epsilon = context.state.epsilon_drift
-                    current_stabilized = context.state.stabilized_value
-            
+
             # Record the state into history
-            ts_context.update_history(current_psi, current_phi, current_epsilon, current_stabilized)
-        
+            ts_context.update_history(
+                context.state.psi_signal,
+                context.state.phi_state,
+                context.state.epsilon_drift,
+                context.state.stabilized_value,
+            )
+
         return ts_context
+
+    @staticmethod
+    def _strip_init_lines(interpreter: PhiPiEInterpreterFixed, program: str) -> str:
+        """Remove initial-conditions lines ('Φ' followed by exactly three
+        numeric literals) from a program, leaving only per-step dynamics."""
+        kept = []
+        for line in program.splitlines():
+            tokens = interpreter.tokenize(interpreter.clean_input(line))
+            is_init = (len(tokens) == 4 and tokens[0] == 'Φ'
+                       and all(interpreter.is_number_token(t) for t in tokens[1:]))
+            if not is_init:
+                kept.append(line)
+        return '\n'.join(kept)
     
     def run_file(self, filename: str, num_steps: int) -> TimeSteppingContext:
         """Execute a HARMONIA-DSL file over multiple time steps.
@@ -222,34 +239,33 @@ class TimeSteppingInterpreter:
     def compute_integral(self, ts_context: TimeSteppingContext,
                         variable_name: str, window_size: Optional[int] = None) -> float:
         """Compute the discrete integral (accumulated value) of a variable.
-        
-        Uses trapezoidal rule for numerical integration.
-        
+
+        Uses a left Riemann sum with unit time step (dt = 1): each recorded
+        sample contributes its value once, so a constant signal c over n
+        steps integrates to c * n. (The previous trapezoidal-over-intervals
+        form yielded c * (n-1), off by one full sample.)
+
         Args:
             ts_context: The time-stepping context with history
             variable_name: Name of the variable to integrate
             window_size: Number of time steps to integrate over (None = all history)
-        
+
         Returns:
             The integral (accumulated value) over the specified window
         """
         history = ts_context.get_history(variable_name)
-        
+
         if len(history) < 2:
             return 0.0  # Not enough history to compute integral
-        
+
         # Determine the window
         if window_size is None or window_size > len(history):
             window = history
         else:
             window = history[-window_size:]
-        
-        # Trapezoidal rule: sum of averages of consecutive pairs
-        integral = 0.0
-        for i in range(len(window) - 1):
-            integral += (window[i] + window[i + 1]) / 2.0
-        
-        return integral
+
+        # Left Riemann sum with dt = 1
+        return float(sum(window))
 
 
 # Convenience function for quick time-stepping execution
