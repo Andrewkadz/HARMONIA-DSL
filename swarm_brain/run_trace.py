@@ -23,6 +23,14 @@ class RunTrace:
     dsl_calls_per_round: List[int] = field(default_factory=list)
     # voluntary idles (coherence gating), per agent id
     voluntary_idles: Dict[int, int] = field(default_factory=lambda: defaultdict(int))
+    # ε work-steps per (agent_id, task_id) — the G3 drift instrument
+    epsilon_steps: Dict[tuple, int] = field(default_factory=lambda: defaultdict(int))
+    # attempts recorded after a task was refused (must stay 0: permanent refusal)
+    attempts_after_refusal: Dict[str, int] = field(default_factory=lambda: defaultdict(int))
+
+    @property
+    def total_voluntary_idles(self) -> int:
+        return sum(self.voluntary_idles.values())
 
     @property
     def total_flip_flops(self) -> int:

@@ -107,13 +107,30 @@ Governance signals:
       run_trace.py        # structured trace both swarms emit
     tests/test_swarm_brain_phase1.py
 
-## Open items (settle at implementation, leanings recorded)
+## Resolved items (pinned at implementation, 2026-08-04)
 
-- Coherence aggregation: leaning mean of per-agent normalized
-  lambda_obs with θ_low ≈ 0.3× initial coherence; exact form pinned by
-  test at implementation.
-- Refusal window R: leaning 5 rounds; must be small enough that the
-  poison test runs fast, large enough to be non-trivial.
-- Whether refusal is permanent or retry-after-cooldown: leaning
-  permanent for Phase 1 (simplest honest semantics; cooldown is a
-  Phase 2 concern).
+- **Coherence comparison is local to the conflict group** (deviation
+  from the global-mean leaning, logged here per process): agents with
+  partial resource holdings form a conflict group; each runs
+  Φ-stabilization then Λ-observation; the highest-lambda_obs
+  contender keeps its holdings (ties: lowest id), all others release
+  AND back off one full round (skip acquisition — yielding the round,
+  not just the resources, is what breaks re-contention cycles).
+  Global-mean thresholding deferred to Phase 2 with multi-group
+  contention.
+- **REFUSAL_WINDOW R = 5** consecutive rounds without observable
+  improvement, counted ONLY under structural blockage (deps unmet —
+  the poison case) or in-place stagnation (all resources held, no
+  register motion). Resource starvation is queueing, not stagnation:
+  rounds spent waiting for a busy resource never count toward
+  refusal. (Discovered at implementation: without this distinction,
+  agents queueing for shared resources were spuriously refused —
+  caught by G1's full-completion assertion.)
+- **Refusal is permanent** (Phase 1): refused tasks are excluded from
+  claiming forever; attempts_after_refusal must stay 0. Cooldown is
+  Phase 2.
+- **DRIFT_BUDGET = 5** ε-steps per (agent, task). Note: the poison
+  task accrues ZERO ε-steps (it is never workable — refusal comes
+  from flat observations, not drift exhaustion), so the stricter
+  "poison hits exactly the budget" variant does not apply; tests pin
+  what is true: all pairs ≤ budget, poison = 0.
