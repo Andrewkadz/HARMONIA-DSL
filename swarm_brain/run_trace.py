@@ -38,9 +38,23 @@ class RunTrace:
 
     def snapshot(self, rnd: int, holdings: Dict[int, List[str]],
                  events: List[dict], lam: Dict[int, float],
-                 assignments: Dict[int, str]) -> None:
-        """Record one round's state for the visualizer."""
+                 assignments: Dict[int, str],
+                 zpos: Dict[int, complex] = None,
+                 zgoal: Dict[int, complex] = None) -> None:
+        """Record one round's state for the visualizer.
+
+        zpos/zgoal: the agents' actual @self/@goal register values —
+        positions on the complex plane. Governed swarm only (the
+        baseline has no registers, hence no field to move on)."""
+        extra = {}
+        if zpos is not None:
+            extra["z"] = {str(a): [round(v.real, 6), round(v.imag, 6)]
+                          for a, v in zpos.items()}
+        if zgoal is not None:
+            extra["g"] = {str(a): [round(v.real, 6), round(v.imag, 6)]
+                          for a, v in zgoal.items()}
         self.per_round.append({
+            **extra,
             "r": rnd,
             "hold": {str(a): list(rs) for a, rs in holdings.items() if rs},
             "assign": {str(a): t for a, t in assignments.items()},

@@ -89,12 +89,28 @@ def build_html(meta, traces) -> str:
             .replace("__DATA__", data))
 
 
-def main(out_path: str = "harmonia_swarm_viz.html"):
+def build_terrarium_html(meta, traces) -> str:
+    """The field view: agents as individuated creatures on the complex
+    plane (their actual @self register positions), moving over the real
+    Λ coupling field. Governed + stubbed traces only — the baseline has
+    no registers and therefore no field to move on."""
+    field_traces = [t for t in traces if t["label"].startswith("Governed")]
+    data = json.dumps({"meta": meta, "traces": field_traces})
+    return (_TERRARIUM
+            .replace("__TITLE__", "HARMONIA Terrarium — the field the AI moves on")
+            .replace("__DATA__", data))
+
+
+def main(out_path: str = "harmonia_swarm_viz.html",
+         terrarium_path: str = "harmonia_terrarium.html"):
     with contextlib.redirect_stdout(io.StringIO()):
         meta, traces = collect_traces()
     html = build_html(meta, traces)
     Path(out_path).write_text(html, encoding="utf-8")
     print(f"wrote {out_path} ({len(html)//1024} KB)")
+    thtml = build_terrarium_html(meta, traces)
+    Path(terrarium_path).write_text(thtml, encoding="utf-8")
+    print(f"wrote {terrarium_path} ({len(thtml)//1024} KB)")
 
 
 _TEMPLATE = r"""<!DOCTYPE html>
@@ -267,5 +283,182 @@ tabs(); render();
 </script></body></html>
 """
 
+_TERRARIUM = r"""<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>__TITLE__</title>
+<style>
+ body{background:#07090c;color:#dde3ea;font:14px/1.45 -apple-system,'Segoe UI',sans-serif;margin:0;padding:14px}
+ h1{font-size:17px;margin:0 0 2px}
+ .sub{color:#7d8a99;font-size:12px;margin-bottom:10px;max-width:900px}
+ .tabs{display:flex;gap:8px;margin-bottom:8px}
+ .tab{padding:5px 12px;border:1px solid #2c3540;border-radius:6px;cursor:pointer;background:#10151b;font-size:13px}
+ .tab.on{background:#24445c;border-color:#4a90c4}
+ .row{display:flex;gap:12px;flex-wrap:wrap}
+ canvas{border:1px solid #232c36;border-radius:8px;background:#04060a}
+ .ctrl{display:flex;gap:8px;align-items:center;margin:8px 0}
+ button{background:#24445c;color:#dde3ea;border:1px solid #4a90c4;border-radius:6px;padding:5px 12px;cursor:pointer;font-size:13px}
+ input[type=range]{flex:1}
+ .panel{width:300px;min-width:260px}
+ .box{background:#10151b;border:1px solid #232c36;border-radius:8px;padding:10px;margin-bottom:10px;font-size:12.5px}
+ .box h3{margin:0 0 6px;font-size:13px;color:#8ec0e8}
+ .mono{font-family:ui-monospace,monospace;font-size:11.5px;color:#9fb3c8}
+ .legend{font-size:11px;color:#7d8a99;margin-top:4px;max-width:900px}
+</style></head><body>
+<h1>__TITLE__</h1>
+<div class="sub">This plane is ℂ — the complex plane. Each creature's position IS its <b>@self</b> register; stars are <b>@goal</b> registers; the glowing landscape is the real Λ coupling field Λ(z,goals) computed live from the math core's formula (Λ=137/3). ε-steps move creatures by ≤0.001 — they physically cannot jump (that's the proven safety bound), so use the microscope. Φ-stabilization during conflict is the only large motion, and it is a proven contraction.</div>
+<div class="tabs" id="tabs"></div>
+<div class="row">
+ <div>
+  <canvas id="cv" width="920" height="420"></canvas>
+  <div class="ctrl">
+   <button id="play">▶ play</button><button id="stepb">step</button>
+   <input type="range" id="slider" min="0" value="0">
+   <span id="rlabel" style="min-width:90px"></span>
+  </div>
+  <div class="legend">click a creature to follow it (field re-centers on its goal; microscope engages) · click empty space to release · trails show the last 12 rounds of real register motion</div>
+ </div>
+ <div class="panel">
+  <div class="box"><h3 id="mtitle">Microscope</h3>
+   <canvas id="micro" width="276" height="180"></canvas>
+   <div class="mono" id="minfo">select a creature</div></div>
+  <div class="box"><h3>Creature</h3><div class="mono" id="ainfo">—</div></div>
+ </div>
+</div>
+<script>
+const DATA=__DATA__;const meta=DATA.meta,traces=DATA.traces;
+const L=137/3;
+let ti=0,ri=0,playing=null,sel=null;
+const cv=document.getElementById('cv'),cx=cv.getContext('2d');
+const mc=document.getElementById('micro'),mx=mc.getContext('2d');
+// plane bounds from all recorded positions/goals
+let B={x0:0,x1:13,y0:-1.6,y1:1.6};
+(function(){let xs=[],ys=[];traces.forEach(t=>t.per_round.forEach(s=>{
+ [s.z||{},s.g||{}].forEach(m=>Object.values(m).forEach(([x,y])=>{xs.push(x);ys.push(y);}));}));
+ if(xs.length){B.x0=Math.min(...xs)-1;B.x1=Math.max(...xs)+1;
+ B.y0=Math.min(...ys)-1;B.y1=Math.max(...ys)+1;}})();
+const px=x=>(x-B.x0)/(B.x1-B.x0)*cv.width;
+const py=y=>cv.height-(y-B.y0)/(B.y1-B.y0)*cv.height;
+const hue=i=>i*137.5%360;
+function lam(zr,zi,wr,wi){ // Λ(z,w) = Λ·2Re(z̄w)/(Λ+|z|²+|w|²)
+ const re=zr*wr+zi*wi;
+ return L*2*re/(L+zr*zr+zi*zi+wr*wr+wi*wi);}
+function field(snap){
+ const goals=sel!==null&&snap.g&&snap.g[sel]?[snap.g[sel]]:Object.values(snap.g||{});
+ if(!goals.length)return;
+ const gw=92,gh=42,cw=cv.width/gw,ch=cv.height/gh;
+ let vals=[],mx0=0;
+ for(let j=0;j<gh;j++)for(let i=0;i<gw;i++){
+  const x=B.x0+(i+.5)/gw*(B.x1-B.x0),y=B.y0+(1-(j+.5)/gh)*(B.y1-B.y0);
+  let v=0;goals.forEach(([wr,wi])=>v+=lam(x,y,wr,wi));
+  vals.push(v);mx0=Math.max(mx0,Math.abs(v));}
+ for(let j=0;j<gh;j++)for(let i=0;i<gw;i++){
+  const v=vals[j*gw+i]/(mx0||1);
+  const a=Math.abs(v);
+  cx.fillStyle=v>=0?`rgba(40,110,190,${a*0.55})`:`rgba(190,70,110,${a*0.55})`;
+  cx.fillRect(i*cw,j*ch,cw+1,ch+1);}
+}
+function trail(t,aid){
+ const pts=[];
+ for(let k=Math.max(0,ri-12);k<=ri;k++){
+  const s=t.per_round[k];if(s.z&&s.z[aid])pts.push(s.z[aid]);}
+ return pts;}
+function render(){
+ const t=traces[ti],snap=t.per_round[ri];
+ document.getElementById('slider').value=ri;
+ document.getElementById('rlabel').textContent='round '+snap.r+' / '+t.rounds_used;
+ cx.clearRect(0,0,cv.width,cv.height);
+ field(snap);
+ // goals
+ Object.entries(snap.g||{}).forEach(([a,[gxr,gyi]])=>{
+  const x=px(gxr),y=py(gyi);
+  cx.strokeStyle='#e8c86a';cx.lineWidth=1.4;
+  cx.beginPath();for(let k=0;k<5;k++){const an=-Math.PI/2+k*4*Math.PI/5;
+   cx[k?'lineTo':'moveTo'](x+8*Math.cos(an),y+8*Math.sin(an));}
+  cx.closePath();cx.stroke();
+  const task=snap.assign&&snap.assign[a];
+  if(task){cx.fillStyle='#e8c86a';cx.font='10px sans-serif';
+   cx.textAlign='center';cx.fillText(task,x,y-12);}});
+ // creatures
+ Object.entries(snap.z||{}).forEach(([a,[zr,zi]])=>{
+  const x=px(zr),y=py(zi),h=hue(+a);
+  const pts=trail(t,a);
+  cx.strokeStyle=`hsla(${h},70%,60%,0.5)`;cx.lineWidth=1.2;
+  cx.beginPath();pts.forEach(([tx,ty],k)=>cx[k?'lineTo':'moveTo'](px(tx),py(ty)));cx.stroke();
+  const yielded=snap.ev.some(e=>e.t==='idle'&&e.a==+a);
+  cx.fillStyle=`hsl(${h},70%,${yielded?35:60}%)`;
+  cx.beginPath();cx.arc(x,y,sel==+a?9:7,0,7);cx.fill();
+  if(sel==+a){cx.strokeStyle='#fff';cx.lineWidth=1.5;
+   cx.beginPath();cx.arc(x,y,12,0,7);cx.stroke();}
+  cx.fillStyle='#04060a';cx.font='9px sans-serif';cx.textAlign='center';
+  cx.fillText(a,x,y+3);});
+ micro();info();
+}
+function micro(){
+ mx.clearRect(0,0,mc.width,mc.height);
+ const t=traces[ti],snap=t.per_round[ri];
+ document.getElementById('mtitle').textContent=
+  sel===null?'Microscope':'Microscope — creature '+sel;
+ if(sel===null||!snap.z||!snap.z[sel]){
+  document.getElementById('minfo').textContent='select a creature to magnify its ε-motion';return;}
+ const pts=trail(t,String(sel));
+ if(pts.length<2){document.getElementById('minfo').textContent='no motion history yet';return;}
+ let xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);
+ let x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+ const pad=Math.max((x1-x0),(y1-y0),1e-4)*0.25;
+ x0-=pad;x1+=pad;y0-=pad;y1+=pad;
+ const mpx=x=>(x-x0)/(x1-x0)*mc.width,mpy=y=>mc.height-(y-y0)/(y1-y0)*mc.height;
+ const h=hue(sel);
+ mx.strokeStyle=`hsl(${h},70%,60%)`;mx.lineWidth=1.5;
+ mx.beginPath();pts.forEach(([tx,ty],k)=>mx[k?'lineTo':'moveTo'](mpx(tx),mpy(ty)));mx.stroke();
+ pts.forEach(([tx,ty],k)=>{mx.fillStyle=k===pts.length-1?'#fff':`hsla(${h},70%,60%,0.7)`;
+  mx.beginPath();mx.arc(mpx(tx),mpy(ty),k===pts.length-1?4:2.5,0,7);mx.fill();});
+ let steps=[];for(let k=1;k<pts.length;k++){
+  steps.push(Math.hypot(pts[k][0]-pts[k-1][0],pts[k][1]-pts[k-1][1]));}
+ const last=steps[steps.length-1];
+ document.getElementById('minfo').textContent=
+  'window '+(x1-x0).toExponential(1)+' wide · last step |Δz| = '+
+  (last?last.toExponential(2):'0')+
+  (last&&last<=0.0011?'  (ε-bounded ✓)':last?'  (Φ jump / re-init)':'');
+}
+function info(){
+ const t=traces[ti],snap=t.per_round[ri];
+ const el=document.getElementById('ainfo');
+ if(sel===null){el.textContent='click a creature — each is one agent: its own FieldContext, registers, trajectory';return;}
+ const z=snap.z&&snap.z[sel],g=snap.g&&snap.g[sel];
+ const task=snap.assign&&snap.assign[String(sel)];
+ let s='agent '+sel+'\n';
+ s+='task: '+(task||'(none)')+'\n';
+ if(z)s+='@self = '+z[0].toFixed(4)+' + '+z[1].toFixed(4)+'i\n';
+ if(g)s+='@goal = '+g[0].toFixed(4)+' + '+g[1].toFixed(4)+'i\n';
+ if(z&&g)s+='|@self−@goal| = '+Math.hypot(z[0]-g[0],z[1]-g[1]).toFixed(4)+'\n';
+ if(snap.lam&&snap.lam[sel]!==undefined)s+='λ_obs = '+snap.lam[sel];
+ el.textContent=s;el.style.whiteSpace='pre';
+}
+cv.onclick=e=>{
+ const r=cv.getBoundingClientRect();
+ const mxp=e.clientX-r.left,myp=e.clientY-r.top;
+ const snap=traces[ti].per_round[ri];let hit=null;
+ Object.entries(snap.z||{}).forEach(([a,[zr,zi]])=>{
+  if(Math.hypot(px(zr)-mxp,py(zi)-myp)<12)hit=+a;});
+ sel=hit;render();};
+function tabs(){const el=document.getElementById('tabs');el.innerHTML='';
+ traces.forEach((t,i)=>{const d=document.createElement('div');
+  d.className='tab'+(i===ti?' on':'');d.textContent=t.label;
+  d.onclick=()=>{ti=i;ri=0;sel=null;stop();tabs();render();};el.appendChild(d);});
+ document.getElementById('slider').max=traces[ti].per_round.length-1;}
+function step(){if(ri<traces[ti].per_round.length-1){ri++;render();}else stop();}
+function stop(){if(playing){clearInterval(playing);playing=null;
+ document.getElementById('play').textContent='▶ play';}}
+document.getElementById('play').onclick=()=>{
+ if(playing){stop();return;}
+ if(ri>=traces[ti].per_round.length-1)ri=0;
+ playing=setInterval(step,700);
+ document.getElementById('play').textContent='⏸ pause';};
+document.getElementById('stepb').onclick=()=>{stop();step();};
+document.getElementById('slider').oninput=e=>{stop();ri=+e.target.value;render();};
+tabs();render();
+</script></body></html>
+"""
+
 if __name__ == "__main__":
-    main(sys.argv[1] if len(sys.argv) > 1 else "harmonia_swarm_viz.html")
+    main(sys.argv[1] if len(sys.argv) > 1 else "harmonia_swarm_viz.html",
+         sys.argv[2] if len(sys.argv) > 2 else "harmonia_terrarium.html")

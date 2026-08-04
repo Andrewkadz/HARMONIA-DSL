@@ -11,7 +11,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from swarm_brain.baseline_swarm import BaselineSwarm
-from swarm_brain.export_traces import build_html, collect_traces
+from swarm_brain.export_traces import (
+    build_html,
+    build_terrarium_html,
+    collect_traces,
+)
 from swarm_brain.governed_swarm import GovernedSwarm
 from swarm_brain.task_spec import make_scenario
 
@@ -61,6 +65,52 @@ class TestExport:
         governed = next(t for t in traces if t["label"].startswith("Governed ("))
         assert set(governed["completed"]) == set(meta["tasks"]) - {"P"}
         assert set(stubbed["completed"]) != set(meta["tasks"]) - {"P"}
+
+    def test_governed_snapshots_carry_register_positions(self):
+        """The terrarium's field data: @self/@goal positions on ℂ are
+        recorded each round for the governed swarm; the baseline has
+        no registers, hence no field."""
+        governed = GovernedSwarm(make_scenario(), 60).run()
+        baseline = BaselineSwarm(make_scenario(), 60).run()
+        with_z = [s for s in governed.per_round if "z" in s and s["z"]]
+        assert with_z, "governed rounds must record register positions"
+        for snap in with_z:
+            for agent, (re, im) in snap["z"].items():
+                assert isinstance(re, float) and isinstance(im, float)
+        assert all("z" not in s for s in baseline.per_round)
+
+    def test_epsilon_motion_is_bounded_in_recorded_positions(self):
+        """The proven ε bound, visible in the recorded trajectory: any
+        round-to-round motion of a working agent is either an ε-step
+        (tiny) or an explicit Φ/re-init jump — and ε-steps recorded in
+        events never move @self by more than ε·|w−z| < 0.007 here."""
+        governed = GovernedSwarm(make_scenario(), 60).run()
+        rounds = governed.per_round
+        for k in range(1, len(rounds)):
+            prev, cur = rounds[k - 1], rounds[k]
+            eps_agents = {str(e["a"]) for e in cur["ev"] if e["t"] == "eps"}
+            jumped = {str(e["a"]) for e in cur["ev"]
+                      if e["t"] in ("claim", "watch", "idle")}
+            for a in eps_agents - jumped:
+                if a in prev.get("z", {}) and a in cur.get("z", {}):
+                    (r0, i0), (r1, i1) = prev["z"][a], cur["z"][a]
+                    dist = ((r1 - r0) ** 2 + (i1 - i0) ** 2) ** 0.5
+                    assert dist < 0.02  # ε-scale, never a jump
+
+    def test_terrarium_html_self_contained(self):
+        meta, traces = collect_traces()
+        html = build_terrarium_html(meta, traces)
+        assert html.startswith("<!DOCTYPE html>")
+        assert "__DATA__" not in html and "__TITLE__" not in html
+        start = html.index("const DATA=") + len("const DATA=")
+        end = html.index(";const meta", start)
+        payload = json.loads(html[start:end])
+        # terrarium carries only register-bearing traces
+        assert len(payload["traces"]) == 2
+        assert all(t["label"].startswith("Governed")
+                   for t in payload["traces"])
+        governed = payload["traces"][0]
+        assert any("z" in s for s in governed["per_round"])
 
     def test_html_is_self_contained_with_embedded_data(self):
         meta, traces = collect_traces()

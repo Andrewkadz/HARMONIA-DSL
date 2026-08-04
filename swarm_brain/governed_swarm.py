@@ -227,7 +227,11 @@ class GovernedSwarm:
                 {a.id: a.held for a in agents},
                 events,
                 {a.id: a.lambda_obs for a in agents if a.lambda_obs},
-                {a.id: a.task.id for a in agents if a.task is not None})
+                {a.id: a.task.id for a in agents if a.task is not None},
+                zpos={a.id: a.ctx.read_register('@self') for a in agents
+                      if a.ctx.zfield},
+                zgoal={a.id: a.ctx.read_register('@goal') for a in agents
+                       if a.ctx.zfield})
 
             resolved = trace.completed | trace.refused
             if resolved == set(self.scenario.tasks):
