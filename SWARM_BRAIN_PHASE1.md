@@ -1,8 +1,9 @@
 # SWARM_BRAIN_PHASE1 — First Governed Swarm Task
 
-Status: DRAFT — awaiting ratification (Andrew / Claude / Perplexity).
-No implementation until this document is ratified. Depends on
-BRIDGE_DESIGN Step 3 (binary register forms) being merged.
+Status: Ratified 2026-08-03 (Andrew / Claude / Perplexity). Governs
+`feat/swarm-brain-phase1`. G4 (governance authenticity) is
+non-negotiable. Any deviation must be reflected here before
+implementation. BRIDGE_DESIGN Step 3 is merged (prerequisite met).
 
 ## Scope and non-goals
 
