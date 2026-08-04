@@ -340,6 +340,21 @@ class PhiPiEInterpreterFixed:
             tokens = self.tokenize(cleaned_code)
             print(f"Tokens: {tokens}")
 
+            # Statement-boundary map (Step 3 fix): register dispatch and
+            # operand lookahead must not cross line boundaries — 'Σ' at
+            # the end of one line must not capture '@z' starting the
+            # next. tokenize() output is unchanged; this is metadata.
+            line_ids: List[int] = []
+            for ln, line in enumerate(cleaned_code.split('\n')):
+                line_ids.extend([ln] * len(self.tokenize(line)))
+            if len(line_ids) != len(tokens):
+                # Multi-line bracket token etc.: fall back to treating
+                # the program as one statement (pre-fix behavior).
+                line_ids = [0] * len(tokens)
+
+            def same_line(a: int, b: int) -> bool:
+                return b < len(tokens) and line_ids[a] == line_ids[b]
+
             # Create or reuse context
             if context is None:
                 context = FieldContext()
@@ -361,12 +376,11 @@ class PhiPiEInterpreterFixed:
                     current_value = self.execute_loop(loop_code, context)
                 elif self.is_register_token(token):
                     # Register initialization: @name RE IM  (exactly two
-                    # numeric args — BRIDGE_DESIGN resolved item 2)
-                    following = tokens[i + 1:i + 4]
+                    # numeric args on the SAME line — resolved item 2)
                     nums = []
-                    for t in following:
-                        if self.is_number_token(t):
-                            nums.append(t)
+                    for j in range(i + 1, min(i + 4, len(tokens))):
+                        if same_line(i, j) and self.is_number_token(tokens[j]):
+                            nums.append(tokens[j])
                         else:
                             break
                     if len(nums) != 2:
@@ -377,12 +391,38 @@ class PhiPiEInterpreterFixed:
                     context.write_register(
                         token, complex(float(nums[0]), float(nums[1])))
                     i += 2
+                elif token in ('Φ', 'Ψ', 'ε') and i + 1 < len(tokens) \
+                        and same_line(i, i + 1) \
+                        and self.is_register_token(tokens[i + 1]):
+                    # Binary register forms (BRIDGE_DESIGN Step 3):
+                    # Φ/Ψ/ε @z @w -> math-core operator on (z, w),
+                    # result written IN-PLACE to the first operand.
+                    operands = tokens[i + 1:i + 3]
+                    if len(operands) != 2 or not same_line(i, i + 2) or \
+                            not all(self.is_register_token(t) for t in operands):
+                        raise SyntaxError(
+                            f"'{token}' register form requires exactly two "
+                            f"register operands: '{token} @z @w' — mixed or "
+                            f"partial forms are forbidden")
+                    from phi_pi_e_math_core import (
+                        harmonic_equilibrium, incremental_insight,
+                        recursive_animation)
+                    op = {'Φ': harmonic_equilibrium,
+                          'Ψ': recursive_animation,
+                          'ε': incremental_insight}[token]
+                    z = context.read_register(operands[0])
+                    w = context.read_register(operands[1])
+                    context.write_register(operands[0], op(z, w))
+                    # current_value passes through unchanged (register ops
+                    # live in the ℂ layer; only Λ reduces to ℝ)
+                    i += 2
                 elif token == 'Λ' and i + 1 < len(tokens) \
+                        and same_line(i, i + 1) \
                         and self.is_register_token(tokens[i + 1]):
                     # Λ register reduction: Λ @z @w -> lambda_obs
                     # (BRIDGE_DESIGN resolved item 3; math-core Λ is binary)
                     operands = tokens[i + 1:i + 3]
-                    if len(operands) != 2 or \
+                    if len(operands) != 2 or not same_line(i, i + 2) or \
                             not all(self.is_register_token(t) for t in operands):
                         raise SyntaxError(
                             "Λ register reduction requires exactly two "
@@ -395,14 +435,15 @@ class PhiPiEInterpreterFixed:
                     current_value = context.lambda_obs
                     i += 2
                 elif token in self.symbols:
-                    # Guard: no other symbol accepts register operands yet
-                    # (binary Φ/Ψ/ε register forms are Step 3, and mixed
-                    # forms are forbidden outright per BRIDGE_DESIGN)
-                    if i + 1 < len(tokens) and self.is_register_token(tokens[i + 1]):
+                    # Guard: no other symbol accepts register operands
+                    # (same-line only — a register starting the NEXT
+                    # statement is that statement's own initialization)
+                    if i + 1 < len(tokens) and same_line(i, i + 1) \
+                            and self.is_register_token(tokens[i + 1]):
                         raise SyntaxError(
                             f"'{token}' does not accept register operands "
-                            f"in Step 2 (only Λ reduces registers; binary "
-                            f"register forms arrive in Step 3)")
+                            f"(only Φ/Ψ/ε/Λ operate on registers, per "
+                            f"BRIDGE_DESIGN Step 3)")
                     handler = self.symbols[token]
                     # Φ with three numeric args is a full state initialization:
                     #   Φ ψ φ ε   (e.g. "Φ 5 3 0.1" -> psi=5, phi=3, eps=0.1)
