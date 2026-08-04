@@ -80,7 +80,8 @@ class FieldContext:
     charge: float
     depth: int
     
-    def __init__(self, state: Optional[RecursiveState] = None):
+    def __init__(self, state: Optional[RecursiveState] = None,
+                 zfield: Optional[Dict[str, complex]] = None):
         if state is None:
             state = RecursiveState()
         self.state = state
@@ -88,9 +89,34 @@ class FieldContext:
         self.phase = state.phase
         self.charge = state.charge
         self.depth = state.depth
+        # Shadow register layer (BRIDGE_DESIGN Decision 1, Step 1).
+        # Complex registers for the Φπε math core. STRICTLY isolated
+        # from the real scalars: nothing in this dict may read or write
+        # psi_signal / phi_state / epsilon_drift / stabilized_value.
+        # No DSL syntax touches this yet (syntax is Step 2).
+        self.zfield: Dict[str, complex] = zfield if zfield is not None else {}
+
+    def write_register(self, name: str, value: complex) -> None:
+        """Write a complex value to a named shadow register.
+
+        Ints/floats are coerced to complex (imag=0). Per BRIDGE_DESIGN,
+        registers are the ONLY residence of ℂ values; this method never
+        touches real scalar state.
+        """
+        self.zfield[name] = complex(value)
+
+    def read_register(self, name: str) -> complex:
+        """Read a named shadow register; unset registers read as 0j."""
+        return self.zfield.get(name, 0j)
 
     def fork(self) -> 'FieldContext':
-        """Create a new context with increased depth"""
+        """Create a new context with increased depth.
+
+        The shadow register layer is SHARED with the fork (same dict):
+        registers are execution-global, like the persistent context in
+        the time model. Fork/discard cycles by modulators must not
+        create divergent register copies.
+        """
         new_state = RecursiveState(
             parent=self.state.id,
             depth=self.depth + 1,
@@ -99,7 +125,7 @@ class FieldContext:
             charge=self.charge
         )
         self.state.add_child(new_state.id)
-        return FieldContext(new_state)
+        return FieldContext(new_state, zfield=self.zfield)
 
     def merge(self, other: 'FieldContext') -> None:
         """Merge another context into this one"""
