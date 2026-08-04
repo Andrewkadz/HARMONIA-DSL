@@ -127,8 +127,11 @@ class TestStepTwoProhibitions:
     def test_setters_reject_register_operands(self):
         run_raises("@z 1.0 2.0\nΦ @z")
 
-    def test_binary_setter_register_form_not_yet_available(self):
-        run_raises("@z 1.0 2.0\n@w 3.0 4.0\nΦ @z @w")  # Step 3, not now
+    def test_binary_setter_register_form_now_available(self):
+        """Flipped at Step 3: 'Φ @z @w' is now the math-core register
+        form (full coverage in test_binary_register_ops.py)."""
+        interp, _ = run("@z 1.0 2.0\n@w 3.0 4.0\nΦ @z @w")
+        assert interp.last_context.read_register('@z') != 1 + 2j
 
     def test_reducer_sigma_rejects_registers(self):
         run_raises("@z 1.0 2.0\nΣ @z")

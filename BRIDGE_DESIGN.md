@@ -120,3 +120,21 @@ keep pinned DSL semantics; `Λ @z @w` is the first math-core register
 form; mixed forms (`Λ @z 1.0`, `Φ @z 1.0`, …) are rejected outright;
 binary register forms for Φ/Ψ/ε are NOT part of Step 2 and may only be
 added (Step 3) after Step-2 tests are green.
+
+## Step 3 ratification (2026-08-03): binary Φ/Ψ/ε register forms
+
+- `Φ @z @w`, `Ψ @z @w`, `ε @z @w` dispatch to the math-core operators
+  (harmonic_equilibrium, recursive_animation, incremental_insight) on
+  the registers' complex values.
+- **Result destination: the FIRST operand register** (in-place
+  evolution). Rationale: ε's proven iteration is z_{n+1} = ε(z_n, w),
+  so `[ε @z @w]` in a loop evolves `@z` toward `@w` exactly as
+  Thm 4.3 describes; the same single rule applies to Φ and Ψ for
+  uniformity. The second operand is never written.
+- Register operations **pass the interpreter's current value through
+  unchanged** (like modulators): their observable output lives in the
+  register layer, and only Λ crosses into ℝ (via lambda_obs).
+- Scalar isolation unchanged: register forms touch no pinned scalar.
+- Prohibitions maintained: mixed forms and single-register forms are
+  errors; π/Δ binary register forms and any further symbols require a
+  new ratified entry here first.
