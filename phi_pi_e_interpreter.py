@@ -21,6 +21,7 @@ For the complete theoretical foundations, see /theory/RI1_GRANDHARMONICEQUATION.
 from dataclasses import dataclass, field
 from typing import Dict, List, Tuple, Any, Union, Optional, Set
 import math
+import re
 import numpy as np
 from collections import defaultdict, deque
 from enum import Enum
@@ -147,43 +148,102 @@ class PhiPiEInterpreterFixed:
             '=': self.stabilize       # Stabilization
         }
 
+        # ===== OPERATOR CATEGORIES (feat/operator-categories) =====
+        # Categorical execution model aligned with the Φπε operator
+        # architecture (Φ→π→ε→Λ→Δ→Ω→Ψ→Ξ→Γ→Σ→ζ→λ→ω→Τ→Ρ→δ→Θ).
+        # Uniform argument rule per category:
+        #   SETTERS    consume adjacent numeric literals into semantic
+        #              state (psi_signal / phi_state / epsilon_drift).
+        #   REDUCERS   take no literal arguments; read semantic state and
+        #              return a scalar observation/result.
+        #   MODULATORS operate on context mechanics (phase/charge/depth);
+        #              they never consume literals and return no scalar.
+        # This replaces per-symbol special-casing in the dispatcher and is
+        # the seed of a future AST. Full semantics for modulators are
+        # intentionally NOT implemented yet — see SYMBOL_COVERAGE.md.
+        self.categories = {
+            'setter': {'Φ', 'Ψ', 'ε'},
+            'reducer': {'Σ', 'Κ', 'Υ', 'Β'},
+            # Γ (growth) and ζ (recurrence) are candidate reducers per the
+            # Φπε architecture, but currently only touch phase/charge, so
+            # they stay modulators until given real read-state semantics.
+            'modulator': {'Π', 'Ε', 'Δ', 'δ', 'Λ', 'λ', 'Γ', 'Ω', 'ω',
+                          'Ξ', 'ζ', 'Τ', 'Ρ', 'Θ', 'η', 'χ', 'n'},
+        }
+
+    def category_of(self, symbol: str) -> Optional[str]:
+        """Return the execution category of a symbol, or None."""
+        for category, members in self.categories.items():
+            if symbol in members:
+                return category
+        return None
+
     def clean_input(self, code: str) -> str:
-        """Clean and prepare input code for parsing - FIXED VERSION"""
-        # Remove // comments properly
+        """Clean and prepare input code for parsing.
+
+        Fixes (fix/dsl-lexical-semantic-path):
+        - Strips both '//' and '#' comments before any filtering, so comment
+          text can no longer leak phantom tokens (e.g. 'n' from "tension").
+        - Preserves statement boundaries: lines are joined with '\n' instead
+          of being concatenated.
+        """
         lines = code.splitlines()
         cleaned_lines = []
         for line in lines:
-            # Remove everything after //
+            # Remove everything after // or # (comments)
             if '//' in line:
                 line = line.split('//')[0]
+            if '#' in line:
+                line = line.split('#')[0]
             line = line.strip()
             if line:
                 cleaned_lines.append(line)
-        
-        # Join without spaces initially
-        code = ''.join(cleaned_lines)
-        
+
+        # FIXED: preserve statement boundaries with newlines
+        code = '\n'.join(cleaned_lines)
+
         # Remove ASCII_OUTPUT_MODE marker
         code = code.replace('ASCII_OUTPUT_MODE', '').replace('[:ASCII:]', '')
-        
-        # FIXED: Proper allowed characters including all Greek letters
-        allowed_chars = set('ΦΠΕεΔδΨΛλΓΩωΣΞζΤΡΘηχn→+::/|[]=()0123456789., ')
+
+        # Proper allowed characters including all Greek letters, newline, and '-'
+        allowed_chars = set('ΦΠΕεΔδΨΛλΓΩωΣΞζΤΡΘηχn→+::/|[]=()0123456789.,- \n')
         code = ''.join(c for c in code if c in allowed_chars)
-        
+
         return code
 
+    # Matches an int or float literal, optionally negative (e.g. 5, 5.0, -0.2)
+    _NUMBER_RE = re.compile(r'-?(\d+\.\d*|\.\d+|\d+)')
+
+    @classmethod
+    def is_number_token(cls, token: str) -> bool:
+        """True if the token is a numeric literal produced by tokenize()."""
+        return bool(cls._NUMBER_RE.fullmatch(token))
+
     def tokenize(self, code: str) -> List[str]:
-        """Tokenize code into operators - NEW METHOD"""
+        """Tokenize code into operators and NUMBER literals.
+
+        FIXED (fix/dsl-lexical-semantic-path): numeric literals are now
+        emitted as first-class tokens instead of being silently discarded.
+        """
         tokens = []
         i = 0
         while i < len(code):
             char = code[i]
-            
+
             # Skip whitespace
             if char in ' \t\n\r':
                 i += 1
                 continue
-            
+
+            # NUMBER literal (int/float, optional leading '-')
+            m = self._NUMBER_RE.match(code, i)
+            if m and (char.isdigit() or
+                      (char in '-.' and i + 1 < len(code) and
+                       (code[i + 1].isdigit() or code[i + 1] == '.'))):
+                tokens.append(m.group(0))
+                i = m.end()
+                continue
+
             # Handle brackets as single tokens
             if char == '[':
                 # Find matching ]
@@ -209,40 +269,85 @@ class PhiPiEInterpreterFixed:
         
         return tokens
 
-    def execute(self, code: str) -> Any:
-        """Execute a complete Φπε program - FIXED VERSION"""
+    def execute(self, code: str, context: Optional[FieldContext] = None) -> Any:
+        """Execute a complete Φπε program - FIXED VERSION
+
+        Args:
+            code: Φπε source text.
+            context: Optional pre-existing FieldContext. When provided
+                (e.g. by TimeSteppingInterpreter), state persists across
+                calls, enabling temporal dynamics. Otherwise a fresh
+                context is created (original single-shot behavior).
+        """
         try:
             # Clean input
             cleaned_code = self.clean_input(code)
             print(f"\nCleaned code: {cleaned_code}")
-            
+
             # Tokenize into operators
             tokens = self.tokenize(cleaned_code)
             print(f"Tokens: {tokens}")
-            
-            # Create initial context
-            context = FieldContext()
+
+            # Create or reuse context
+            if context is None:
+                context = FieldContext()
+            self.last_context = context  # exposed for inspection/testing
             current_value = None
-            
-            # Execute tokens sequentially
-            for token in tokens:
+
+            # Category rule: only SETTERS consume adjacent NUMBER args
+            arg_binding_symbols = self.categories['setter']
+
+            # Execute tokens sequentially, binding NUMBER args to symbols
+            i = 0
+            while i < len(tokens):
+                token = tokens[i]
                 print(f"\nExecuting token: {token}")
-                
+
                 if token.startswith('[') and token.endswith(']'):
                     # Handle loop
                     loop_code = token[1:-1]  # Remove brackets
                     current_value = self.execute_loop(loop_code, context)
                 elif token in self.symbols:
-                    # Execute symbol operator
                     handler = self.symbols[token]
-                    current_value = handler(current_value, context)
+                    # Φ with three numeric args is a full state initialization:
+                    #   Φ ψ φ ε   (e.g. "Φ 5 3 0.1" -> psi=5, phi=3, eps=0.1)
+                    if (token == 'Φ' and i + 3 < len(tokens) + 1
+                            and all(self.is_number_token(t)
+                                    for t in tokens[i + 1:i + 4])
+                            and len(tokens[i + 1:i + 4]) == 3):
+                        context.state.psi_signal = float(tokens[i + 1])
+                        context.state.phi_state = float(tokens[i + 2])
+                        context.state.epsilon_drift = float(tokens[i + 3])
+                        i += 4
+                        continue
+                    # FIXED: consume adjacent numeric literal as argument
+                    arg = None
+                    if (token in arg_binding_symbols and i + 1 < len(tokens)
+                            and self.is_number_token(tokens[i + 1])):
+                        arg = float(tokens[i + 1])
+                        i += 1
+                    if arg is not None:
+                        current_value = handler(current_value, context, arg)
+                    else:
+                        result = handler(current_value, context)
+                        # Category rule: REDUCERS return scalar observations;
+                        # MODULATORS act on context only and pass the
+                        # current value through unchanged.
+                        if self.category_of(token) == 'modulator':
+                            pass  # keep current_value
+                        else:
+                            current_value = result
                 elif token in self.operators:
                     # Execute operator (needs special handling for binary ops)
                     handler = self.operators[token]
                     current_value = handler(current_value, context)
+                elif self.is_number_token(token):
+                    # Bare NUMBER literal becomes the current value
+                    current_value = float(token)
                 else:
                     print(f"Unknown token: {token}")
-            
+                i += 1
+
             return current_value
             
         except Exception as e:
@@ -253,29 +358,61 @@ class PhiPiEInterpreterFixed:
             raise RuntimeError(error_msg) from e
 
     def execute_loop(self, loop_code: str, context: FieldContext) -> Any:
-        """Execute code inside a loop"""
+        """Execute code inside a loop.
+
+        FIXED (fix/loop-context): iterations now share the caller's
+        persistent FieldContext, so loops can accumulate state. The old
+        code called execute() without a context, which built a fresh
+        context every iteration — the same defect class as the broken
+        time-stepping runner (state silently reset each pass).
+        """
         # Execute the loop code multiple times (or until convergence)
         result = None
         for iteration in range(10):  # Max 10 iterations
-            result = self.execute(loop_code)
-            # Could add convergence check here
+            result = self.execute(loop_code, context)
+            # TODO: convergence check — per Φπε proofs, ε-convergence
+            # (micro-ignition settling below threshold) is the natural
+            # loop-exit criterion, replacing the fixed 10-iteration cap.
         return result
 
     # ===== OPERATOR IMPLEMENTATIONS =====
     # (All the operator methods from the original, unchanged)
     
-    def stabilize(self, field: Any, context: FieldContext) -> Any:
-        """Apply harmonic equilibrium to a field"""
+    def stabilize(self, field: Any, context: FieldContext, arg: Optional[float] = None) -> Any:
+        """Apply harmonic equilibrium to a field.
+
+        If a numeric argument is supplied (e.g. 'Φ 5.0'), it is bound
+        directly to phi_state instead of the derived default.
+
+        Φπε proofs alignment: Φ is proven NON-FUSIONAL (applying Φ must
+        never merge distinct fields) and BOUNDED (phi_state must remain
+        within the harmonic envelope). The non-fusional property holds
+        here trivially (single-field operation); boundedness is NOT yet
+        enforced — arg is accepted unclamped.
+        # TODO: enforce Φ boundedness per Φπε proofs (clamp/reject args
+        # outside the proven harmonic envelope instead of accepting any float)
+        """
         context.tension.strength = max(0, context.tension.strength - 0.1)
         context.phase = (context.phase + math.pi/2) % (2 * math.pi)
-        
-        # ΦπεNode integration: Set phi_state from stabilized tension
-        context.state.phi_state = 1.0 - context.tension.strength
-        
+
+        # ΦπεNode integration: Set phi_state from argument or stabilized tension
+        if arg is not None:
+            context.state.phi_state = arg
+        else:
+            context.state.phi_state = 1.0 - context.tension.strength
+
         return field
 
     def transcend(self, field: Any, context: FieldContext) -> Any:
-        """Apply transcendent continuity to field"""
+        """Apply transcendent continuity to field.
+
+        Φπε proofs alignment: this handler is where π's SPIRAL RECURSION
+        belongs — phase-coherent non-terminating recursion (each cycle
+        advances phase without ever closing). The current implementation
+        only forks and bumps phase/depth; it is ceremonial.
+        # TODO: implement π(z,w) per Φπε proofs (spiral non-termination,
+        # phase coherence across recursion depths)
+        """
         new_context = context.fork()
         new_context.depth += 1
         new_context.phase += math.pi/4
@@ -288,15 +425,32 @@ class PhiPiEInterpreterFixed:
         new_context.charge = 1.0
         return field
 
-    def micro_ignite(self, field: Any, context: FieldContext) -> Any:
-        """Activate within a recursion loop"""
+    def micro_ignite(self, field: Any, context: FieldContext, arg: Optional[float] = None) -> Any:
+        """Activate within a recursion loop.
+
+        If a numeric argument is supplied (e.g. 'ε 0.2'), it is bound
+        directly to epsilon_drift instead of the depth-derived default.
+
+        Φπε proofs alignment: ε is the micro-ignition operator with a
+        proven CONVERGENCE property — repeated micro-ignitions settle
+        below a threshold rather than diverging. Currently drift
+        accumulates without bound.
+        # TODO: use ε(z,w) as micro-ignition threshold in drift detection —
+        # convergence check should gate accumulation and drive loop exit
+        # (see execute_loop TODO) per Φπε proofs
+        """
         new_context = context.fork()
         new_context.phase += math.pi/8
         new_context.charge *= 0.5
-        
-        # ΦπεNode integration: Set epsilon_drift based on recursion depth
-        context.state.epsilon_drift = 0.1 * context.depth
-        
+
+        # ΦπεNode integration: ε x accumulates into epsilon_drift (additive —
+        # drift compounds over persistent contexts). From a fresh context
+        # (eps=0), 'ε 0.2' still yields 0.2.
+        if arg is not None:
+            context.state.epsilon_drift += arg
+        else:
+            context.state.epsilon_drift = 0.1 * context.depth
+
         return field
 
     def fuse(self, field: Any, context: FieldContext) -> Any:
@@ -311,15 +465,24 @@ class PhiPiEInterpreterFixed:
         context.phase += math.pi/16
         return field
 
-    def pulse(self, field: Any, context: FieldContext) -> Any:
-        """Initiate recursive pulse"""
+    def pulse(self, field: Any, context: FieldContext, arg: Optional[float] = None) -> Any:
+        """Initiate recursive pulse.
+
+        If a numeric argument is supplied (e.g. 'Ψ 3.0'), it is bound
+        directly to psi_signal instead of the charge-derived default.
+        """
         new_context = context.fork()
         new_context.phase += math.pi/2
         new_context.charge *= 1.5
-        
-        # ΦπεNode integration: Set psi_signal from current charge
-        context.state.psi_signal = context.charge
-        
+
+        # ΦπεNode integration: Ψ x accumulates into psi_signal (additive,
+        # so repeated pulses over persistent contexts build amplitude).
+        # From a fresh context (psi=0), 'Ψ 3.0' still yields 3.0.
+        if arg is not None:
+            context.state.psi_signal += arg
+        else:
+            context.state.psi_signal = context.charge
+
         return field
 
     def illuminate(self, field: Any, context: FieldContext) -> Any:
@@ -366,8 +529,9 @@ class PhiPiEInterpreterFixed:
         eps = context.state.epsilon_drift
         
         context.state.stabilized_value = (psi + phi) * (1 - eps)
-        
-        return field
+
+        # FIXED: return the computed stabilization so execute() yields a result
+        return context.state.stabilized_value
 
     def emerge(self, field: Any, context: FieldContext) -> Any:
         """Create emergent system"""
@@ -672,5 +836,11 @@ class PhiPiEInterpreterFixed:
         
         # Also update phi_state with the integral (for chaining)
         context.state.phi_state = integral
-        
+
         return field
+
+
+# FIXED (fix/dsl-lexical-semantic-path): compatibility alias.
+# Φπε.py and other entry points import the original class name, which was
+# renamed to PhiPiEInterpreterFixed. This alias restores the boot path.
+PhiPiEInterpreter = PhiPiEInterpreterFixed

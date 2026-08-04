@@ -1,0 +1,40 @@
+# Contributing to HARMONIA-DSL
+
+## Spec discipline (read this first)
+
+This project has a strict precedence chain for what counts as true:
+
+**tests > math core > errata > proofs PDF > other docs**
+
+1. `tests/` is the ground truth. If a document disagrees with a passing
+   test, the document is wrong. All 200+ tests must pass before any
+   merge — no exceptions (see `INVARIANTS.md` for the non-regressible
+   subset, including the canonical Φ/Ψ/ε/Σ → 6.4 fixture).
+2. `phi_pi_e_math_core.py` is the authoritative implementation of the
+   Φπε operators on ℂ.
+3. `theory/PHI_PI_E_ERRATA.md` records known cracks in the proofs.
+   When you find a discrepancy between the proofs and derivable math:
+   **log it as an erratum and pin the correct behavior with a test —
+   never silently patch the text, and never code to the broken claim.**
+4. `theory/RI1_LANGUAGE_Φπε_PROOFS_*.pdf` is the design spec and
+   roadmap. It is versioned working notes (see its own disclaimer),
+   not an infallible reference. It describes where the language is
+   going, which is not always where the code is.
+5. Everything else (READMEs, analyses, celebration docs) is narrative.
+
+## Practical rules
+
+- Ceremonial vs real: `SYMBOL_COVERAGE.md` tracks which DSL symbols
+  have honest semantics. Don't claim a symbol works because it
+  dispatches; it works when it moves semantic state and a test proves it.
+- Math core stays pure: `phi_pi_e_math_core.py` operates on ℂ only and
+  never imports the interpreter. Bridging ℂ ↔ context state happens in
+  dedicated bridge modules, on dedicated branches, after design review.
+- Categorical operators (Ω, Ξ, Γ, …) refuse numerical evaluation by
+  design. Ω's unsolvability is proven in its own spec; "implementing"
+  it numerically would be a bug.
+- One concern per branch: `fix/…` for repairs, `feat/…` for new
+  capability. Never mix interpreter changes with math-core changes.
+
+When in doubt: trust tests over text, and log cracks as errata rather
+than silently patching.

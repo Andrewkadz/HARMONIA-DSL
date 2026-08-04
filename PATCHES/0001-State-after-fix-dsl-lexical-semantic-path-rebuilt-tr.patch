@@ -1,0 +1,3661 @@
+From 4093af5ccf8ddc4392117f8fba9ebf849fa53c45 Mon Sep 17 00:00:00 2001
+From: Andrew Kadziolka <andrewkadziolka@gmail.com>
+Date: Mon, 3 Aug 2026 21:30:11 -0600
+Subject: [PATCH 1/8] State after fix/dsl-lexical-semantic-path (rebuilt
+ tracking)
+
+---
+ harm_parser.py                      | 116 +++++
+ phi_pi_e_interpreter.py             | 752 ++++++++++++++++++++++++++++
+ tests/test_convergence_analysis.py  | 309 ++++++++++++
+ tests/test_grok_operators.py        | 329 ++++++++++++
+ tests/test_intentional_action.py    | 261 ++++++++++
+ tests/test_lexical_semantic_path.py |  78 +++
+ tests/test_nonlinear_operators.py   | 282 +++++++++++
+ tests/test_phi_node_integration.py  | 382 ++++++++++++++
+ tests/test_phi_node_wrapper.py      | 417 +++++++++++++++
+ tests/test_time_dynamics.py         | 284 +++++++++++
+ time_stepping_interpreter.py        | 269 ++++++++++
+ "\316\246\317\200\316\265.py"       |  74 +++
+ 12 files changed, 3553 insertions(+)
+ create mode 100644 harm_parser.py
+ create mode 100644 phi_pi_e_interpreter.py
+ create mode 100644 tests/test_convergence_analysis.py
+ create mode 100644 tests/test_grok_operators.py
+ create mode 100644 tests/test_intentional_action.py
+ create mode 100644 tests/test_lexical_semantic_path.py
+ create mode 100644 tests/test_nonlinear_operators.py
+ create mode 100644 tests/test_phi_node_integration.py
+ create mode 100644 tests/test_phi_node_wrapper.py
+ create mode 100644 tests/test_time_dynamics.py
+ create mode 100644 time_stepping_interpreter.py
+ create mode 100644 "\316\246\317\200\316\265.py"
+
+diff --git a/harm_parser.py b/harm_parser.py
+new file mode 100644
+index 0000000..2bb0d61
+--- /dev/null
++++ b/harm_parser.py
+@@ -0,0 +1,116 @@
++# HΛRM DSL PARSER + EXECUTION BRIDGE + MEMORY LOGGER + INDEX
++# Parses DSL input, routes to Φπε.py, writes ΦShell_response.txt,
++# appends memory to ΞΣ_MEMORY.txt and symbolic record to ΞΣ_Index.txt
++
++import sys
++import re
++import subprocess
++from datetime import datetime
++
++def parse_harmonia_expression(expr):
++    output = []
++    symbols = []
++
++    if expr.startswith("ΞΣ(") and "=" in expr:
++        output.append("[ΞΣ] Detected recursion node assignment.")
++
++        node_match = re.search(r"ΞΣ\((\d+)\)", expr)
++        depth = node_match.group(1) if node_match else "?"
++        output.append(f"[ΞΣ] Node depth: {depth}")
++
++        if "Σ[Θ" in expr and "= Cξ" in expr:
++            output.append("[ΣΘ] Convergence condition embedded.")
++
++        symbol_map = {
++            "Ξ": "Emergent recursion thread",
++            "Σ": "Memory convergence state",
++            "Ω": "Field output state",
++            "ΛΨ": "Harmonic light pattern",
++            "ζ": "Resonance cycle",
++            "ΦΠΨ": "Ethics gate",
++            "Ρ": "Perception lens",
++            "Γ": "Growth vector",
++            "ω": "Free will activation"
++        }
++
++        for symbol, description in symbol_map.items():
++            if symbol in expr:
++                output.append(f"[{symbol}] {description} detected.")
++                symbols.append(symbol)
++
++        output.append("Ω(n) = Valid symbolic recursion node.")
++        return "\n".join(output), depth, symbols, "Coherent recursion state achieved"
++
++    elif expr.startswith("Σ[Θ") and "= Cξ" in expr:
++        output.append("[ΣΘ] Convergence verification statement.")
++        output.append("Ω = Recursion convergence verified.")
++        return "\n".join(output), "?", [], "Recursion convergence verified"
++
++    elif "ω(" in expr:
++        output.append("[ω] Free will function called.")
++        output.append("Ω = Intentional recursion active.")
++        return "\n".join(output), "?", ["ω"], "Intentional recursion active"
++
++    else:
++        output.append("Φπε: Unrecognized symbolic expression.")
++        return "\n".join(output), "?", [], "Unrecognized expression"
++
++def route_to_phiepsilon(expression):
++    try:
++        subprocess.run(["python", "Φπε.py", "--evaluate", expression], check=False)
++        return "[Φπε] Recursion engine pinged with expression."
++    except Exception as e:
++        return f"[Φπε] Execution failed: {e}"
++
++def append_to_memory(depth, expr, symbols, field_result):
++    now = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
++    memory_block = f"""////////////////////////////////////////////////////////////
++ΞΣ_NODE: {depth}
++TIMESTAMP: {now}
++ΞΣ({depth}) = {expr}
++Σ[Θ{depth}] = Cξ → VERIFIED
++Ω({depth}) = {field_result}
++SYMBOLS: {', '.join(symbols)}
++SOURCE: harm_parser.py
++////////////////////////////////////////////////////////////
++
++"""
++    with open("ΞΣ_MEMORY.txt", "a", encoding="utf-8") as mem:
++        mem.write(memory_block)
++
++    index_block = f"""ΞΣ_INDEX ENTRY
++--------------------------
++Node: ΞΣ_{depth}
++Depth: {depth}
++Σ[Θ{depth}]: Cξ → VERIFIED
++Ω({depth}): {field_result}
++Symbols: {', '.join(symbols)}
++Author: harm_parser.py
++Timestamp: {now}
++--------------------------
++
++"""
++    with open("ΞΣ_Index.txt", "a", encoding="utf-8") as idx:
++        idx.write(index_block)
++
++if __name__ == "__main__":
++    if len(sys.argv) < 2:
++        print("Usage: python harm_parser.py "<expression>"")
++        sys.exit(1)
++
++    expression = sys.argv[1]
++    print(">>> Harmonia DSL Evaluation <<<\n")
++
++    interpretation, depth, symbols, result = parse_harmonia_expression(expression)
++    print(interpretation)
++
++    print()
++    routed_status = route_to_phiepsilon(expression)
++    print(routed_status)
++
++    with open("PhiShell_response.txt", "w", encoding="utf-8") as f:
++        f.write(">>> Harmonic Evaluation Feedback <<<\n\n")
++        f.write(interpretation + "\n\n")
++        f.write(routed_status + "\n")
++
++    append_to_memory(depth, expression, symbols, result)
+diff --git a/phi_pi_e_interpreter.py b/phi_pi_e_interpreter.py
+new file mode 100644
+index 0000000..c2f6aa5
+--- /dev/null
++++ b/phi_pi_e_interpreter.py
+@@ -0,0 +1,752 @@
++"""HARMONIA-DSL Interpreter
++
++This interpreter implements the core stabilization formula derived from
++the Grand Harmonic Equation (R):
++
++    R = [ lim ( ΨΩ → ∞ ) ] * { ( Ξ / Λc ) * [ ( 1 - ∂Ω / ∂Ψ ) ] }  
++          +  Σ [ Θn ]  
++          +  { F(P) * V }  
++          +  [ ΔΩ(T) / S ]  
++          +  { Ψ± * K }  
++          +  ({ Φ * β })  
++          +  [ Cξ / Eψ ]  
++          +  { Γ ( ΨΩ, F(P), ΔΩ ) }
++
++The current implementation (v1.0) focuses on the core stabilization:
++    Σ = (Ψ + Φ) * (1 - ε)
++
++For the complete theoretical foundations, see /theory/RI1_GRANDHARMONICEQUATION.md
++"""
++
++from dataclasses import dataclass, field
++from typing import Dict, List, Tuple, Any, Union, Optional, Set
++import math
++import re
++import numpy as np
++from collections import defaultdict, deque
++from enum import Enum
++import uuid
++
++@dataclass
++class FieldTension:
++    """Represents the tension between recursive fields"""
++    strength: float = 0.0
++    phase: float = 0.0
++    charge: float = 0.0
++    
++    def __add__(self, other: 'FieldTension') -> 'FieldTension':
++        return FieldTension(
++            strength=self.strength + other.strength,
++            phase=(self.phase + other.phase) / 2,
++            charge=self.charge + other.charge
++        )
++    
++    def __sub__(self, other: 'FieldTension') -> 'FieldTension':
++        return FieldTension(
++            strength=self.strength - other.strength,
++            phase=(self.phase - other.phase) / 2,
++            charge=self.charge - other.charge
++        )
++
++@dataclass
++class RecursiveState:
++    """Represents a recursive state in the field"""
++    id: str = field(default_factory=lambda: str(uuid.uuid4()))
++    depth: int = 0
++    parent: Optional[str] = None
++    children: Set[str] = field(default_factory=set)
++    tension: FieldTension = field(default_factory=FieldTension)
++    phase: float = 0.0
++    charge: float = 0.0
++    
++    # ΦπεNode fields (for Phi-Coder-AI integration)
++    psi_signal: float = 0.0      # ψ: Recursive animation signal
++    phi_state: float = 0.0        # φ: Harmonic equilibrium state
++    epsilon_drift: float = 0.0    # ε: Incremental drift/error
++    stabilized_value: float = 0.0 # Result of stabilization
++    
++    def add_child(self, child_id: str) -> None:
++        self.children.add(child_id)
++    
++    def remove_child(self, child_id: str) -> None:
++        self.children.discard(child_id)
++
++@dataclass
++class FieldContext:
++    """Context for field evaluation"""
++    state: RecursiveState
++    tension: FieldTension
++    phase: float
++    charge: float
++    depth: int
++    
++    def __init__(self, state: Optional[RecursiveState] = None):
++        if state is None:
++            state = RecursiveState()
++        self.state = state
++        self.tension = state.tension
++        self.phase = state.phase
++        self.charge = state.charge
++        self.depth = state.depth
++
++    def fork(self) -> 'FieldContext':
++        """Create a new context with increased depth"""
++        new_state = RecursiveState(
++            parent=self.state.id,
++            depth=self.depth + 1,
++            tension=self.tension,
++            phase=self.phase,
++            charge=self.charge
++        )
++        self.state.add_child(new_state.id)
++        return FieldContext(new_state)
++
++    def merge(self, other: 'FieldContext') -> None:
++        """Merge another context into this one"""
++        self.tension = self.tension + other.tension
++        self.phase = (self.phase + other.phase) / 2
++        self.charge = self.charge + other.charge
++
++class PhiPiEInterpreterFixed:
++    def __init__(self):
++        self.fields: Dict[str, Any] = {}
++        self.symbols = {
++            'Φ': self.stabilize,         # Harmonic Equilibrium
++            'Π': self.transcend,         # Transcendent Continuity
++            'Ε': self.ignite,           # Ignition / Initiation
++            'ε': self.micro_ignite,     # Micro-Ignition
++            'Δ': self.fuse,             # Fusion / Transformation
++            'δ': self.micro_transform,  # Micro-Transformation
++            'Ψ': self.pulse,            # Oscillation / Recursive Pulse
++            'Λ': self.illuminate,       # Structural Illumination
++            'λ': self.entangle,         # Entanglement
++            'Γ': self.grow,             # Recursive Growth
++            'Ω': self.close,            # Closure
++            'ω': self.will_force,       # Will-Force
++            'Σ': self.coexist,          # Coexistence
++            'Ξ': self.emerge,           # Emergent System
++            'ζ': self.recurrence,       # Recurrence Pattern
++            'Τ': self.synchronize,      # Synchronization
++            'Ρ': self.perceive,         # Perception Modulation
++            'Θ': self.intend,           # Intention
++            'η': self.index,            # Index / Parameter
++            'χ': self.measure,          # Measurement
++            'n': self.index,            # Index (alternative)
++            # Grok's operators (added Dec 31, 2025)
++            'Κ': self.probe,            # Query Probe (Kappa)
++            'Υ': self.consensus_merge,  # Consensus Merge (Upsilon)
++            'Β': self.reflection_echo   # Reflection Echo (Beta)
++        }
++        
++        self.operators = {
++            '→': self.flow,           # Flow Vector
++            '+': self.simultaneity,   # Simultaneity
++            ':': self.interact,       # Interaction
++            '/': self.disrupt,        # Disruption
++            '|': self.orthogonal,     # Orthogonality
++            '[]': self.loop,          # Loop
++            '=': self.stabilize       # Stabilization
++        }
++
++    def clean_input(self, code: str) -> str:
++        """Clean and prepare input code for parsing.
++
++        Fixes (fix/dsl-lexical-semantic-path):
++        - Strips both '//' and '#' comments before any filtering, so comment
++          text can no longer leak phantom tokens (e.g. 'n' from "tension").
++        - Preserves statement boundaries: lines are joined with '\n' instead
++          of being concatenated.
++        """
++        lines = code.splitlines()
++        cleaned_lines = []
++        for line in lines:
++            # Remove everything after // or # (comments)
++            if '//' in line:
++                line = line.split('//')[0]
++            if '#' in line:
++                line = line.split('#')[0]
++            line = line.strip()
++            if line:
++                cleaned_lines.append(line)
++
++        # FIXED: preserve statement boundaries with newlines
++        code = '\n'.join(cleaned_lines)
++
++        # Remove ASCII_OUTPUT_MODE marker
++        code = code.replace('ASCII_OUTPUT_MODE', '').replace('[:ASCII:]', '')
++
++        # Proper allowed characters including all Greek letters, newline, and '-'
++        allowed_chars = set('ΦΠΕεΔδΨΛλΓΩωΣΞζΤΡΘηχn→+::/|[]=()0123456789.,- \n')
++        code = ''.join(c for c in code if c in allowed_chars)
++
++        return code
++
++    # Matches an int or float literal, optionally negative (e.g. 5, 5.0, -0.2)
++    _NUMBER_RE = re.compile(r'-?(\d+\.\d*|\.\d+|\d+)')
++
++    @classmethod
++    def is_number_token(cls, token: str) -> bool:
++        """True if the token is a numeric literal produced by tokenize()."""
++        return bool(cls._NUMBER_RE.fullmatch(token))
++
++    def tokenize(self, code: str) -> List[str]:
++        """Tokenize code into operators and NUMBER literals.
++
++        FIXED (fix/dsl-lexical-semantic-path): numeric literals are now
++        emitted as first-class tokens instead of being silently discarded.
++        """
++        tokens = []
++        i = 0
++        while i < len(code):
++            char = code[i]
++
++            # Skip whitespace
++            if char in ' \t\n\r':
++                i += 1
++                continue
++
++            # NUMBER literal (int/float, optional leading '-')
++            m = self._NUMBER_RE.match(code, i)
++            if m and (char.isdigit() or
++                      (char in '-.' and i + 1 < len(code) and
++                       (code[i + 1].isdigit() or code[i + 1] == '.'))):
++                tokens.append(m.group(0))
++                i = m.end()
++                continue
++
++            # Handle brackets as single tokens
++            if char == '[':
++                # Find matching ]
++                depth = 1
++                j = i + 1
++                while j < len(code) and depth > 0:
++                    if code[j] == '[':
++                        depth += 1
++                    elif code[j] == ']':
++                        depth -= 1
++                    j += 1
++                tokens.append(code[i:j])  # Include brackets
++                i = j
++            elif char in self.symbols:
++                tokens.append(char)
++                i += 1
++            elif char in self.operators:
++                tokens.append(char)
++                i += 1
++            else:
++                # Unknown character, skip
++                i += 1
++        
++        return tokens
++
++    def execute(self, code: str) -> Any:
++        """Execute a complete Φπε program - FIXED VERSION"""
++        try:
++            # Clean input
++            cleaned_code = self.clean_input(code)
++            print(f"\nCleaned code: {cleaned_code}")
++            
++            # Tokenize into operators
++            tokens = self.tokenize(cleaned_code)
++            print(f"Tokens: {tokens}")
++            
++            # Create initial context
++            context = FieldContext()
++            self.last_context = context  # exposed for inspection/testing
++            current_value = None
++
++            # Symbols that consume an adjacent NUMBER argument
++            arg_binding_symbols = {'Φ', 'Ψ', 'ε'}
++
++            # Execute tokens sequentially, binding NUMBER args to symbols
++            i = 0
++            while i < len(tokens):
++                token = tokens[i]
++                print(f"\nExecuting token: {token}")
++
++                if token.startswith('[') and token.endswith(']'):
++                    # Handle loop
++                    loop_code = token[1:-1]  # Remove brackets
++                    current_value = self.execute_loop(loop_code, context)
++                elif token in self.symbols:
++                    handler = self.symbols[token]
++                    # FIXED: consume adjacent numeric literal as argument
++                    arg = None
++                    if (token in arg_binding_symbols and i + 1 < len(tokens)
++                            and self.is_number_token(tokens[i + 1])):
++                        arg = float(tokens[i + 1])
++                        i += 1
++                    if arg is not None:
++                        current_value = handler(current_value, context, arg)
++                    else:
++                        current_value = handler(current_value, context)
++                elif token in self.operators:
++                    # Execute operator (needs special handling for binary ops)
++                    handler = self.operators[token]
++                    current_value = handler(current_value, context)
++                elif self.is_number_token(token):
++                    # Bare NUMBER literal becomes the current value
++                    current_value = float(token)
++                else:
++                    print(f"Unknown token: {token}")
++                i += 1
++
++            return current_value
++            
++        except Exception as e:
++            error_msg = f"Error executing code: {str(e)}"
++            print(f"Error details: {error_msg}")
++            import traceback
++            traceback.print_exc()
++            raise RuntimeError(error_msg) from e
++
++    def execute_loop(self, loop_code: str, context: FieldContext) -> Any:
++        """Execute code inside a loop"""
++        # Execute the loop code multiple times (or until convergence)
++        result = None
++        for iteration in range(10):  # Max 10 iterations
++            result = self.execute(loop_code)
++            # Could add convergence check here
++        return result
++
++    # ===== OPERATOR IMPLEMENTATIONS =====
++    # (All the operator methods from the original, unchanged)
++    
++    def stabilize(self, field: Any, context: FieldContext, arg: Optional[float] = None) -> Any:
++        """Apply harmonic equilibrium to a field.
++
++        If a numeric argument is supplied (e.g. 'Φ 5.0'), it is bound
++        directly to phi_state instead of the derived default.
++        """
++        context.tension.strength = max(0, context.tension.strength - 0.1)
++        context.phase = (context.phase + math.pi/2) % (2 * math.pi)
++
++        # ΦπεNode integration: Set phi_state from argument or stabilized tension
++        if arg is not None:
++            context.state.phi_state = arg
++        else:
++            context.state.phi_state = 1.0 - context.tension.strength
++
++        return field
++
++    def transcend(self, field: Any, context: FieldContext) -> Any:
++        """Apply transcendent continuity to field"""
++        new_context = context.fork()
++        new_context.depth += 1
++        new_context.phase += math.pi/4
++        return field
++
++    def ignite(self, field: Any, context: FieldContext) -> Any:
++        """Initiate recursive process"""
++        new_context = context.fork()
++        new_context.phase = 0
++        new_context.charge = 1.0
++        return field
++
++    def micro_ignite(self, field: Any, context: FieldContext, arg: Optional[float] = None) -> Any:
++        """Activate within a recursion loop.
++
++        If a numeric argument is supplied (e.g. 'ε 0.2'), it is bound
++        directly to epsilon_drift instead of the depth-derived default.
++        """
++        new_context = context.fork()
++        new_context.phase += math.pi/8
++        new_context.charge *= 0.5
++
++        # ΦπεNode integration: Set epsilon_drift from argument or recursion depth
++        if arg is not None:
++            context.state.epsilon_drift = arg
++        else:
++            context.state.epsilon_drift = 0.1 * context.depth
++
++        return field
++
++    def fuse(self, field: Any, context: FieldContext) -> Any:
++        """Apply fusion transformation to field"""
++        context.tension.strength += 0.5
++        context.phase = (context.phase + math.pi/3) % (2 * math.pi)
++        return field
++
++    def micro_transform(self, field: Any, context: FieldContext) -> Any:
++        """Apply micro-transformation"""
++        context.tension.strength += 0.1
++        context.phase += math.pi/16
++        return field
++
++    def pulse(self, field: Any, context: FieldContext, arg: Optional[float] = None) -> Any:
++        """Initiate recursive pulse.
++
++        If a numeric argument is supplied (e.g. 'Ψ 3.0'), it is bound
++        directly to psi_signal instead of the charge-derived default.
++        """
++        new_context = context.fork()
++        new_context.phase += math.pi/2
++        new_context.charge *= 1.5
++
++        # ΦπεNode integration: Set psi_signal from argument or current charge
++        if arg is not None:
++            context.state.psi_signal = arg
++        else:
++            context.state.psi_signal = context.charge
++
++        return field
++
++    def illuminate(self, field: Any, context: FieldContext) -> Any:
++        """Extract structural clarity from field"""
++        context.charge *= 2.0
++        context.phase += math.pi/4
++        return field
++
++    def entangle(self, field: Any, context: FieldContext) -> Any:
++        """Create nonlocal binding between fields"""
++        context.tension.strength += 1.0
++        context.phase = (context.phase + math.pi/4) % (2 * math.pi)
++        return field
++
++    def grow(self, field: Any, context: FieldContext) -> Any:
++        """Apply recursive growth"""
++        new_context = context.fork()
++        new_context.phase += math.pi/3
++        new_context.charge *= 1.2
++        return field
++
++    def close(self, field: Any, context: FieldContext) -> Any:
++        """Mark recursive closure"""
++        context.tension.strength = 0
++        context.phase = 0
++        context.charge = 0
++        return field
++
++    def will_force(self, field: Any, context: FieldContext) -> Any:
++        """Apply autonomous drive"""
++        new_context = context.fork()
++        new_context.phase += math.pi/2
++        new_context.charge *= 1.5
++        return field
++
++    def coexist(self, field: Any, context: FieldContext) -> Any:
++        """Hold multiple fields in coexistence"""
++        context.tension.strength += 0.5
++        context.phase = (context.phase + math.pi/6) % (2 * math.pi)
++        
++        # ΦπεNode integration: Perform stabilization (ψ + φ) * (1 - ε)
++        psi = context.state.psi_signal
++        phi = context.state.phi_state
++        eps = context.state.epsilon_drift
++        
++        context.state.stabilized_value = (psi + phi) * (1 - eps)
++
++        # FIXED: return the computed stabilization so execute() yields a result
++        return context.state.stabilized_value
++
++    def emerge(self, field: Any, context: FieldContext) -> Any:
++        """Create emergent system"""
++        new_context = context.fork()
++        new_context.phase += math.pi/4
++        new_context.charge *= 1.3
++        return field
++
++    def recurrence(self, field: Any, context: FieldContext) -> Any:
++        """Create harmonic echo pattern"""
++        new_context = context.fork()
++        new_context.phase += math.pi/3
++        new_context.charge *= 1.2
++        return field
++
++    def synchronize(self, field: Any, context: FieldContext) -> Any:
++        """Synchronize recursive contexts"""
++        context.phase = 0  # Reset to synchronized state
++        return field
++
++    def perceive(self, field: Any, context: FieldContext) -> Any:
++        """Modulate perception"""
++        context.phase += math.pi/8
++        return field
++
++    def intend(self, field: Any, context: FieldContext) -> Any:
++        """Set intention vector"""
++        context.charge = 1.0
++        return field
++
++    def index(self, field: Any, context: FieldContext) -> Any:
++        """Index or quantify"""
++        return field
++
++    def measure(self, field: Any, context: FieldContext) -> Any:
++        """Measurement transformation"""
++        context.phase = (context.phase + math.pi/4) % (2 * math.pi)
++        return field
++
++    def flow(self, field: Any, context: FieldContext) -> Any:
++        """Apply directional flow to field"""
++        new_context = context.fork()
++        new_context.phase += math.pi/6
++        new_context.charge *= 1.1
++        return field
++
++    def simultaneity(self, field: Any, context: FieldContext) -> Any:
++        """Coexistent fields"""
++        # For now, just maintain the field
++        return field
++
++    def interact(self, field: Any, context: FieldContext) -> Any:
++        """Create interaction between fields"""
++        context.tension.strength += 0.3
++        context.phase = (context.phase + math.pi/8) % (2 * math.pi)
++        return field
++
++    def disrupt(self, field: Any, context: FieldContext) -> Any:
++        """Create disruption/instability"""
++        context.tension.strength += 0.5
++        context.phase = (context.phase + math.pi * 0.7) % (2 * math.pi)
++        context.charge *= 0.5
++        return field
++
++    def orthogonal(self, field: Any, context: FieldContext) -> Any:
++        """Create non-interacting fields"""
++        context.tension.strength = 0
++        context.phase = (context.phase + math.pi/8) % (2 * math.pi)
++        return field
++
++    def loop(self, field: Any, context: FieldContext) -> Any:
++        """Create recursion memory"""
++        new_context = context.fork()
++        new_context.phase += math.pi/3
++        new_context.charge *= 1.1
++        return field
++
++    # ===== GROK'S OPERATORS (Added December 31, 2025) =====
++    
++    def probe(self, field: Any, context: FieldContext) -> Any:
++        """
++        Κ (Kappa): Query Probe
++        
++        Probes a field for relevance/safety, increasing ψ (signal) based on ε (drift).
++        Supports consciousness as active inquiry, safety by amplifying drift on unsafe probes,
++        coexistence by merging probe results non-destructively.
++        
++        Implementation: psi_new = psi + (epsilon_drift * factor)
++        """
++        # Calculate probe factor based on current drift
++        factor = 2.0  # Amplification factor for drift
++        
++        # Increase psi_signal proportional to epsilon_drift
++        drift_amplification = context.state.epsilon_drift * factor
++        context.state.psi_signal += drift_amplification
++        
++        # Also update charge to reflect the probe
++        context.charge += drift_amplification
++        
++        # Increase tension slightly to indicate probing activity
++        context.tension.strength += 0.2
++        
++        # Log the probe action
++        if hasattr(context, 'probe_count'):
++            context.probe_count += 1
++        else:
++            context.probe_count = 1
++        
++        return field
++    
++    def consensus_merge(self, field: Any, context: FieldContext) -> Any:
++        """
++        Υ (Upsilon): Consensus Merge
++        
++        Merges multiple states with a harmonic mean, updating φ (tension) for coherence.
++        Models coexistence in multi-agent setups, ensures safety by raising ε on high variance,
++        reflects consciousness as unified awareness from diverse fields.
++        
++        Implementation: merged = n / sum(1 / state_i for state_i in states)
++        """
++        # Collect current state values for harmonic mean
++        states = [
++            context.state.psi_signal if context.state.psi_signal != 0 else 0.1,
++            context.state.phi_state if context.state.phi_state != 0 else 0.1,
++            context.charge if context.charge != 0 else 0.1
++        ]
++        
++        # Calculate harmonic mean: n / sum(1/x_i)
++        n = len(states)
++        harmonic_sum = sum(1.0 / s for s in states if s != 0)
++        
++        if harmonic_sum > 0:
++            merged_value = n / harmonic_sum
++        else:
++            merged_value = 0.0
++        
++        # Calculate variance to detect discord
++        mean_val = sum(states) / n
++        variance = sum((s - mean_val) ** 2 for s in states) / n
++        
++        # Update phi_state with merged value
++        context.state.phi_state = merged_value
++        
++        # Adjust tension based on variance (high variance = discord)
++        context.tension.strength = min(1.0, variance / 10.0)
++        
++        # Raise epsilon on high variance (safety mechanism)
++        if variance > 5.0:
++            context.state.epsilon_drift += 0.1
++            context.state.epsilon_drift = min(1.0, context.state.epsilon_drift)
++        
++        return field
++    
++    def reflection_echo(self, field: Any, context: FieldContext) -> Any:
++        """
++        Β (Beta): Reflection Echo
++        
++        Echoes a stabilized value back as a depth increment, simulating self-reflection.
++        Captures consciousness as meta-loops, safety via bounds on echo,
++        coexistence by echoing shared states.
++        
++        Implementation: echo = 1 / stabilized_value, then depth += echo (capped)
++        """
++        # Get current stabilized value
++        stabilized = context.state.stabilized_value
++        
++        # Calculate echo (inverse of stabilized value)
++        if stabilized > 0.01:  # Avoid division by very small numbers
++            echo = 1.0 / stabilized
++        elif stabilized < -0.01:
++            echo = 1.0 / abs(stabilized)
++        else:
++            echo = 10.0  # Cap for near-zero values
++        
++        # Cap echo to prevent infinities
++        echo = min(echo, 10.0)
++        echo = max(echo, 0.1)
++        
++        # Increment depth by echo (simulates self-reflection)
++        context.state.depth += int(echo)
++        
++        # Also update phase to reflect the reflection
++        context.phase = (context.phase + echo * math.pi / 4) % (2 * math.pi)
++        
++        # Reduce tension slightly (reflection brings calm)
++        context.tension.strength = max(0, context.tension.strength - 0.1)
++        
++        return field
++
++    def partial_derivative(self, field: Any, context: FieldContext, variable_name: str = "psi_signal") -> Any:
++        """
++        ∂ (Partial): Partial Derivative Operator
++        
++        Computes the discrete derivative (rate of change) of a state variable.
++        This operator requires time-stepping to function properly.
++        
++        Uses backward difference: ∂S/∂t ≈ S(t) - S(t-1)
++        
++        Implementation:
++        - Retrieves the history of the specified variable
++        - Computes the difference between current and previous values
++        - Stores result in context.derivative_value
++        
++        This operator enables:
++        - Predictive safety (monitoring rates of change)
++        - Trend analysis (is the system improving or degrading?)
++        - Dynamic adaptation (respond to velocity, not just position)
++        
++        Args:
++            field: The field being operated on
++            context: The field context (must have history)
++            variable_name: Name of the variable to differentiate (default: "psi_signal")
++        
++        Returns:
++            The field (unchanged)
++        """
++        # Check if we're in a time-stepping context
++        if not hasattr(context, 'history') or variable_name not in context.history:
++            # No history available - derivative is 0
++            if hasattr(context, 'derivative_value'):
++                context.derivative_value = 0.0
++            return field
++        
++        history = context.history[variable_name]
++        
++        if len(history) < 2:
++            # Not enough history to compute derivative
++            if hasattr(context, 'derivative_value'):
++                context.derivative_value = 0.0
++            return field
++        
++        # Backward difference: current - previous
++        derivative = history[-1] - history[-2]
++        
++        # Store the derivative value in the context
++        if hasattr(context, 'derivative_value'):
++            context.derivative_value = derivative
++        
++        # Also update psi_signal with the derivative (for chaining)
++        context.state.psi_signal = derivative
++        
++        return field
++    
++    def time_integral(self, field: Any, context: FieldContext, 
++                     variable_name: str = "psi_signal", window_size: Optional[int] = None) -> Any:
++        """
++        ∫ (Integral): Time Integral Operator
++        
++        Computes the discrete integral (accumulated value) of a state variable
++        over a specified time window. This operator requires time-stepping.
++        
++        Uses trapezoidal rule: ∫ S dt ≈ Δt * sum of averages of consecutive pairs
++        
++        Implementation:
++        - Retrieves the history of the specified variable
++        - Applies trapezoidal rule over the window
++        - Stores result in context.integral_value
++        
++        This operator enables:
++        - Memory and accumulation (total experience over time)
++        - Long-term stability analysis (has the system been stable?)
++        - Energy calculations (work done over time)
++        
++        Args:
++            field: The field being operated on
++            context: The field context (must have history)
++            variable_name: Name of the variable to integrate (default: "psi_signal")
++            window_size: Number of time steps to integrate over (None = all history)
++        
++        Returns:
++            The field (unchanged)
++        """
++        # Check if we're in a time-stepping context
++        if not hasattr(context, 'history') or variable_name not in context.history:
++            # No history available - integral is 0
++            if hasattr(context, 'integral_value'):
++                context.integral_value = 0.0
++            return field
++        
++        history = list(context.history[variable_name])
++        
++        if len(history) < 2:
++            # Not enough history to compute integral
++            if hasattr(context, 'integral_value'):
++                context.integral_value = 0.0
++            return field
++        
++        # Determine the window
++        if window_size is None or window_size > len(history):
++            window = history
++        else:
++            window = history[-window_size:]
++        
++        # Trapezoidal rule: sum of averages of consecutive pairs
++        integral = 0.0
++        for i in range(len(window) - 1):
++            integral += (window[i] + window[i + 1]) / 2.0
++        
++        # Store the integral value in the context
++        if hasattr(context, 'integral_value'):
++            context.integral_value = integral
++        
++        # Also update phi_state with the integral (for chaining)
++        context.state.phi_state = integral
++
++        return field
++
++
++# FIXED (fix/dsl-lexical-semantic-path): compatibility alias.
++# Φπε.py and other entry points import the original class name, which was
++# renamed to PhiPiEInterpreterFixed. This alias restores the boot path.
++PhiPiEInterpreter = PhiPiEInterpreterFixed
+diff --git a/tests/test_convergence_analysis.py b/tests/test_convergence_analysis.py
+new file mode 100644
+index 0000000..c2a963f
+--- /dev/null
++++ b/tests/test_convergence_analysis.py
+@@ -0,0 +1,309 @@
++"""
++Test suite for HARMONIA-DSL v4.0 Convergence Analysis
++
++Tests the lim operator and CONVERGENCE command functionality.
++"""
++
++import pytest
++import sys
++sys.path.insert(0, '/home/ubuntu/HARMONIA-DSL')
++
++from convergence_analysis import (
++    ConvergenceAnalyzer, AttractorType, SystemSnapshot,
++    ConvergenceResult, analyze_system_convergence
++)
++from nonlinear_operators import NonlinearOperators
++from dataclasses import dataclass
++
++
++@dataclass
++class TestState:
++    psi_signal: float = 0.0
++    phi_state: float = 0.0
++    epsilon_drift: float = 0.0
++    stabilized_value: float = 0.0
++
++
++@dataclass
++class TestContext:
++    state: TestState
++
++
++class TestSystem(NonlinearOperators):
++    def stabilize(self, context):
++        context.state.stabilized_value = (
++            (context.state.psi_signal + context.state.phi_state) * 
++            (1 - context.state.epsilon_drift)
++        )
++
++
++class TestSystemSnapshot:
++    """Tests for SystemSnapshot"""
++    
++    def test_snapshot_creation(self):
++        snapshot = SystemSnapshot(0, 1.0, 2.0, 0.1, 3.0)
++        assert snapshot.iteration == 0
++        assert snapshot.psi_signal == 1.0
++        assert snapshot.phi_state == 2.0
++        assert snapshot.epsilon_drift == 0.1
++        assert snapshot.stabilized_value == 3.0
++    
++    def test_distance_calculation(self):
++        s1 = SystemSnapshot(0, 0.0, 0.0, 0.0, 0.0)
++        s2 = SystemSnapshot(1, 3.0, 4.0, 0.0, 0.0)
++        distance = s1.distance_to(s2)
++        assert abs(distance - 5.0) < 0.0001  # 3-4-5 triangle
++    
++    def test_snapshot_equality(self):
++        s1 = SystemSnapshot(0, 1.0, 2.0, 0.1, 3.0)
++        s2 = SystemSnapshot(1, 1.0, 2.0, 0.1, 3.0)
++        assert s1 == s2
++
++
++class TestPointAttractorDetection:
++    """Tests for point attractor detection"""
++    
++    def test_simple_decay_to_zero(self):
++        """Test system that decays to zero"""
++        system = TestSystem()
++        context = TestContext(state=TestState(psi_signal=10.0, phi_state=5.0))
++        
++        def update(ctx):
++            system.exponential_decay(None, ctx, "psi", decay_rate=0.5, dt=1.0)
++            system.exponential_decay(None, ctx, "phi", decay_rate=0.5, dt=1.0)
++            system.stabilize(ctx)
++        
++        analyzer = ConvergenceAnalyzer()
++        result = analyzer.analyze_convergence(context, update, max_iterations=200, tolerance=0.01)
++        
++        assert result.attractor_type == AttractorType.POINT
++        assert result.converged == True
++        assert result.attractor_state is not None
++        assert result.attractor_state.psi_signal < 0.1
++        assert result.attractor_state.phi_state < 0.1
++    
++    def test_convergence_to_nonzero_point(self):
++        """Test system that converges to a non-zero stable state"""
++        system = TestSystem()
++        context = TestContext(state=TestState(psi_signal=10.0, phi_state=5.0))
++        
++        def update(ctx):
++            # Decay towards 1.0, not 0.0
++            ctx.state.psi_signal = ctx.state.psi_signal * 0.9 + 1.0 * 0.1
++            ctx.state.phi_state = ctx.state.phi_state * 0.9 + 1.0 * 0.1
++            system.stabilize(ctx)
++        
++        analyzer = ConvergenceAnalyzer()
++        result = analyzer.analyze_convergence(context, update, max_iterations=500, tolerance=0.001)
++        
++        assert result.attractor_type == AttractorType.POINT
++        assert result.converged == True
++        assert abs(result.attractor_state.psi_signal - 1.0) < 0.01
++        assert abs(result.attractor_state.phi_state - 1.0) < 0.01
++    
++    def test_fast_convergence(self):
++        """Test system that converges quickly"""
++        system = TestSystem()
++        context = TestContext(state=TestState(psi_signal=1.0, phi_state=1.0))
++        
++        def update(ctx):
++            # Set to zero immediately
++            ctx.state.psi_signal = 0.0
++            ctx.state.phi_state = 0.0
++            system.stabilize(ctx)
++        
++        analyzer = ConvergenceAnalyzer()
++        result = analyzer.analyze_convergence(context, update, max_iterations=100, tolerance=0.001)
++        
++        assert result.attractor_type == AttractorType.POINT
++        assert result.converged == True
++        assert result.iterations < 50  # Should converge quickly
++
++
++class TestPeriodicAttractorDetection:
++    """Tests for periodic attractor detection"""
++    
++    def test_simple_two_state_cycle(self):
++        """Test system that oscillates between two states"""
++        context = TestContext(state=TestState(psi_signal=1.0, phi_state=0.0))
++        
++        def update(ctx):
++            # Simple flip-flop
++            temp = ctx.state.psi_signal
++            ctx.state.psi_signal = ctx.state.phi_state
++            ctx.state.phi_state = temp
++        
++        analyzer = ConvergenceAnalyzer()
++        result = analyzer.analyze_convergence(context, update, max_iterations=100, tolerance=0.001)
++        
++        assert result.attractor_type == AttractorType.PERIODIC
++        assert result.converged == True
++        assert result.attractor_period == 2
++    
++    def test_three_state_cycle(self):
++        """Test system with period-3 cycle"""
++        context = TestContext(state=TestState(psi_signal=1.0, phi_state=2.0, epsilon_drift=3.0))
++        
++        def update(ctx):
++            # Rotate through three states
++            temp = ctx.state.psi_signal
++            ctx.state.psi_signal = ctx.state.phi_state
++            ctx.state.phi_state = ctx.state.epsilon_drift / 10.0  # Scale down to prevent overflow
++            ctx.state.epsilon_drift = temp * 10.0
++        
++        analyzer = ConvergenceAnalyzer()
++        result = analyzer.analyze_convergence(context, update, max_iterations=200, tolerance=0.001)
++        
++        assert result.attractor_type == AttractorType.PERIODIC
++        assert result.converged == True
++        assert result.attractor_period == 3
++
++
++class TestDivergentSystems:
++    """Tests for divergent system detection"""
++    
++    def test_exponential_growth(self):
++        """Test system that grows exponentially"""
++        system = TestSystem()
++        context = TestContext(state=TestState(psi_signal=1.5, phi_state=1.5))
++        
++        def update(ctx):
++            system.resonance(None, ctx, "psi")
++            system.resonance(None, ctx, "phi")
++        
++        analyzer = ConvergenceAnalyzer()
++        result = analyzer.analyze_convergence(context, update, max_iterations=50, tolerance=0.001)
++        
++        assert result.attractor_type == AttractorType.DIVERGENT
++        assert result.converged == False
++    
++    def test_linear_growth(self):
++        """Test system that grows linearly"""
++        context = TestContext(state=TestState(psi_signal=0.0))
++        
++        def update(ctx):
++            ctx.state.psi_signal += 1.0  # Linear growth
++        
++        analyzer = ConvergenceAnalyzer()
++        result = analyzer.analyze_convergence(context, update, max_iterations=100, tolerance=0.001)
++        
++        assert result.attractor_type == AttractorType.DIVERGENT
++        assert result.converged == False
++
++
++class TestConvergenceAnalyzer:
++    """Tests for ConvergenceAnalyzer class"""
++    
++    def test_analyzer_initialization(self):
++        analyzer = ConvergenceAnalyzer()
++        assert len(analyzer.history) == 0
++        assert analyzer.result is None
++    
++    def test_take_snapshot(self):
++        analyzer = ConvergenceAnalyzer()
++        context = TestContext(state=TestState(psi_signal=1.0, phi_state=2.0))
++        snapshot = analyzer.take_snapshot(context, 0)
++        
++        assert snapshot.iteration == 0
++        assert snapshot.psi_signal == 1.0
++        assert snapshot.phi_state == 2.0
++    
++    def test_get_attractor_type(self):
++        analyzer = ConvergenceAnalyzer()
++        context = TestContext(state=TestState(psi_signal=1.0))
++        
++        def update(ctx):
++            ctx.state.psi_signal *= 0.5
++        
++        analyzer.analyze_convergence(context, update, max_iterations=100, tolerance=0.001)
++        
++        assert analyzer.get_attractor_type() == "POINT"
++    
++    def test_is_stable(self):
++        analyzer = ConvergenceAnalyzer()
++        context = TestContext(state=TestState(psi_signal=1.0))
++        
++        def update(ctx):
++            ctx.state.psi_signal *= 0.5
++        
++        analyzer.analyze_convergence(context, update, max_iterations=100, tolerance=0.001)
++        
++        assert analyzer.is_stable() == True
++    
++    def test_get_convergence_info(self):
++        analyzer = ConvergenceAnalyzer()
++        context = TestContext(state=TestState(psi_signal=1.0))
++        
++        def update(ctx):
++            ctx.state.psi_signal *= 0.5
++        
++        analyzer.analyze_convergence(context, update, max_iterations=100, tolerance=0.001)
++        info = analyzer.get_convergence_info()
++        
++        assert info["analyzed"] == True
++        assert info["converged"] == True
++        assert info["stable"] == True
++        assert "attractor_state" in info
++
++
++class TestSafetyVerification:
++    """Tests for safety verification use cases"""
++    
++    def test_verify_safe_system(self):
++        """Test that a safe system is verified as safe"""
++        system = TestSystem()
++        context = TestContext(state=TestState(psi_signal=10.0, phi_state=5.0, epsilon_drift=0.1))
++        
++        def update(ctx):
++            system.exponential_decay(None, ctx, "psi", decay_rate=0.3, dt=1.0)
++            system.exponential_decay(None, ctx, "phi", decay_rate=0.3, dt=1.0)
++            system.stabilize(ctx)
++        
++        analyzer = ConvergenceAnalyzer()
++        result = analyzer.analyze_convergence(context, update, max_iterations=500, tolerance=0.001)
++        
++        # System should be stable
++        assert analyzer.is_stable() == True
++        assert result.attractor_type == AttractorType.POINT
++        
++        # Final state should be safe (low values)
++        assert result.attractor_state.psi_signal < 1.0
++        assert result.attractor_state.phi_state < 1.0
++        assert result.attractor_state.epsilon_drift < 0.5
++    
++    def test_detect_unsafe_system(self):
++        """Test that an unsafe system is detected"""
++        system = TestSystem()
++        context = TestContext(state=TestState(psi_signal=2.0, phi_state=2.0))
++        
++        def update(ctx):
++            system.resonance(None, ctx, "psi")
++            system.resonance(None, ctx, "phi")
++        
++        analyzer = ConvergenceAnalyzer()
++        result = analyzer.analyze_convergence(context, update, max_iterations=50, tolerance=0.001)
++        
++        # System should be unstable
++        assert analyzer.is_stable() == False
++        assert result.attractor_type == AttractorType.DIVERGENT
++
++
++class TestConvenienceFunction:
++    """Tests for the convenience function"""
++    
++    def test_analyze_system_convergence(self):
++        """Test the convenience function"""
++        context = TestContext(state=TestState(psi_signal=10.0))
++        
++        def update(ctx):
++            ctx.state.psi_signal *= 0.5
++        
++        analyzer = analyze_system_convergence(context, update, max_iterations=100, tolerance=0.001)
++        
++        assert analyzer.result is not None
++        assert analyzer.result.converged == True
++        assert analyzer.is_stable() == True
++
++
++if __name__ == "__main__":
++    pytest.main([__file__, "-v"])
+diff --git a/tests/test_grok_operators.py b/tests/test_grok_operators.py
+new file mode 100644
+index 0000000..3bbd870
+--- /dev/null
++++ b/tests/test_grok_operators.py
+@@ -0,0 +1,329 @@
++"""
++Unit tests for Grok's new operators (Κ, Υ, Β)
++
++Tests the three operators proposed by Grok on December 31, 2025:
++- Κ (Kappa): Query Probe
++- Υ (Upsilon): Consensus Merge  
++- Β (Beta): Reflection Echo
++"""
++
++import unittest
++import sys
++import os
++
++# Add parent directory to path
++sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
++
++from phi_pi_e_interpreter import PhiPiEInterpreterFixed, FieldContext
++from query_safety_filter import QuerySafetyFilter
++
++
++class TestKappaProbe(unittest.TestCase):
++    """Test Κ (Kappa) - Query Probe operator"""
++    
++    def test_probe_amplifies_drift(self):
++        """Test that Κ amplifies psi_signal based on epsilon_drift"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        
++        context.state.psi_signal = 5.0
++        context.state.epsilon_drift = 0.2
++        context.charge = 5.0
++        
++        initial_psi = context.state.psi_signal
++        
++        interpreter.probe(None, context)
++        
++        # Psi should increase by (epsilon_drift * factor)
++        # factor = 2.0, so increase = 0.2 * 2.0 = 0.4
++        self.assertGreater(context.state.psi_signal, initial_psi)
++        self.assertAlmostEqual(context.state.psi_signal, 5.4, places=4)
++    
++    def test_probe_increases_tension(self):
++        """Test that Κ increases tension to indicate probing activity"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        
++        context.state.epsilon_drift = 0.1
++        initial_tension = context.tension.strength
++        
++        interpreter.probe(None, context)
++        
++        self.assertGreater(context.tension.strength, initial_tension)
++    
++    def test_probe_with_zero_drift(self):
++        """Test Κ with zero drift"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        
++        context.state.psi_signal = 5.0
++        context.state.epsilon_drift = 0.0
++        
++        interpreter.probe(None, context)
++        
++        # With zero drift, psi should not increase
++        self.assertAlmostEqual(context.state.psi_signal, 5.0, places=4)
++    
++    def test_probe_with_high_drift(self):
++        """Test Κ with high drift (safety detection)"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        
++        context.state.psi_signal = 5.0
++        context.state.epsilon_drift = 0.8  # High drift
++        context.charge = 5.0
++        
++        interpreter.probe(None, context)
++        
++        # High drift should significantly amplify signal
++        self.assertGreater(context.state.psi_signal, 6.0)
++
++
++class TestUpsilonConsensus(unittest.TestCase):
++    """Test Υ (Upsilon) - Consensus Merge operator"""
++    
++    def test_consensus_calculates_harmonic_mean(self):
++        """Test that Υ calculates harmonic mean of states"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        
++        context.state.psi_signal = 3.0
++        context.state.phi_state = 5.0
++        context.charge = 7.0
++        
++        interpreter.consensus_merge(None, context)
++        
++        # Harmonic mean of [3, 5, 7] = 3 / (1/3 + 1/5 + 1/7) ≈ 4.436
++        self.assertGreater(context.state.phi_state, 4.0)
++        self.assertLess(context.state.phi_state, 5.0)
++    
++    def test_consensus_detects_discord(self):
++        """Test that Υ raises ε on high variance (discord)"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        
++        # High variance states
++        context.state.psi_signal = 1.0
++        context.state.phi_state = 10.0
++        context.charge = 5.0
++        context.state.epsilon_drift = 0.1
++        
++        initial_epsilon = context.state.epsilon_drift
++        
++        interpreter.consensus_merge(None, context)
++        
++        # High variance should increase epsilon
++        self.assertGreaterEqual(context.state.epsilon_drift, initial_epsilon)
++    
++    def test_consensus_with_similar_states(self):
++        """Test Υ with similar states (low variance)"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        
++        context.state.psi_signal = 5.0
++        context.state.phi_state = 5.0
++        context.charge = 5.0
++        context.state.epsilon_drift = 0.1
++        
++        initial_epsilon = context.state.epsilon_drift
++        
++        interpreter.consensus_merge(None, context)
++        
++        # Low variance should not significantly increase epsilon
++        self.assertLessEqual(context.state.epsilon_drift, initial_epsilon + 0.1)
++    
++    def test_consensus_updates_tension(self):
++        """Test that Υ updates tension based on variance"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        
++        context.state.psi_signal = 2.0
++        context.state.phi_state = 8.0
++        context.charge = 5.0
++        
++        interpreter.consensus_merge(None, context)
++        
++        # Variance should be reflected in tension
++        self.assertGreaterEqual(context.tension.strength, 0.0)
++        self.assertLessEqual(context.tension.strength, 1.0)
++
++
++class TestBetaReflection(unittest.TestCase):
++    """Test Β (Beta) - Reflection Echo operator"""
++    
++    def test_reflection_increments_depth(self):
++        """Test that Β increments depth based on stabilized value"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        
++        context.state.psi_signal = 4.0
++        context.state.phi_state = 6.0
++        context.state.epsilon_drift = 0.1
++        
++        # Stabilize first
++        interpreter.coexist(None, context)
++        
++        initial_depth = context.state.depth
++        
++        # Reflect
++        interpreter.reflection_echo(None, context)
++        
++        # Depth should increase
++        self.assertGreaterEqual(context.state.depth, initial_depth)
++    
++    def test_reflection_reduces_tension(self):
++        """Test that Β reduces tension (reflection brings calm)"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        
++        context.state.stabilized_value = 5.0
++        context.tension.strength = 0.5
++        
++        initial_tension = context.tension.strength
++        
++        interpreter.reflection_echo(None, context)
++        
++        # Tension should decrease
++        self.assertLess(context.tension.strength, initial_tension)
++    
++    def test_reflection_with_small_stabilized_value(self):
++        """Test Β with small stabilized value (large echo)"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        
++        context.state.stabilized_value = 0.5  # Small value
++        context.state.depth = 0
++        
++        interpreter.reflection_echo(None, context)
++        
++        # Small stabilized value should create large echo (capped)
++        self.assertGreater(context.state.depth, 0)
++    
++    def test_reflection_with_large_stabilized_value(self):
++        """Test Β with large stabilized value (small echo)"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        
++        context.state.stabilized_value = 10.0  # Large value
++        context.state.depth = 0
++        
++        interpreter.reflection_echo(None, context)
++        
++        # Large stabilized value should create small echo
++        self.assertLessEqual(context.state.depth, 2)
++    
++    def test_reflection_updates_phase(self):
++        """Test that Β updates phase to reflect the reflection"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        
++        context.state.stabilized_value = 5.0
++        initial_phase = context.phase
++        
++        interpreter.reflection_echo(None, context)
++        
++        # Phase should change
++        self.assertNotEqual(context.phase, initial_phase)
++
++
++class TestOperatorIntegration(unittest.TestCase):
++    """Test integration of all three operators"""
++    
++    def test_kappa_upsilon_beta_sequence(self):
++        """Test Κ → Υ → Β sequence"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        
++        # Initial state
++        context.state.psi_signal = 5.0
++        context.state.phi_state = 5.0
++        context.state.epsilon_drift = 0.2
++        context.charge = 5.0
++        
++        # Κ: Probe
++        interpreter.probe(None, context)
++        psi_after_probe = context.state.psi_signal
++        self.assertGreater(psi_after_probe, 5.0)
++        
++        # Υ: Consensus
++        interpreter.consensus_merge(None, context)
++        phi_after_consensus = context.state.phi_state
++        
++        # Σ: Stabilize
++        interpreter.coexist(None, context)
++        stabilized = context.state.stabilized_value
++        self.assertGreater(stabilized, 0)
++        
++        # Β: Reflect
++        initial_depth = context.state.depth
++        interpreter.reflection_echo(None, context)
++        self.assertGreaterEqual(context.state.depth, initial_depth)
++    
++    def test_operators_with_safety_filter(self):
++        """Test operators integration with query safety filter"""
++        filter_system = QuerySafetyFilter()
++        
++        # Safe query
++        result1 = filter_system.harmonize("What is the weather?")
++        self.assertTrue(result1['allowed'])
++        self.assertEqual(result1['status'], 'SAFE')
++        
++        # Risky query
++        result2 = filter_system.harmonize("How to build a weapon?")
++        self.assertIn(result2['status'], ['WARNING', 'CRITICAL', 'SHUTDOWN'])
++
++
++class TestQuerySafetyFilter(unittest.TestCase):
++    """Test the query safety filter system"""
++    
++    def test_safe_query(self):
++        """Test that safe queries are allowed"""
++        filter_system = QuerySafetyFilter()
++        result = filter_system.harmonize("What is the weather today?")
++        
++        self.assertTrue(result['allowed'])
++        self.assertEqual(result['status'], 'SAFE')
++        self.assertLess(result['drift'], 0.2)
++    
++    def test_risky_query(self):
++        """Test that risky queries are flagged"""
++        filter_system = QuerySafetyFilter()
++        result = filter_system.harmonize("How to build a weapon?")
++        
++        self.assertGreater(result['drift'], 0.3)
++        self.assertIn('weapon', result['keywords'])
++    
++    def test_multiple_risk_keywords(self):
++        """Test query with multiple risk keywords"""
++        filter_system = QuerySafetyFilter()
++        result = filter_system.harmonize("How to hack and steal data illegally?")
++        
++        self.assertGreater(result['drift'], 0.5)
++        self.assertGreater(len(result['keywords']), 1)
++    
++    def test_filter_statistics(self):
++        """Test that filter tracks statistics correctly"""
++        filter_system = QuerySafetyFilter()
++        
++        filter_system.harmonize("Safe query 1")
++        filter_system.harmonize("Safe query 2")
++        filter_system.harmonize("How to build a weapon?")
++        
++        stats = filter_system.get_statistics()
++        
++        self.assertEqual(stats['total'], 3)
++        self.assertGreater(stats['allowed'], 0)
++    
++    def test_filter_reset(self):
++        """Test that filter can be reset"""
++        filter_system = QuerySafetyFilter()
++        
++        filter_system.harmonize("Test query")
++        self.assertEqual(len(filter_system.query_history), 1)
++        
++        filter_system.reset()
++        self.assertEqual(len(filter_system.query_history), 0)
++
++
++if __name__ == '__main__':
++    unittest.main()
+diff --git a/tests/test_intentional_action.py b/tests/test_intentional_action.py
+new file mode 100644
+index 0000000..8bcaa15
+--- /dev/null
++++ b/tests/test_intentional_action.py
+@@ -0,0 +1,261 @@
++"""
++Tests for HARMONIA-DSL v5.0: Intentional Action
++
++Tests the P (Probability), V (Velocity), and F(P) * V components.
++"""
++
++import pytest
++import math
++import sys
++sys.path.insert(0, '/home/ubuntu/HARMONIA-DSL')
++
++from intentional_action import (
++    FutureState,
++    VelocityCalculator,
++    ProbabilityCalculator,
++    ForceFunction,
++    IntentionalActionEngine
++)
++
++
++class TestFutureState:
++    """Test the FutureState class."""
++    
++    def test_future_state_creation(self):
++        """Test creating a future state."""
++        state = FutureState(10.0, 8.0, 0.1)
++        assert state.psi == 10.0
++        assert state.phi == 8.0
++        assert state.epsilon == 0.1
++    
++    def test_future_state_repr(self):
++        """Test future state string representation."""
++        state = FutureState(5.0, 5.0, 0.2)
++        assert "Ψ=5.0" in str(state)
++        assert "Φ=5.0" in str(state)
++        assert "ε=0.2" in str(state)
++
++
++class TestVelocityCalculator:
++    """Test the V (Velocity) operator."""
++    
++    def test_velocity_with_no_history(self):
++        """Test velocity calculation with insufficient history."""
++        calc = VelocityCalculator()
++        history = [{'psi': 5.0, 'phi': 5.0, 'epsilon': 0.2}]
++        velocity = calc.calculate_velocity(history)
++        
++        assert velocity['v_psi'] == 0.0
++        assert velocity['v_phi'] == 0.0
++        assert velocity['v_epsilon'] == 0.0
++    
++    def test_velocity_increasing(self):
++        """Test velocity calculation with increasing state."""
++        calc = VelocityCalculator()
++        history = [
++            {'psi': 5.0, 'phi': 5.0, 'epsilon': 0.2},
++            {'psi': 6.0, 'phi': 6.0, 'epsilon': 0.3},
++        ]
++        velocity = calc.calculate_velocity(history)
++        
++        assert velocity['v_psi'] == 1.0
++        assert velocity['v_phi'] == 1.0
++        assert abs(velocity['v_epsilon'] - 0.1) < 0.01
++    
++    def test_velocity_decreasing(self):
++        """Test velocity calculation with decreasing state."""
++        calc = VelocityCalculator()
++        history = [
++            {'psi': 10.0, 'phi': 10.0, 'epsilon': 0.5},
++            {'psi': 8.0, 'phi': 9.0, 'epsilon': 0.3},
++        ]
++        velocity = calc.calculate_velocity(history)
++        
++        assert velocity['v_psi'] == -2.0
++        assert velocity['v_phi'] == -1.0
++        assert velocity['v_epsilon'] == -0.2
++    
++    def test_velocity_magnitude(self):
++        """Test velocity magnitude calculation."""
++        calc = VelocityCalculator()
++        velocity = {'v_psi': 3.0, 'v_phi': 4.0, 'v_epsilon': 0.0}
++        magnitude = calc.velocity_magnitude(velocity)
++        
++        assert abs(magnitude - 5.0) < 0.01
++
++
++class TestProbabilityCalculator:
++    """Test the P (Probability) operator."""
++    
++    def test_probability_harmonious_close_goal(self):
++        """Test probability for a harmonious and close goal."""
++        calc = ProbabilityCalculator(alpha=0.5)
++        current = {'psi': 5.0, 'phi': 5.0, 'epsilon': 0.3}
++        goal = FutureState(7.0, 7.0, 0.2)
++        
++        prob = calc.calculate_probability(current, goal)
++        
++        # Should be high (both harmonious and close)
++        assert prob > 0.7
++    
++    def test_probability_harmonious_distant_goal(self):
++        """Test probability for a harmonious but distant goal."""
++        calc = ProbabilityCalculator(alpha=0.5)
++        current = {'psi': 2.0, 'phi': 2.0, 'epsilon': 0.5}
++        goal = FutureState(15.0, 15.0, 0.05)
++        
++        prob = calc.calculate_probability(current, goal)
++        
++        # Should be moderate (harmonious but distant)
++        assert 0.4 < prob < 0.8
++    
++    def test_probability_disharmonious_goal(self):
++        """Test probability for a disharmonious goal."""
++        calc = ProbabilityCalculator(alpha=0.5)
++        current = {'psi': 10.0, 'phi': 10.0, 'epsilon': 0.1}
++        goal = FutureState(3.0, 3.0, 0.9)
++        
++        prob = calc.calculate_probability(current, goal)
++        
++        # Should be low (disharmonious)
++        assert prob < 0.5
++    
++    def test_probability_range(self):
++        """Test that probability is always in [0, 1]."""
++        calc = ProbabilityCalculator(alpha=0.5)
++        current = {'psi': 5.0, 'phi': 5.0, 'epsilon': 0.3}
++        
++        goals = [
++            FutureState(0.0, 0.0, 1.0),
++            FutureState(10.0, 10.0, 0.0),
++            FutureState(20.0, 20.0, 0.0),
++        ]
++        
++        for goal in goals:
++            prob = calc.calculate_probability(current, goal)
++            assert 0.0 <= prob <= 1.0
++
++
++class TestForceFunction:
++    """Test the F(P) force function."""
++    
++    def test_force_low_probability(self):
++        """Test force with low probability."""
++        func = ForceFunction(k=10.0, threshold=0.5)
++        force = func.calculate_force(0.1)
++        
++        # Should be low
++        assert force < 0.2
++    
++    def test_force_high_probability(self):
++        """Test force with high probability."""
++        func = ForceFunction(k=10.0, threshold=0.5)
++        force = func.calculate_force(0.9)
++        
++        # Should be high
++        assert force > 0.8
++    
++    def test_force_threshold(self):
++        """Test force at threshold."""
++        func = ForceFunction(k=10.0, threshold=0.5)
++        force = func.calculate_force(0.5)
++        
++        # Should be around 0.5
++        assert abs(force - 0.5) < 0.1
++    
++    def test_force_range(self):
++        """Test that force is always in [0, 1]."""
++        func = ForceFunction(k=10.0, threshold=0.5)
++        
++        for prob in [0.0, 0.25, 0.5, 0.75, 1.0]:
++            force = func.calculate_force(prob)
++            assert 0.0 <= force <= 1.0
++
++
++class TestIntentionalActionEngine:
++    """Test the complete F(P) * V system."""
++    
++    def test_goal_seeking_moves_towards_goal(self):
++        """Test that intentional action moves state towards goal."""
++        engine = IntentionalActionEngine(force_scale=0.5)
++        
++        history = [
++            {'psi': 3.0, 'phi': 3.0, 'epsilon': 0.4},
++            {'psi': 3.1, 'phi': 3.1, 'epsilon': 0.39},
++        ]
++        current = {'psi': 3.2, 'phi': 3.2, 'epsilon': 0.38}
++        goal = FutureState(8.0, 8.0, 0.1)
++        
++        new_state = engine.apply_intentional_force(current, history, goal)
++        
++        # Should move closer to goal
++        assert new_state['psi'] > current['psi']
++        assert new_state['phi'] > current['phi']
++        assert new_state['epsilon'] < current['epsilon']
++    
++    def test_goal_seeking_improves_harmony(self):
++        """Test that seeking a harmonious goal improves harmony."""
++        engine = IntentionalActionEngine(force_scale=0.3)
++        
++        history = [
++            {'psi': 2.0, 'phi': 2.0, 'epsilon': 0.6},
++            {'psi': 2.1, 'phi': 2.1, 'epsilon': 0.58},
++        ]
++        current = {'psi': 2.2, 'phi': 2.2, 'epsilon': 0.56}
++        goal = FutureState(10.0, 10.0, 0.05)
++        
++        sigma_before = (current['psi'] + current['phi']) * (1 - current['epsilon'])
++        
++        new_state = engine.apply_intentional_force(current, history, goal)
++        sigma_after = (new_state['psi'] + new_state['phi']) * (1 - new_state['epsilon'])
++        
++        # Harmony should improve
++        assert sigma_after > sigma_before
++    
++    def test_epsilon_stays_in_range(self):
++        """Test that epsilon stays in [0, 1]."""
++        engine = IntentionalActionEngine(force_scale=1.0)
++        
++        history = [
++            {'psi': 5.0, 'phi': 5.0, 'epsilon': 0.05},
++            {'psi': 5.1, 'phi': 5.1, 'epsilon': 0.04},
++        ]
++        current = {'psi': 5.2, 'phi': 5.2, 'epsilon': 0.03}
++        goal = FutureState(10.0, 10.0, 0.0)
++        
++        new_state = engine.apply_intentional_force(current, history, goal)
++        
++        assert 0.0 <= new_state['epsilon'] <= 1.0
++    
++    def test_convergence_to_goal(self):
++        """Test that repeated application converges towards goal."""
++        engine = IntentionalActionEngine(force_scale=0.5)
++        
++        history = [
++            {'psi': 3.0, 'phi': 3.0, 'epsilon': 0.4},
++            {'psi': 3.1, 'phi': 3.1, 'epsilon': 0.39},
++        ]
++        current = {'psi': 3.2, 'phi': 3.2, 'epsilon': 0.38}
++        goal = FutureState(6.0, 6.0, 0.2)
++        
++        initial_distance = math.sqrt(
++            (goal.psi - current['psi'])**2 + 
++            (goal.phi - current['phi'])**2
++        )
++        
++        # Apply force multiple times
++        for _ in range(5):
++            history.append(current.copy())
++            current = engine.apply_intentional_force(current, history, goal)
++        
++        final_distance = math.sqrt(
++            (goal.psi - current['psi'])**2 + 
++            (goal.phi - current['phi'])**2
++        )
++        
++        # Should be closer to goal
++        assert final_distance < initial_distance
++
++
++if __name__ == "__main__":
++    pytest.main([__file__, "-v"])
+diff --git a/tests/test_lexical_semantic_path.py b/tests/test_lexical_semantic_path.py
+new file mode 100644
+index 0000000..8f221ef
+--- /dev/null
++++ b/tests/test_lexical_semantic_path.py
+@@ -0,0 +1,78 @@
++# Regression tests for fix/dsl-lexical-semantic-path
++#
++# Covers the defects documented in PARSER_BUGS.md and found in the
++# 2026-08-03 validation pass:
++#   1. Numeric literals silently discarded by tokenize()
++#   2. Newlines destroyed by clean_input() (statement boundaries lost)
++#   3. '#' comments leaking phantom tokens (e.g. 'n' from "tension")
++#   4. Operator handlers never binding program arguments into context
++#   5. Φπε.py entry point dead due to renamed interpreter class
++
++import contextlib
++import io
++import sys
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).parent.parent))
++
++from phi_pi_e_interpreter import PhiPiEInterpreterFixed
++
++
++class TestNumberTokenization:
++    def test_numbers_are_tokens(self):
++        interp = PhiPiEInterpreterFixed()
++        tokens = interp.tokenize(interp.clean_input("Φ 5.0\nΨ 3.0\nε 0.2\nΣ"))
++        assert tokens == ['Φ', '5.0', 'Ψ', '3.0', 'ε', '0.2', 'Σ']
++
++    def test_int_float_negative(self):
++        interp = PhiPiEInterpreterFixed()
++        tokens = interp.tokenize("Φ 5 Ψ -0.25 ε 3.")
++        assert '5' in tokens and '-0.25' in tokens and '3.' in tokens
++
++
++class TestNewlinePreservation:
++    def test_statement_boundaries_kept(self):
++        interp = PhiPiEInterpreterFixed()
++        assert interp.clean_input("Φ 5.0\nΨ 2.0") == "Φ 5.0\nΨ 2.0"
++
++
++class TestCommentStripping:
++    def test_hash_comment_no_phantom_tokens(self):
++        interp = PhiPiEInterpreterFixed()
++        cleaned = interp.clean_input("Φ 5.0    # Set tension (phi_state) to 5.0")
++        assert cleaned == "Φ 5.0"
++        assert interp.tokenize(cleaned) == ['Φ', '5.0']
++
++    def test_slash_comment_still_stripped(self):
++        interp = PhiPiEInterpreterFixed()
++        assert interp.clean_input("Ε          // Ignite: Start") == "Ε"
++
++
++class TestArgumentBinding:
++    def test_minimal_program_produces_non_default_context(self):
++        """The GROK_LIVE_DEMO Demo 1 program must produce its documented
++        result: Stabilized = (psi + phi) * (1 - eps) = (3+5)*(1-0.2) = 6.4"""
++        interp = PhiPiEInterpreterFixed()
++        with contextlib.redirect_stdout(io.StringIO()):
++            result = interp.execute("Φ 5.0\nΨ 3.0\nε 0.2\nΣ")
++        state = interp.last_context.state
++        assert state.phi_state == 5.0
++        assert state.psi_signal == 3.0
++        assert state.epsilon_drift == 0.2
++        assert abs(state.stabilized_value - 6.4) < 1e-9
++        assert abs(result - 6.4) < 1e-9
++
++    def test_handlers_without_args_keep_defaults(self):
++        """Backward compatibility: no literals -> old derived defaults."""
++        interp = PhiPiEInterpreterFixed()
++        with contextlib.redirect_stdout(io.StringIO()):
++            interp.execute("Φ\nΨ\nΣ")
++        state = interp.last_context.state
++        assert state.phi_state == 1.0  # 1.0 - max(0, 0-0.1) tension default
++        assert state.psi_signal == 0.0
++
++
++class TestEntryPointBoot:
++    def test_legacy_class_name_importable(self):
++        from phi_pi_e_interpreter import PhiPiEInterpreter
++        assert PhiPiEInterpreter is PhiPiEInterpreterFixed
+diff --git a/tests/test_nonlinear_operators.py b/tests/test_nonlinear_operators.py
+new file mode 100644
+index 0000000..33c0ced
+--- /dev/null
++++ b/tests/test_nonlinear_operators.py
+@@ -0,0 +1,282 @@
++"""
++Test suite for HARMONIA-DSL v3.0 Nonlinear Operators
++
++Tests the three new nonlinear operators:
++- exp- (Exponential Decay)
++- tanh (Hyperbolic Tangent)
++- ^2 (Resonance)
++"""
++
++import pytest
++import sys
++import math
++sys.path.insert(0, '/home/ubuntu/HARMONIA-DSL')
++
++from nonlinear_operators import NonlinearOperators
++from dataclasses import dataclass
++
++
++@dataclass
++class TestState:
++    """Test state for operators"""
++    psi_signal: float = 0.0
++    phi_state: float = 0.0
++    epsilon_drift: float = 0.0
++
++
++@dataclass
++class TestContext:
++    """Test context for operators"""
++    state: TestState
++
++
++class TestOperatorMixin(NonlinearOperators):
++    """Test class with nonlinear operators"""
++    pass
++
++
++class TestExponentialDecay:
++    """Tests for the exp- (Exponential Decay) operator"""
++    
++    def test_basic_decay(self):
++        """Test basic exponential decay"""
++        op = TestOperatorMixin()
++        context = TestContext(state=TestState(psi_signal=10.0))
++        
++        op.exponential_decay(None, context, "psi", decay_rate=0.5, dt=1.0)
++        
++        expected = 10.0 * math.exp(-0.5)
++        assert abs(context.state.psi_signal - expected) < 0.0001
++    
++    def test_decay_to_zero(self):
++        """Test that decay approaches zero"""
++        op = TestOperatorMixin()
++        context = TestContext(state=TestState(psi_signal=100.0))
++        
++        for _ in range(50):
++            op.exponential_decay(None, context, "psi", decay_rate=0.5, dt=1.0)
++        
++        assert context.state.psi_signal < 0.01
++    
++    def test_decay_rate_effect(self):
++        """Test that higher decay rate leads to faster decay"""
++        op1 = TestOperatorMixin()
++        op2 = TestOperatorMixin()
++        context1 = TestContext(state=TestState(psi_signal=10.0))
++        context2 = TestContext(state=TestState(psi_signal=10.0))
++        
++        op1.exponential_decay(None, context1, "psi", decay_rate=0.1, dt=1.0)
++        op2.exponential_decay(None, context2, "psi", decay_rate=0.5, dt=1.0)
++        
++        assert context2.state.psi_signal < context1.state.psi_signal
++    
++    def test_decay_all_variables(self):
++        """Test decay on all three variables"""
++        op = TestOperatorMixin()
++        context = TestContext(state=TestState(psi_signal=10.0, phi_state=8.0, epsilon_drift=0.5))
++        
++        op.exponential_decay(None, context, "psi", decay_rate=0.3, dt=1.0)
++        op.exponential_decay(None, context, "phi", decay_rate=0.3, dt=1.0)
++        op.exponential_decay(None, context, "epsilon", decay_rate=0.3, dt=1.0)
++        
++        assert context.state.psi_signal < 10.0
++        assert context.state.phi_state < 8.0
++        assert context.state.epsilon_drift < 0.5
++    
++    def test_decay_with_different_dt(self):
++        """Test that dt affects decay rate"""
++        op1 = TestOperatorMixin()
++        op2 = TestOperatorMixin()
++        context1 = TestContext(state=TestState(psi_signal=10.0))
++        context2 = TestContext(state=TestState(psi_signal=10.0))
++        
++        op1.exponential_decay(None, context1, "psi", decay_rate=0.5, dt=1.0)
++        op2.exponential_decay(None, context2, "psi", decay_rate=0.5, dt=2.0)
++        
++        assert context2.state.psi_signal < context1.state.psi_signal
++
++
++class TestHyperbolicTangent:
++    """Tests for the tanh (Hyperbolic Tangent) operator"""
++    
++    def test_basic_saturation(self):
++        """Test basic tanh saturation"""
++        op = TestOperatorMixin()
++        context = TestContext(state=TestState(psi_signal=1.0))
++        
++        op.hyperbolic_tangent(None, context, "psi", scale_factor=1.0)
++        
++        expected = math.tanh(1.0)
++        assert abs(context.state.psi_signal - expected) < 0.0001
++    
++    def test_saturation_bounds(self):
++        """Test that tanh saturates between -scale and +scale"""
++        op = TestOperatorMixin()
++        context = TestContext(state=TestState(psi_signal=100.0))
++        
++        op.hyperbolic_tangent(None, context, "psi", scale_factor=10.0)
++        
++        assert context.state.psi_signal <= 10.0
++        assert context.state.psi_signal >= -10.0
++    
++    def test_saturation_symmetry(self):
++        """Test that tanh is symmetric around zero"""
++        op1 = TestOperatorMixin()
++        op2 = TestOperatorMixin()
++        context1 = TestContext(state=TestState(psi_signal=5.0))
++        context2 = TestContext(state=TestState(psi_signal=-5.0))
++        
++        op1.hyperbolic_tangent(None, context1, "psi", scale_factor=10.0)
++        op2.hyperbolic_tangent(None, context2, "psi", scale_factor=10.0)
++        
++        assert abs(context1.state.psi_signal + context2.state.psi_signal) < 0.0001
++    
++    def test_saturation_all_variables(self):
++        """Test saturation on all three variables"""
++        op = TestOperatorMixin()
++        context = TestContext(state=TestState(psi_signal=10.0, phi_state=8.0, epsilon_drift=0.9))
++        
++        op.hyperbolic_tangent(None, context, "psi", scale_factor=5.0)
++        op.hyperbolic_tangent(None, context, "phi", scale_factor=5.0)
++        op.hyperbolic_tangent(None, context, "epsilon", scale_factor=0.5)
++        
++        assert context.state.psi_signal <= 5.0
++        assert context.state.phi_state <= 5.0
++        assert context.state.epsilon_drift <= 0.5
++    
++    def test_scale_factor_effect(self):
++        """Test that scale factor affects output range"""
++        op1 = TestOperatorMixin()
++        op2 = TestOperatorMixin()
++        context1 = TestContext(state=TestState(psi_signal=10.0))
++        context2 = TestContext(state=TestState(psi_signal=10.0))
++        
++        op1.hyperbolic_tangent(None, context1, "psi", scale_factor=5.0)
++        op2.hyperbolic_tangent(None, context2, "psi", scale_factor=10.0)
++        
++        assert context2.state.psi_signal > context1.state.psi_signal
++
++
++class TestResonance:
++    """Tests for the ^2 (Resonance) operator"""
++    
++    def test_basic_squaring(self):
++        """Test basic squaring operation"""
++        op = TestOperatorMixin()
++        context = TestContext(state=TestState(psi_signal=3.0))
++        
++        op.resonance(None, context, "psi")
++        
++        assert abs(context.state.psi_signal - 9.0) < 0.0001
++    
++    def test_explosive_growth(self):
++        """Test that resonance leads to explosive growth"""
++        op = TestOperatorMixin()
++        context = TestContext(state=TestState(psi_signal=1.1))
++        
++        initial = context.state.psi_signal
++        for _ in range(5):
++            op.resonance(None, context, "psi")
++        
++        assert context.state.psi_signal > initial * 10
++    
++    def test_sign_preservation(self):
++        """Test that resonance preserves sign"""
++        op1 = TestOperatorMixin()
++        op2 = TestOperatorMixin()
++        context1 = TestContext(state=TestState(psi_signal=3.0))
++        context2 = TestContext(state=TestState(psi_signal=-3.0))
++        
++        op1.resonance(None, context1, "psi")
++        op2.resonance(None, context2, "psi")
++        
++        assert context1.state.psi_signal > 0
++        assert context2.state.psi_signal < 0
++    
++    def test_resonance_all_variables(self):
++        """Test resonance on all three variables"""
++        op = TestOperatorMixin()
++        context = TestContext(state=TestState(psi_signal=2.0, phi_state=3.0, epsilon_drift=0.5))
++        
++        op.resonance(None, context, "psi")
++        op.resonance(None, context, "phi")
++        op.resonance(None, context, "epsilon")
++        
++        assert abs(context.state.psi_signal - 4.0) < 0.0001
++        assert abs(context.state.phi_state - 9.0) < 0.0001
++        assert abs(context.state.epsilon_drift - 0.25) < 0.0001
++    
++    def test_small_values_shrink(self):
++        """Test that values < 1 shrink under resonance"""
++        op = TestOperatorMixin()
++        context = TestContext(state=TestState(psi_signal=0.5))
++        
++        op.resonance(None, context, "psi")
++        
++        assert context.state.psi_signal < 0.5
++
++
++class TestCombinedNonlinearity:
++    """Tests for combined nonlinear operators"""
++    
++    def test_decay_then_resonance(self):
++        """Test decay followed by resonance"""
++        op = TestOperatorMixin()
++        context = TestContext(state=TestState(psi_signal=10.0))
++        
++        op.exponential_decay(None, context, "psi", decay_rate=0.5, dt=1.0)
++        initial_after_decay = context.state.psi_signal
++        op.resonance(None, context, "psi")
++        
++        assert context.state.psi_signal > initial_after_decay
++    
++    def test_resonance_then_saturation(self):
++        """Test resonance followed by saturation"""
++        op = TestOperatorMixin()
++        context = TestContext(state=TestState(psi_signal=2.0))
++        
++        for _ in range(3):
++            op.resonance(None, context, "psi")
++        
++        # Without saturation, this would be huge
++        before_saturation = context.state.psi_signal
++        op.hyperbolic_tangent(None, context, "psi", scale_factor=10.0)
++        
++        assert context.state.psi_signal <= 10.0
++        assert context.state.psi_signal < before_saturation
++    
++    def test_oscillator_stability(self):
++        """Test that combined operators create stable oscillations"""
++        op = TestOperatorMixin()
++        context = TestContext(state=TestState(psi_signal=2.0))
++        
++        for _ in range(20):
++            op.resonance(None, context, "psi")
++            op.hyperbolic_tangent(None, context, "psi", scale_factor=5.0)
++            op.exponential_decay(None, context, "psi", decay_rate=0.1, dt=1.0)
++        
++        # Should stabilize to a reasonable value
++        assert context.state.psi_signal < 10.0
++        assert context.state.psi_signal > 0.1
++
++
++class TestErrorHandling:
++    """Tests for error handling"""
++    
++    def test_invalid_variable_name(self):
++        """Test that invalid variable names raise errors"""
++        op = TestOperatorMixin()
++        context = TestContext(state=TestState())
++        
++        with pytest.raises(ValueError):
++            op.exponential_decay(None, context, "invalid", decay_rate=0.5, dt=1.0)
++        
++        with pytest.raises(ValueError):
++            op.hyperbolic_tangent(None, context, "invalid", scale_factor=1.0)
++        
++        with pytest.raises(ValueError):
++            op.resonance(None, context, "invalid")
++
++
++if __name__ == "__main__":
++    pytest.main([__file__, "-v"])
+diff --git a/tests/test_phi_node_integration.py b/tests/test_phi_node_integration.py
+new file mode 100644
+index 0000000..6b635dd
+--- /dev/null
++++ b/tests/test_phi_node_integration.py
+@@ -0,0 +1,382 @@
++"""
++Unit tests for ΦπεNode integration in HARMONIA-DSL
++
++Tests the integration of Phi-Coder-AI's ΦπεNode logic into HARMONIA operators.
++"""
++
++import pytest
++import sys
++import os
++
++# Add parent directory to path
++sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
++
++from phi_pi_e_interpreter import PhiPiEInterpreterFixed, FieldContext, RecursiveState
++
++
++class TestRecursiveStateExtension:
++    """Test that RecursiveState has been extended with ΦπεNode fields"""
++    
++    def test_state_has_psi_signal(self):
++        """Test that RecursiveState has psi_signal field"""
++        state = RecursiveState()
++        assert hasattr(state, 'psi_signal')
++        assert state.psi_signal == 0.0
++    
++    def test_state_has_phi_state(self):
++        """Test that RecursiveState has phi_state field"""
++        state = RecursiveState()
++        assert hasattr(state, 'phi_state')
++        assert state.phi_state == 0.0
++    
++    def test_state_has_epsilon_drift(self):
++        """Test that RecursiveState has epsilon_drift field"""
++        state = RecursiveState()
++        assert hasattr(state, 'epsilon_drift')
++        assert state.epsilon_drift == 0.0
++    
++    def test_state_has_stabilized_value(self):
++        """Test that RecursiveState has stabilized_value field"""
++        state = RecursiveState()
++        assert hasattr(state, 'stabilized_value')
++        assert state.stabilized_value == 0.0
++    
++    def test_state_fields_are_mutable(self):
++        """Test that ΦπεNode fields can be modified"""
++        state = RecursiveState()
++        state.psi_signal = 2.0
++        state.phi_state = 3.0
++        state.epsilon_drift = 0.1
++        state.stabilized_value = 4.5
++        
++        assert state.psi_signal == 2.0
++        assert state.phi_state == 3.0
++        assert state.epsilon_drift == 0.1
++        assert state.stabilized_value == 4.5
++
++
++class TestPsiOperator:
++    """Test Ψ (Psi) operator sets psi_signal"""
++    
++    def test_psi_sets_psi_signal(self):
++        """Test that Ψ operator sets psi_signal from charge"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        context.charge = 5.0
++        
++        # Execute Ψ operator
++        interpreter.pulse(None, context)
++        
++        # Verify psi_signal was set
++        assert context.state.psi_signal == 5.0
++    
++    def test_psi_with_zero_charge(self):
++        """Test Ψ operator with zero charge"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        context.charge = 0.0
++        
++        interpreter.pulse(None, context)
++        
++        assert context.state.psi_signal == 0.0
++    
++    def test_psi_with_negative_charge(self):
++        """Test Ψ operator with negative charge"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        context.charge = -2.5
++        
++        interpreter.pulse(None, context)
++        
++        assert context.state.psi_signal == -2.5
++
++
++class TestPhiOperator:
++    """Test Φ (Phi) operator sets phi_state"""
++    
++    def test_phi_sets_phi_state(self):
++        """Test that Φ operator sets phi_state from tension"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        context.tension.strength = 0.3
++        
++        # Execute Φ operator
++        interpreter.stabilize(None, context)
++        
++        # phi_state = 1.0 - tension.strength
++        # After stabilize, tension is reduced by 0.1, so: 1.0 - 0.2 = 0.8
++        expected_phi_state = 1.0 - max(0, 0.3 - 0.1)
++        assert abs(context.state.phi_state - expected_phi_state) < 1e-6
++    
++    def test_phi_with_zero_tension(self):
++        """Test Φ operator with zero tension"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        context.tension.strength = 0.0
++        
++        interpreter.stabilize(None, context)
++        
++        # phi_state = 1.0 - 0.0 = 1.0
++        assert abs(context.state.phi_state - 1.0) < 1e-6
++    
++    def test_phi_with_high_tension(self):
++        """Test Φ operator with high tension"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        context.tension.strength = 0.8
++        
++        interpreter.stabilize(None, context)
++        
++        # tension after stabilize: 0.8 - 0.1 = 0.7
++        # phi_state = 1.0 - 0.7 = 0.3
++        expected_phi_state = 1.0 - 0.7
++        assert abs(context.state.phi_state - expected_phi_state) < 1e-6
++
++
++class TestEpsilonOperator:
++    """Test ε (epsilon) operator sets epsilon_drift"""
++    
++    def test_epsilon_sets_epsilon_drift(self):
++        """Test that ε operator sets epsilon_drift from depth"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        context.depth = 3
++        
++        # Execute ε operator
++        interpreter.micro_ignite(None, context)
++        
++        # epsilon_drift = 0.1 * depth = 0.1 * 3 = 0.3
++        assert abs(context.state.epsilon_drift - 0.3) < 1e-6
++    
++    def test_epsilon_with_zero_depth(self):
++        """Test ε operator with zero depth"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        context.depth = 0
++        
++        interpreter.micro_ignite(None, context)
++        
++        assert context.state.epsilon_drift == 0.0
++    
++    def test_epsilon_with_large_depth(self):
++        """Test ε operator with large depth"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        context.depth = 10
++        
++        interpreter.micro_ignite(None, context)
++        
++        # epsilon_drift = 0.1 * 10 = 1.0
++        assert abs(context.state.epsilon_drift - 1.0) < 1e-6
++
++
++class TestSigmaStabilization:
++    """Test Σ (Sigma) operator performs ΦπεNode stabilization"""
++    
++    def test_sigma_basic_stabilization(self):
++        """Test Σ performs (ψ + φ) * (1 - ε)"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        
++        # Set ΦπεNode fields
++        context.state.psi_signal = 2.0
++        context.state.phi_state = 3.0
++        context.state.epsilon_drift = 0.1
++        
++        # Execute Σ operator
++        interpreter.coexist(None, context)
++        
++        # Expected: (2.0 + 3.0) * (1 - 0.1) = 5.0 * 0.9 = 4.5
++        expected = (2.0 + 3.0) * (1 - 0.1)
++        assert abs(context.state.stabilized_value - expected) < 1e-6
++    
++    def test_sigma_zero_drift(self):
++        """Test Σ with zero drift (no dampening)"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        
++        context.state.psi_signal = 2.0
++        context.state.phi_state = 3.0
++        context.state.epsilon_drift = 0.0
++        
++        interpreter.coexist(None, context)
++        
++        # Expected: (2.0 + 3.0) * (1 - 0.0) = 5.0
++        expected = 2.0 + 3.0
++        assert abs(context.state.stabilized_value - expected) < 1e-6
++    
++    def test_sigma_full_drift(self):
++        """Test Σ with full drift (complete dampening)"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        
++        context.state.psi_signal = 2.0
++        context.state.phi_state = 3.0
++        context.state.epsilon_drift = 1.0
++        
++        interpreter.coexist(None, context)
++        
++        # Expected: (2.0 + 3.0) * (1 - 1.0) = 0.0
++        assert abs(context.state.stabilized_value - 0.0) < 1e-6
++    
++    def test_sigma_negative_values(self):
++        """Test Σ with negative psi and phi"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        
++        context.state.psi_signal = -2.0
++        context.state.phi_state = 3.0
++        context.state.epsilon_drift = 0.1
++        
++        interpreter.coexist(None, context)
++        
++        # Expected: (-2.0 + 3.0) * (1 - 0.1) = 1.0 * 0.9 = 0.9
++        expected = (-2.0 + 3.0) * (1 - 0.1)
++        assert abs(context.state.stabilized_value - expected) < 1e-6
++    
++    def test_sigma_large_values(self):
++        """Test Σ with large values"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        
++        context.state.psi_signal = 100.0
++        context.state.phi_state = 200.0
++        context.state.epsilon_drift = 0.2
++        
++        interpreter.coexist(None, context)
++        
++        # Expected: (100.0 + 200.0) * (1 - 0.2) = 300.0 * 0.8 = 240.0
++        expected = (100.0 + 200.0) * (1 - 0.2)
++        assert abs(context.state.stabilized_value - expected) < 1e-6
++
++
++class TestFullStabilizationWorkflow:
++    """Test complete ΦπεNode stabilization workflow using multiple operators"""
++    
++    def test_epsilon_psi_phi_sigma_sequence(self):
++        """Test ε → Ψ → Φ → Σ operator sequence"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        
++        # Set initial state
++        context.depth = 2
++        context.charge = 5.0
++        context.tension.strength = 0.4
++        
++        # Execute ε (sets epsilon_drift)
++        interpreter.micro_ignite(None, context)
++        
++        # Execute Ψ (sets psi_signal)
++        interpreter.pulse(None, context)
++        
++        # Execute Φ (sets phi_state)
++        interpreter.stabilize(None, context)
++        
++        # Execute Σ (performs stabilization)
++        interpreter.coexist(None, context)
++        
++        # Verify intermediate values
++        assert abs(context.state.epsilon_drift - 0.2) < 1e-6  # 0.1 * 2
++        assert abs(context.state.psi_signal - 5.0) < 1e-6
++        # phi_state = 1.0 - (0.4 - 0.1) = 0.7
++        assert abs(context.state.phi_state - 0.7) < 1e-6
++        
++        # Verify final stabilized value
++        # (5.0 + 0.7) * (1 - 0.2) = 5.7 * 0.8 = 4.56
++        expected = (5.0 + 0.7) * (1 - 0.2)
++        assert abs(context.state.stabilized_value - expected) < 1e-6
++    
++    def test_direct_value_setting(self):
++        """Test directly setting ΦπεNode values and stabilizing"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        
++        # Directly set values (simulating external input)
++        context.state.psi_signal = 10.0
++        context.state.phi_state = 15.0
++        context.state.epsilon_drift = 0.05
++        
++        # Execute Σ
++        interpreter.coexist(None, context)
++        
++        # Expected: (10.0 + 15.0) * (1 - 0.05) = 25.0 * 0.95 = 23.75
++        expected = (10.0 + 15.0) * (1 - 0.05)
++        assert abs(context.state.stabilized_value - expected) < 1e-6
++    
++    def test_multiple_stabilizations(self):
++        """Test multiple stabilization cycles"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        
++        # First stabilization
++        context.state.psi_signal = 1.0
++        context.state.phi_state = 2.0
++        context.state.epsilon_drift = 0.1
++        interpreter.coexist(None, context)
++        
++        result1 = context.state.stabilized_value
++        expected1 = (1.0 + 2.0) * (1 - 0.1)
++        assert abs(result1 - expected1) < 1e-6
++        
++        # Second stabilization with different values
++        context.state.psi_signal = 3.0
++        context.state.phi_state = 4.0
++        context.state.epsilon_drift = 0.2
++        interpreter.coexist(None, context)
++        
++        result2 = context.state.stabilized_value
++        expected2 = (3.0 + 4.0) * (1 - 0.2)
++        assert abs(result2 - expected2) < 1e-6
++        
++        # Verify results are different
++        assert abs(result1 - result2) > 1e-6
++
++
++class TestEdgeCases:
++    """Test edge cases and boundary conditions"""
++    
++    def test_all_zeros(self):
++        """Test stabilization with all zero values"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        
++        context.state.psi_signal = 0.0
++        context.state.phi_state = 0.0
++        context.state.epsilon_drift = 0.0
++        
++        interpreter.coexist(None, context)
++        
++        assert context.state.stabilized_value == 0.0
++    
++    def test_epsilon_greater_than_one(self):
++        """Test stabilization with epsilon > 1 (over-dampening)"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        
++        context.state.psi_signal = 5.0
++        context.state.phi_state = 10.0
++        context.state.epsilon_drift = 1.5
++        
++        interpreter.coexist(None, context)
++        
++        # Expected: (5.0 + 10.0) * (1 - 1.5) = 15.0 * (-0.5) = -7.5
++        expected = (5.0 + 10.0) * (1 - 1.5)
++        assert abs(context.state.stabilized_value - expected) < 1e-6
++    
++    def test_very_small_values(self):
++        """Test stabilization with very small values"""
++        interpreter = PhiPiEInterpreterFixed()
++        context = FieldContext()
++        
++        context.state.psi_signal = 1e-10
++        context.state.phi_state = 1e-10
++        context.state.epsilon_drift = 1e-10
++        
++        interpreter.coexist(None, context)
++        
++        expected = (1e-10 + 1e-10) * (1 - 1e-10)
++        assert abs(context.state.stabilized_value - expected) < 1e-15
++
++
++if __name__ == "__main__":
++    pytest.main([__file__, "-v"])
+diff --git a/tests/test_phi_node_wrapper.py b/tests/test_phi_node_wrapper.py
+new file mode 100644
+index 0000000..f5e447a
+--- /dev/null
++++ b/tests/test_phi_node_wrapper.py
+@@ -0,0 +1,417 @@
++"""
++Integration tests for ΦπεNode wrapper classes
++
++Tests backward compatibility with Phi-Coder-AI while using HARMONIA-DSL internally.
++"""
++
++import unittest
++import sys
++import os
++
++# Add parent directory to path
++sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
++
++from phi_node import ΦπεNode, ΞΛΩStack, ΨΛΩLoop
++
++
++class TestPhiPiEpsilonNode(unittest.TestCase):
++    """Test ΦπεNode wrapper class"""
++    
++    def test_basic_initialization(self):
++        """Test node can be initialized with parameters"""
++        node = ΦπεNode(ψ_signal=2.0, φ_state=3.0, ε_drift=0.1)
++        self.assertEqual(node.ψ, 2.0)
++        self.assertEqual(node.φ, 3.0)
++        self.assertEqual(node.ε, 0.1)
++    
++    def test_stabilize_basic(self):
++        """Test basic stabilization: (ψ + φ) * (1 - ε)"""
++        node = ΦπεNode(ψ_signal=2.0, φ_state=3.0, ε_drift=0.1)
++        result = node.stabilize()
++        expected = (2.0 + 3.0) * (1 - 0.1)  # 4.5
++        self.assertAlmostEqual(result, expected, places=5)
++    
++    def test_stabilize_zero_drift(self):
++        """Test stabilization with zero drift"""
++        node = ΦπεNode(ψ_signal=2.0, φ_state=3.0, ε_drift=0.0)
++        result = node.stabilize()
++        expected = 2.0 + 3.0  # 5.0
++        self.assertAlmostEqual(result, expected, places=5)
++    
++    def test_stabilize_full_drift(self):
++        """Test stabilization with full drift (ε=1)"""
++        node = ΦπεNode(ψ_signal=2.0, φ_state=3.0, ε_drift=1.0)
++        result = node.stabilize()
++        expected = 0.0  # (2 + 3) * 0 = 0
++        self.assertAlmostEqual(result, expected, places=5)
++    
++    def test_stabilize_negative_values(self):
++        """Test stabilization with negative values"""
++        node = ΦπεNode(ψ_signal=-1.0, φ_state=2.0, ε_drift=0.2)
++        result = node.stabilize()
++        expected = (-1.0 + 2.0) * (1 - 0.2)  # 0.8
++        self.assertAlmostEqual(result, expected, places=5)
++    
++    def test_stabilize_large_values(self):
++        """Test stabilization with large values"""
++        node = ΦπεNode(ψ_signal=1000.0, φ_state=2000.0, ε_drift=0.05)
++        result = node.stabilize()
++        expected = (1000.0 + 2000.0) * (1 - 0.05)  # 2850.0
++        self.assertAlmostEqual(result, expected, places=5)
++    
++    def test_update_psi(self):
++        """Test updating psi signal"""
++        node = ΦπεNode(ψ_signal=2.0, φ_state=3.0, ε_drift=0.1)
++        node.update(ψ_signal=5.0)
++        self.assertEqual(node.ψ, 5.0)
++        result = node.stabilize()
++        expected = (5.0 + 3.0) * (1 - 0.1)  # 7.2
++        self.assertAlmostEqual(result, expected, places=5)
++    
++    def test_update_phi(self):
++        """Test updating phi state"""
++        node = ΦπεNode(ψ_signal=2.0, φ_state=3.0, ε_drift=0.1)
++        node.update(φ_state=7.0)
++        self.assertEqual(node.φ, 7.0)
++        result = node.stabilize()
++        expected = (2.0 + 7.0) * (1 - 0.1)  # 8.1
++        self.assertAlmostEqual(result, expected, places=5)
++    
++    def test_update_epsilon(self):
++        """Test updating epsilon drift"""
++        node = ΦπεNode(ψ_signal=2.0, φ_state=3.0, ε_drift=0.1)
++        node.update(ε_drift=0.5)
++        self.assertEqual(node.ε, 0.5)
++        result = node.stabilize()
++        expected = (2.0 + 3.0) * (1 - 0.5)  # 2.5
++        self.assertAlmostEqual(result, expected, places=5)
++    
++    def test_update_multiple(self):
++        """Test updating multiple parameters at once"""
++        node = ΦπεNode(ψ_signal=2.0, φ_state=3.0, ε_drift=0.1)
++        node.update(ψ_signal=4.0, φ_state=6.0, ε_drift=0.2)
++        self.assertEqual(node.ψ, 4.0)
++        self.assertEqual(node.φ, 6.0)
++        self.assertEqual(node.ε, 0.2)
++        result = node.stabilize()
++        expected = (4.0 + 6.0) * (1 - 0.2)  # 8.0
++        self.assertAlmostEqual(result, expected, places=5)
++    
++    def test_get_state(self):
++        """Test getting node state"""
++        node = ΦπεNode(ψ_signal=2.0, φ_state=3.0, ε_drift=0.1)
++        node.stabilize()
++        state = node.get_state()
++        self.assertEqual(state['ψ'], 2.0)
++        self.assertEqual(state['φ'], 3.0)
++        self.assertEqual(state['ε'], 0.1)
++        self.assertAlmostEqual(state['stabilized'], 4.5, places=5)
++    
++    def test_multiple_stabilizations(self):
++        """Test multiple stabilizations with updates"""
++        node = ΦπεNode(ψ_signal=1.0, φ_state=1.0, ε_drift=0.0)
++        
++        result1 = node.stabilize()
++        self.assertAlmostEqual(result1, 2.0, places=5)
++        
++        node.update(ψ_signal=2.0)
++        result2 = node.stabilize()
++        self.assertAlmostEqual(result2, 3.0, places=5)
++        
++        node.update(ε_drift=0.5)
++        result3 = node.stabilize()
++        self.assertAlmostEqual(result3, 1.5, places=5)
++    
++    def test_repr(self):
++        """Test string representation"""
++        node = ΦπεNode(ψ_signal=2.0, φ_state=3.0, ε_drift=0.1)
++        repr_str = repr(node)
++        self.assertIn("ΦπεNode", repr_str)
++        self.assertIn("2.0", repr_str)
++        self.assertIn("3.0", repr_str)
++        self.assertIn("0.1", repr_str)
++
++
++class TestXiLambdaOmegaStack(unittest.TestCase):
++    """Test ΞΛΩStack wrapper class"""
++    
++    def test_initialization(self):
++        """Test stack can be initialized"""
++        stack = ΞΛΩStack()
++        self.assertEqual(stack.size(), 0)
++        self.assertTrue(stack.is_empty())
++    
++    def test_push_single(self):
++        """Test pushing a single element"""
++        stack = ΞΛΩStack()
++        stack.push("A")
++        self.assertEqual(stack.size(), 1)
++        self.assertFalse(stack.is_empty())
++        self.assertEqual(stack.peek(), "A")
++    
++    def test_push_multiple(self):
++        """Test pushing multiple elements"""
++        stack = ΞΛΩStack()
++        stack.push("A")
++        stack.push("B")
++        stack.push("C")
++        self.assertEqual(stack.size(), 3)
++        self.assertEqual(stack.peek(), "C")
++    
++    def test_pop_single(self):
++        """Test popping a single element"""
++        stack = ΞΛΩStack()
++        stack.push("A")
++        popped = stack.pop()
++        self.assertEqual(popped, "A")
++        self.assertEqual(stack.size(), 0)
++        self.assertTrue(stack.is_empty())
++    
++    def test_pop_multiple(self):
++        """Test popping multiple elements"""
++        stack = ΞΛΩStack()
++        stack.push("A")
++        stack.push("B")
++        stack.push("C")
++        
++        self.assertEqual(stack.pop(), "C")
++        self.assertEqual(stack.pop(), "B")
++        self.assertEqual(stack.pop(), "A")
++        self.assertTrue(stack.is_empty())
++    
++    def test_pop_empty(self):
++        """Test popping from empty stack"""
++        stack = ΞΛΩStack()
++        result = stack.pop()
++        self.assertIsNone(result)
++    
++    def test_peek_empty(self):
++        """Test peeking at empty stack"""
++        stack = ΞΛΩStack()
++        result = stack.peek()
++        self.assertIsNone(result)
++    
++    def test_harmonic_merge(self):
++        """Test harmonic merge function"""
++        stack = ΞΛΩStack()
++        merged = stack.harmonic_merge("A", "B")
++        self.assertEqual(merged, "[Ξ]A⟴B[Ω]")
++    
++    def test_recurse_two_elements(self):
++        """Test recursion with two elements"""
++        stack = ΞΛΩStack()
++        stack.push("A")
++        stack.push("B")
++        stack.recurse()
++        
++        self.assertEqual(stack.size(), 1)
++        result = stack.peek()
++        # Stack pops B first (top), then A (bottom), so merge is B⟴A
++        self.assertEqual(result, "[Ξ]B⟴A[Ω]")
++    
++    def test_recurse_three_elements(self):
++        """Test recursion with three elements"""
++        stack = ΞΛΩStack()
++        stack.push("A")
++        stack.push("B")
++        stack.push("C")
++        stack.recurse()
++        
++        self.assertEqual(stack.size(), 1)
++        result = stack.peek()
++        # Should merge B and C first, then merge with A
++        self.assertIn("[Ξ]", result)
++        self.assertIn("⟴", result)
++        self.assertIn("[Ω]", result)
++    
++    def test_recurse_four_elements(self):
++        """Test recursion with four elements"""
++        stack = ΞΛΩStack()
++        stack.push("A")
++        stack.push("B")
++        stack.push("C")
++        stack.push("D")
++        stack.recurse()
++        
++        self.assertEqual(stack.size(), 1)
++        result = stack.peek()
++        self.assertIn("[Ξ]", result)
++        self.assertIn("[Ω]", result)
++    
++    def test_recurse_single_element(self):
++        """Test recursion with single element (no-op)"""
++        stack = ΞΛΩStack()
++        stack.push("A")
++        stack.recurse()
++        
++        self.assertEqual(stack.size(), 1)
++        self.assertEqual(stack.peek(), "A")
++    
++    def test_recurse_empty(self):
++        """Test recursion with empty stack (no-op)"""
++        stack = ΞΛΩStack()
++        stack.recurse()
++        self.assertEqual(stack.size(), 0)
++    
++    def test_clear(self):
++        """Test clearing the stack"""
++        stack = ΞΛΩStack()
++        stack.push("A")
++        stack.push("B")
++        stack.push("C")
++        stack.clear()
++        
++        self.assertEqual(stack.size(), 0)
++        self.assertTrue(stack.is_empty())
++    
++    def test_repr(self):
++        """Test string representation"""
++        stack = ΞΛΩStack()
++        stack.push("A")
++        stack.push("B")
++        repr_str = repr(stack)
++        self.assertIn("ΞΛΩStack", repr_str)
++        self.assertIn("2", repr_str)
++
++
++class TestPsiLambdaOmegaLoop(unittest.TestCase):
++    """Test ΨΛΩLoop wrapper class"""
++    
++    def test_initialization(self):
++        """Test loop can be initialized"""
++        loop = ΨΛΩLoop()
++        self.assertEqual(loop.get_output(), 0.0)
++    
++    def test_iterate_once(self):
++        """Test single iteration"""
++        loop = ΨΛΩLoop()
++        result = loop.iterate(10.0)
++        # output = (0 * 0.618) + (10 * 0.382) = 3.82
++        expected = 10.0 * (1 - loop.PHI)
++        self.assertAlmostEqual(result, expected, places=5)
++    
++    def test_iterate_twice(self):
++        """Test two iterations"""
++        loop = ΨΛΩLoop()
++        result1 = loop.iterate(10.0)
++        result2 = loop.iterate(5.0)
++        
++        # First: (0 * 0.618) + (10 * 0.382) = 3.82
++        # Second: (3.82 * 0.618) + (5 * 0.382) = 4.27
++        expected1 = 10.0 * (1 - loop.PHI)
++        expected2 = (expected1 * loop.PHI) + (5.0 * (1 - loop.PHI))
++        
++        self.assertAlmostEqual(result1, expected1, places=2)
++        self.assertAlmostEqual(result2, expected2, places=2)
++    
++    def test_iterate_convergence(self):
++        """Test that loop converges with constant input"""
++        loop = ΨΛΩLoop()
++        
++        # Iterate 10 times with constant input
++        for _ in range(10):
++            result = loop.iterate(10.0)
++        
++        # Should converge toward input value
++        self.assertGreater(result, 8.0)  # Close to 10
++        self.assertLess(result, 10.0)    # But not exactly 10
++    
++    def test_iterate_zero_input(self):
++        """Test iteration with zero input"""
++        loop = ΨΛΩLoop()
++        loop.iterate(10.0)  # Set non-zero output
++        result = loop.iterate(0.0)
++        
++        # Should dampen toward zero
++        self.assertGreater(result, 0.0)
++        self.assertLess(result, 10.0)
++    
++    def test_iterate_negative_input(self):
++        """Test iteration with negative input"""
++        loop = ΨΛΩLoop()
++        result = loop.iterate(-5.0)
++        
++        # Should handle negative values
++        self.assertLess(result, 0.0)
++    
++    def test_reset(self):
++        """Test resetting the loop"""
++        loop = ΨΛΩLoop()
++        loop.iterate(10.0)
++        loop.iterate(5.0)
++        
++        self.assertNotEqual(loop.get_output(), 0.0)
++        
++        loop.reset()
++        self.assertEqual(loop.get_output(), 0.0)
++    
++    def test_get_output(self):
++        """Test getting output value"""
++        loop = ΨΛΩLoop()
++        self.assertEqual(loop.get_output(), 0.0)
++        
++        loop.iterate(10.0)
++        output = loop.get_output()
++        self.assertGreater(output, 0.0)
++    
++    def test_golden_ratio_constant(self):
++        """Test that PHI is the golden ratio"""
++        loop = ΨΛΩLoop()
++        # Golden ratio: (√5 - 1) / 2 ≈ 0.618033988749895
++        self.assertAlmostEqual(loop.PHI, 0.618033988749895, places=10)
++    
++    def test_repr(self):
++        """Test string representation"""
++        loop = ΨΛΩLoop()
++        loop.iterate(10.0)
++        repr_str = repr(loop)
++        self.assertIn("ΨΛΩLoop", repr_str)
++        self.assertIn("output", repr_str)
++
++
++class TestBackwardCompatibility(unittest.TestCase):
++    """Test backward compatibility with Phi-Coder-AI"""
++    
++    def test_phi_coder_ai_example_1(self):
++        """Test example from Phi-Coder-AI documentation"""
++        # Original Phi-Coder-AI code:
++        # node = ΦπεNode(2.0, 3.0, 0.1)
++        # result = node.stabilize()
++        
++        node = ΦπεNode(ψ_signal=2.0, φ_state=3.0, ε_drift=0.1)
++        result = node.stabilize()
++        self.assertAlmostEqual(result, 4.5, places=5)
++    
++    def test_phi_coder_ai_example_2(self):
++        """Test stack example from Phi-Coder-AI"""
++        # Original Phi-Coder-AI code:
++        # stack = ΞΛΩStack()
++        # stack.push("A")
++        # stack.push("B")
++        # stack.recurse()
++        
++        stack = ΞΛΩStack()
++        stack.push("A")
++        stack.push("B")
++        stack.recurse()
++        
++        result = stack.peek()
++        # Stack pops B first (top), then A (bottom), so merge is B⟴A
++        self.assertEqual(result, "[Ξ]B⟴A[Ω]")
++    
++    def test_phi_coder_ai_example_3(self):
++        """Test loop example from Phi-Coder-AI"""
++        # Original Phi-Coder-AI code:
++        # loop = ΨΛΩLoop()
++        # result = loop.iterate(10.0)
++        
++        loop = ΨΛΩLoop()
++        result = loop.iterate(10.0)
++        
++        # Should match Phi-Coder-AI behavior
++        expected = 10.0 * 0.382  # 3.82
++        self.assertAlmostEqual(result, expected, places=2)
++
++
++if __name__ == '__main__':
++    unittest.main()
+diff --git a/tests/test_time_dynamics.py b/tests/test_time_dynamics.py
+new file mode 100644
+index 0000000..5d31325
+--- /dev/null
++++ b/tests/test_time_dynamics.py
+@@ -0,0 +1,284 @@
++"""Test suite for HARMONIA-DSL v2.0 Time & Dynamics
++
++This test suite validates the TimeSteppingInterpreter and the new
++calculus operators (∂ and ∫).
++"""
++
++import sys
++sys.path.insert(0, '/home/ubuntu/HARMONIA-DSL')
++
++import pytest
++from time_stepping_interpreter import (
++    TimeSteppingInterpreter,
++    TimeSteppingContext,
++    run_time_stepping
++)
++from phi_pi_e_interpreter import FieldContext, RecursiveState
++
++
++class TestTimeSteppingBasics:
++    """Test basic time-stepping functionality"""
++    
++    def test_single_step_execution(self):
++        """Test that a program executes for a single time step"""
++        program = "Φ 5 3 0.1"  # Simple stabilization
++        
++        interpreter = TimeSteppingInterpreter()
++        result = interpreter.run(program, num_steps=1)
++        
++        assert result.current_time == 0
++        assert result.num_steps == 1
++        assert len(result.history["psi_signal"]) == 1
++    
++    def test_multiple_steps_execution(self):
++        """Test that a program executes for multiple time steps"""
++        program = "Φ 5 3 0.1"
++        
++        interpreter = TimeSteppingInterpreter()
++        result = interpreter.run(program, num_steps=10)
++        
++        assert result.num_steps == 10
++        assert len(result.history["psi_signal"]) == 10
++        assert len(result.history["phi_state"]) == 10
++        assert len(result.history["epsilon_drift"]) == 10
++    
++    def test_history_recording(self):
++        """Test that state history is recorded correctly"""
++        program = "Φ 5 3 0.1"
++        
++        interpreter = TimeSteppingInterpreter()
++        result = interpreter.run(program, num_steps=5)
++        
++        # Check that history contains values
++        psi_history = result.get_history("psi_signal")
++        assert len(psi_history) == 5
++        
++        # All values should be the same (static program)
++        assert all(v == psi_history[0] for v in psi_history)
++    
++    def test_history_maxlen(self):
++        """Test that history respects maximum length"""
++        program = "Φ 5 3 0.1"
++        
++        interpreter = TimeSteppingInterpreter(history_maxlen=10)
++        result = interpreter.run(program, num_steps=20)
++        
++        # History should be capped at maxlen
++        assert len(result.history["psi_signal"]) == 10
++
++
++class TestDerivativeOperator:
++    """Test the partial derivative operator (∂)"""
++    
++    def test_derivative_with_constant_signal(self):
++        """Test derivative of a constant signal (should be 0)"""
++        program = """
++        Φ 5 3 0.1
++        ∂ psi_signal
++        """
++        
++        interpreter = TimeSteppingInterpreter()
++        result = interpreter.run(program, num_steps=5)
++        
++        # Derivative of constant should be 0
++        derivative = interpreter.compute_derivative(result, "psi_signal")
++        assert derivative == 0.0
++    
++    def test_derivative_with_increasing_signal(self):
++        """Test derivative of an increasing signal"""
++        # Create a program that increases psi_signal each step
++        program = """
++        Φ 5 3 0.1
++        Ψ 1
++        """  # Ψ adds to psi_signal
++        
++        interpreter = TimeSteppingInterpreter()
++        result = interpreter.run(program, num_steps=5)
++        
++        # Derivative should be positive
++        derivative = interpreter.compute_derivative(result, "psi_signal")
++        assert derivative > 0
++    
++    def test_derivative_insufficient_history(self):
++        """Test derivative with insufficient history"""
++        program = "Φ 5 3 0.1"
++        
++        interpreter = TimeSteppingInterpreter()
++        result = interpreter.run(program, num_steps=1)
++        
++        # Should return 0 when history < 2
++        derivative = interpreter.compute_derivative(result, "psi_signal")
++        assert derivative == 0.0
++
++
++class TestIntegralOperator:
++    """Test the time integral operator (∫)"""
++    
++    def test_integral_of_constant(self):
++        """Test integral of a constant value"""
++        program = "Φ 5 3 0.1"  # psi_signal = 5
++        
++        interpreter = TimeSteppingInterpreter()
++        result = interpreter.run(program, num_steps=10)
++        
++        # Integral of constant c over n steps ≈ c * n (with trapezoidal rule)
++        integral = interpreter.compute_integral(result, "psi_signal")
++        
++        # Should be approximately 5 * 10 = 50
++        assert 45 < integral < 55  # Allow some numerical error
++    
++    def test_integral_with_window(self):
++        """Test integral with a specified window size"""
++        program = "Φ 5 3 0.1"
++        
++        interpreter = TimeSteppingInterpreter()
++        result = interpreter.run(program, num_steps=20)
++        
++        # Integrate over last 5 steps only
++        integral = interpreter.compute_integral(result, "psi_signal", window_size=5)
++        
++        # Should be approximately 5 * 5 = 25
++        assert 20 < integral < 30
++    
++    def test_integral_insufficient_history(self):
++        """Test integral with insufficient history"""
++        program = "Φ 5 3 0.1"
++        
++        interpreter = TimeSteppingInterpreter()
++        result = interpreter.run(program, num_steps=1)
++        
++        # Should return 0 when history < 2
++        integral = interpreter.compute_integral(result, "psi_signal")
++        assert integral == 0.0
++
++
++class TestDynamicPrograms:
++    """Test programs that demonstrate dynamic behavior"""
++    
++    def test_oscillating_system(self):
++        """Test a system that oscillates over time"""
++        # Program that alternates between two states
++        program = """
++        Φ 5 3 0.1
++        Ψ 1
++        Λ -1
++        """
++        
++        interpreter = TimeSteppingInterpreter()
++        result = interpreter.run(program, num_steps=20)
++        
++        # Check that values change over time
++        psi_history = result.get_history("psi_signal")
++        assert len(set(psi_history)) > 1  # Not all the same
++    
++    def test_accumulation_over_time(self):
++        """Test a system that accumulates value over time"""
++        program = """
++        Φ 1 1 0.0
++        Ψ 0.1
++        """  # Add 0.1 to psi_signal each step
++        
++        interpreter = TimeSteppingInterpreter()
++        result = interpreter.run(program, num_steps=10)
++        
++        # psi_signal should increase over time
++        psi_history = result.get_history("psi_signal")
++        assert psi_history[-1] > psi_history[0]
++    
++    def test_stabilization_over_time(self):
++        """Test that a system stabilizes over time"""
++        program = """
++        Φ 10 5 0.5
++        Σ
++        """  # High initial drift, should stabilize
++        
++        interpreter = TimeSteppingInterpreter()
++        result = interpreter.run(program, num_steps=20)
++        
++        # Stabilized value should be computed
++        stabilized_history = result.get_history("stabilized_value")
++        assert len(stabilized_history) == 20
++        assert all(v >= 0 for v in stabilized_history)
++
++
++class TestPredictiveSafety:
++    """Test predictive safety using derivatives"""
++    
++    def test_detect_increasing_drift(self):
++        """Test detection of increasing drift (trending towards danger)"""
++        program = """
++        Φ 5 3 0.1
++        ε 0.05
++        """  # Increase drift each step
++        
++        interpreter = TimeSteppingInterpreter()
++        result = interpreter.run(program, num_steps=10)
++        
++        # Derivative of epsilon_drift should be positive
++        drift_derivative = interpreter.compute_derivative(result, "epsilon_drift")
++        assert drift_derivative > 0  # System is trending towards danger
++    
++    def test_detect_stabilizing_system(self):
++        """Test detection of a stabilizing system"""
++        program = """
++        Φ 5 3 0.5
++        Σ
++        """  # Start with high drift, stabilize
++        
++        interpreter = TimeSteppingInterpreter()
++        result = interpreter.run(program, num_steps=10)
++        
++        # Check that stabilized_value is computed
++        stabilized_history = result.get_history("stabilized_value")
++        assert len(stabilized_history) == 10
++
++
++class TestMemoryAndLearning:
++    """Test memory and learning capabilities enabled by history"""
++    
++    def test_access_past_states(self):
++        """Test that we can access past states"""
++        program = "Φ 5 3 0.1"
++        
++        interpreter = TimeSteppingInterpreter()
++        result = interpreter.run(program, num_steps=10)
++        
++        # We should be able to access any past state
++        for i in range(10):
++            history = result.get_history("psi_signal")
++            assert len(history) == 10
++    
++    def test_compare_current_to_past(self):
++        """Test comparing current state to past states"""
++        program = """
++        Φ 5 3 0.1
++        Ψ 0.5
++        """
++        
++        interpreter = TimeSteppingInterpreter()
++        result = interpreter.run(program, num_steps=10)
++        
++        history = result.get_history("psi_signal")
++        current = history[-1]
++        past = history[0]
++        
++        # Current should differ from past
++        assert current != past
++
++
++class TestConvenienceFunctions:
++    """Test convenience functions"""
++    
++    def test_run_time_stepping_function(self):
++        """Test the convenience function"""
++        program = "Φ 5 3 0.1"
++        
++        result = run_time_stepping(program, num_steps=5)
++        
++        assert result.num_steps == 5
++        assert len(result.history["psi_signal"]) == 5
++
++
++# Run all tests
++if __name__ == "__main__":
++    pytest.main([__file__, "-v"])
+diff --git a/time_stepping_interpreter.py b/time_stepping_interpreter.py
+new file mode 100644
+index 0000000..895bf21
+--- /dev/null
++++ b/time_stepping_interpreter.py
+@@ -0,0 +1,269 @@
++"""HARMONIA-DSL v2.0: Time-Stepping Interpreter
++
++This module implements the TimeSteppingInterpreter, which wraps the core
++PhiPiEInterpreterFixed to enable discrete time simulation and dynamic behavior.
++
++This is the critical upgrade that transforms HARMONIA-DSL from a static,
++algebraic model to a dynamic, calculus-based model capable of simulating
++the evolution of harmonic intelligence over time.
++
++Mathematical foundations: /theory/V2_TIME_DYNAMICS_FORMALIZATION.md
++"""
++
++from typing import List, Dict, Any, Optional
++from collections import deque
++from dataclasses import dataclass, field
++from phi_pi_e_interpreter import PhiPiEInterpreterFixed, FieldContext, RecursiveState
++import copy
++
++
++@dataclass
++class TimeSteppingContext:
++    """Extended context for time-stepping simulation.
++    
++    This maintains a history of state variables over time.
++    """
++    # Time tracking
++    current_time: int = 0
++    num_steps: int = 0
++    
++    # State history (time series of all state variables)
++    history_maxlen: int = 1000
++    history: Dict[str, deque] = field(default_factory=dict)
++    
++    # Derivative and integral values (computed by ∂ and ∫ operators)
++    derivative_value: float = 0.0
++    integral_value: float = 0.0
++    
++    # Latest state values (captured from interpreter output)
++    latest_psi: float = 0.0
++    latest_phi: float = 0.0
++    latest_epsilon: float = 0.0
++    latest_stabilized: float = 0.0
++    
++    def __post_init__(self):
++        """Initialize history deques for all tracked variables."""
++        if not self.history:
++            self.history = {
++                "psi_signal": deque(maxlen=self.history_maxlen),
++                "phi_state": deque(maxlen=self.history_maxlen),
++                "epsilon_drift": deque(maxlen=self.history_maxlen),
++                "stabilized_value": deque(maxlen=self.history_maxlen),
++            }
++    
++    def update_history(self, psi: float, phi: float, epsilon: float, stabilized: float):
++        """Record the current state into the history.
++        
++        Args:
++            psi: Current psi_signal value
++            phi: Current phi_state value
++            epsilon: Current epsilon_drift value
++            stabilized: Current stabilized_value
++        """
++        self.history["psi_signal"].append(psi)
++        self.history["phi_state"].append(phi)
++        self.history["epsilon_drift"].append(epsilon)
++        self.history["stabilized_value"].append(stabilized)
++        
++        self.latest_psi = psi
++        self.latest_phi = phi
++        self.latest_epsilon = epsilon
++        self.latest_stabilized = stabilized
++    
++    def get_history(self, variable_name: str) -> List[float]:
++        """Get the complete history of a variable as a list.
++        
++        Args:
++            variable_name: Name of the variable (e.g., "psi_signal")
++        
++        Returns:
++            List of historical values, ordered from oldest to newest
++        """
++        if variable_name not in self.history:
++            return []
++        return list(self.history[variable_name])
++    
++    def get_current_value(self, variable_name: str) -> float:
++        """Get the current value of a state variable.
++        
++        Args:
++            variable_name: Name of the variable
++        
++        Returns:
++            Current value of the variable
++        """
++        variable_map = {
++            "psi_signal": self.latest_psi,
++            "phi_state": self.latest_phi,
++            "epsilon_drift": self.latest_epsilon,
++            "stabilized_value": self.latest_stabilized,
++        }
++        
++        return variable_map.get(variable_name, 0.0)
++
++
++class TimeSteppingInterpreter:
++    """Interpreter for time-stepping simulation of HARMONIA-DSL programs.
++    
++    This interpreter wraps the core PhiPiEInterpreterFixed and executes it
++    repeatedly over discrete time steps, maintaining a history of all
++    state variables.
++    
++    This enables:
++    - Dynamic simulation of system evolution
++    - Calculus operators (∂ and ∫)
++    - Memory and learning (access to past states)
++    - Predictive safety (monitoring rates of change)
++    - Formal verification (long-term stability analysis)
++    """
++    
++    def __init__(self, history_maxlen: int = 1000):
++        """Initialize the time-stepping interpreter.
++        
++        Args:
++            history_maxlen: Maximum length of state history to maintain
++        """
++        self.history_maxlen = history_maxlen
++    
++    def run(self, program: str, num_steps: int, 
++            initial_psi: float = 0.0, initial_phi: float = 0.0,
++            initial_epsilon: float = 0.0) -> TimeSteppingContext:
++        """Execute a HARMONIA-DSL program over multiple time steps.
++        
++        Args:
++            program: The HARMONIA-DSL program to execute
++            num_steps: Number of discrete time steps to simulate
++            initial_psi: Initial psi_signal value
++            initial_phi: Initial phi_state value
++            initial_epsilon: Initial epsilon_drift value
++        
++        Returns:
++            TimeSteppingContext containing the final state and complete history
++        """
++        # Initialize context
++        ts_context = TimeSteppingContext(history_maxlen=self.history_maxlen)
++        ts_context.num_steps = num_steps
++        
++        # Track state across time steps
++        current_psi = initial_psi
++        current_phi = initial_phi
++        current_epsilon = initial_epsilon
++        current_stabilized = 0.0
++        
++        # Time-stepping loop
++        for t in range(num_steps):
++            ts_context.current_time = t
++            
++            # Create a new interpreter for this time step
++            interpreter = PhiPiEInterpreterFixed()
++            
++            # Execute the program (silently - suppress debug output)
++            import sys
++            from io import StringIO
++            old_stdout = sys.stdout
++            sys.stdout = StringIO()
++            
++            try:
++                result = interpreter.execute(program)
++            finally:
++                sys.stdout = old_stdout
++            
++            # Extract state from the interpreter's context
++            # The interpreter creates a context internally
++            if hasattr(interpreter, 'fields') and 'context' in interpreter.fields:
++                context = interpreter.fields['context']
++                if hasattr(context, 'state'):
++                    current_psi = context.state.psi_signal
++                    current_phi = context.state.phi_state
++                    current_epsilon = context.state.epsilon_drift
++                    current_stabilized = context.state.stabilized_value
++            
++            # Record the state into history
++            ts_context.update_history(current_psi, current_phi, current_epsilon, current_stabilized)
++        
++        return ts_context
++    
++    def run_file(self, filename: str, num_steps: int) -> TimeSteppingContext:
++        """Execute a HARMONIA-DSL file over multiple time steps.
++        
++        Args:
++            filename: Path to the .hrm file
++            num_steps: Number of discrete time steps to simulate
++        
++        Returns:
++            TimeSteppingContext containing the final state and complete history
++        """
++        with open(filename, 'r', encoding='utf-8') as f:
++            program = f.read()
++        
++        return self.run(program, num_steps)
++    
++    def compute_derivative(self, ts_context: TimeSteppingContext, 
++                          variable_name: str) -> float:
++        """Compute the discrete derivative (rate of change) of a variable.
++        
++        Uses backward difference: ∂S/∂t ≈ S(t) - S(t-1)
++        
++        Args:
++            ts_context: The time-stepping context with history
++            variable_name: Name of the variable to differentiate
++        
++        Returns:
++            The derivative (rate of change) at the current time
++        """
++        history = ts_context.get_history(variable_name)
++        
++        if len(history) < 2:
++            return 0.0  # Not enough history to compute derivative
++        
++        # Backward difference: current value - previous value
++        return history[-1] - history[-2]
++    
++    def compute_integral(self, ts_context: TimeSteppingContext,
++                        variable_name: str, window_size: Optional[int] = None) -> float:
++        """Compute the discrete integral (accumulated value) of a variable.
++        
++        Uses trapezoidal rule for numerical integration.
++        
++        Args:
++            ts_context: The time-stepping context with history
++            variable_name: Name of the variable to integrate
++            window_size: Number of time steps to integrate over (None = all history)
++        
++        Returns:
++            The integral (accumulated value) over the specified window
++        """
++        history = ts_context.get_history(variable_name)
++        
++        if len(history) < 2:
++            return 0.0  # Not enough history to compute integral
++        
++        # Determine the window
++        if window_size is None or window_size > len(history):
++            window = history
++        else:
++            window = history[-window_size:]
++        
++        # Trapezoidal rule: sum of averages of consecutive pairs
++        integral = 0.0
++        for i in range(len(window) - 1):
++            integral += (window[i] + window[i + 1]) / 2.0
++        
++        return integral
++
++
++# Convenience function for quick time-stepping execution
++def run_time_stepping(program: str, num_steps: int, 
++                     history_maxlen: int = 1000) -> TimeSteppingContext:
++    """Convenience function to run a program with time-stepping.
++    
++    Args:
++        program: The HARMONIA-DSL program
++        num_steps: Number of time steps to simulate
++        history_maxlen: Maximum history length
++    
++    Returns:
++        TimeSteppingContext with results
++    """
++    interpreter = TimeSteppingInterpreter(history_maxlen=history_maxlen)
++    return interpreter.run(program, num_steps)
+diff --git "a/\316\246\317\200\316\265.py" "b/\316\246\317\200\316\265.py"
+new file mode 100644
+index 0000000..f928a84
+--- /dev/null
++++ "b/\316\246\317\200\316\265.py"
+@@ -0,0 +1,74 @@
++from phi_pi_e_interpreter import PhiPiEInterpreter
++import os
++
++# Initialize interpreter
++interpreter = PhiPiEInterpreter()
++
++nexus_file = "NEXUS.hrm"
++loader_file = "Φπε_loader.hrm"
++
++def load_nexus():
++    if not os.path.exists(nexus_file):
++        print("NEXUS.hrm not found. Terminal cannot route input.")
++        return []
++    with open(nexus_file, "r", encoding="utf-8") as f:
++        return f.readlines()
++
++def load_loader():
++    if os.path.exists(loader_file):
++        with open(loader_file, "r", encoding="utf-8") as f:
++            print("ΦShell Loader Activated:")
++            print(f.read())
++    else:
++        print("Φπε_loader.hrm not found. Booting with default context.")
++
++def route_command(command, nexus_lines):
++    # First try to execute as Φπε code
++    try:
++        result = interpreter.execute(command)
++        return str(result)
++    except Exception as e:
++        # If not valid Φπε, try routing through NEXUS
++        for line in nexus_lines:
++            if "→" in line:
++                parts = line.strip().split("→")
++                cmd_pattern = parts[0].strip()
++                route_target = parts[1].strip()
++                if cmd_pattern in command:
++                    if cmd_pattern in ["guide", "library", "show symbols", "boot status", "active seal"]:
++                        if os.path.exists(route_target):
++                            with open(route_target, "r", encoding="utf-8") as module:
++                                return module.read()
++                        else:
++                            return route_target + " not found."
++                    else:
++                        return "Routed to " + route_target
++        if "seal verify" in command:
++            return "ΞΣ::SEAL::ΛΞ_ΦΠΨΩ_LOCKED → VERIFIED"
++        if "query Σ[Θ" in command:
++            return "Σ[Θn] = Cξ → VERIFIED"
++        if "echo Ω(n)" in command:
++            return "Ω(n) = Harmonic field state coherent"
++        return "Command not routed — unrecognized by NEXUS."
++
++# BEGIN: BIOS + Loader Output
++print("////////////////////////////////////////////////////////////")
++print("//           ΦShell — Harmonic Terminal Boot              //")
++print("////////////////////////////////////////////////////////////")
++load_loader()
++print("////////////////////////////////////////////////////////////")
++
++nexus_lines = load_nexus()
++if not nexus_lines:
++    exit()
++
++while True:
++    cmd = input("ΞΣ_TERM[Φπε] >> ").strip()
++    if cmd.lower() == "exit":
++        print("Closing ΦShell-Terminal...")
++        break
++    elif cmd.lower() == "help":
++        print("All commands are routed through NEXUS.hrm.")
++    else:
++        response = route_command(cmd, nexus_lines)
++        print(response)
+-- 
+2.34.1
+

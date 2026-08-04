@@ -1,0 +1,149 @@
+From 72dd8186275c225ce0b5efc6e594b6941ade6bf5 Mon Sep 17 00:00:00 2001
+From: Andrew Kadziolka <andrewkadziolka@gmail.com>
+Date: Mon, 3 Aug 2026 21:43:53 -0600
+Subject: [PATCH 4/8] fix(loop): iterations share persistent context; declare
+ invariants
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- execute_loop passes caller's FieldContext to execute(), so [..] loops
+  accumulate state instead of resetting every pass
+- TODO marker: ε-convergence as future loop-exit criterion (Φπε proofs)
+- INVARIANTS.md: lexical path, binding, temporal semantics, canonical
+  fixture, entry point — all non-regressible
+- 2 regression tests (accumulation; no silent reset)
+---
+ INVARIANTS.md              | 45 ++++++++++++++++++++++++++++++++++++++
+ phi_pi_e_interpreter.py    | 15 ++++++++++---
+ tests/test_loop_context.py | 37 +++++++++++++++++++++++++++++++
+ 3 files changed, 94 insertions(+), 3 deletions(-)
+ create mode 100644 INVARIANTS.md
+ create mode 100644 tests/test_loop_context.py
+
+diff --git a/INVARIANTS.md b/INVARIANTS.md
+new file mode 100644
+index 0000000..6f3eba4
+--- /dev/null
++++ b/INVARIANTS.md
+@@ -0,0 +1,45 @@
++# HARMONIA-DSL Non-Regressible Invariants
++
++These are hard constraints. Any change — refactor, feature, optimization —
++that breaks one of these is wrong by definition and must be reverted or
++reworked, regardless of what else it improves.
++
++## 1. Lexical integrity (`tests/test_lexical_semantic_path.py`)
++
++Numeric literals (ints, floats, negatives) are first-class tokens.
++Statement boundaries (newlines) survive cleaning. `//` and `#` comments
++are stripped before filtering and can never leak phantom tokens.
++
++## 2. Argument binding
++
++`Φ x` binds phi_state; `Φ ψ φ ε` (three literals) seeds full initial
++conditions; `Ψ x` and `ε x` accumulate into psi_signal / epsilon_drift.
++Symbols without arguments keep their legacy derived defaults.
++
++## 3. Temporal semantics (`tests/test_time_dynamics.py`, `tests/test_time_history_semantics.py`)
++
++One persistent FieldContext per time-stepping run. History is recorded
++from real state every step. Initial-conditions lines fire at t=0 only.
++Derivative = backward difference; integral = windowed Riemann sum, dt=1.
++A constant signal c over n steps integrates to c·n.
++
++## 4. The canonical fixture (`TestCanonicalFixture`)
++
++```
++Φ 5.0
++Ψ 3.0
++ε 0.2
++Σ
++```
++
++must always tokenize to `Φ 5.0 Ψ 3.0 ε 0.2 Σ`, produce state
++φ=5.0 ψ=3.0 ε=0.2, and output (ψ+φ)(1−ε) = 6.4. This is the language's
++hello world with semantics. If this breaks, Harmonia has stopped being
++a language, whatever else still passes.
++
++## 5. Entry point
++
++`from phi_pi_e_interpreter import PhiPiEInterpreter` must resolve
++(compatibility alias), and `Φπε.py` must boot.
++
++Enforcement: `python3 -m pytest tests/` must pass 100% before any merge.
+diff --git a/phi_pi_e_interpreter.py b/phi_pi_e_interpreter.py
+index 87df1cf..78732c4 100644
+--- a/phi_pi_e_interpreter.py
++++ b/phi_pi_e_interpreter.py
+@@ -321,12 +321,21 @@ class PhiPiEInterpreterFixed:
+             raise RuntimeError(error_msg) from e
+ 
+     def execute_loop(self, loop_code: str, context: FieldContext) -> Any:
+-        """Execute code inside a loop"""
++        """Execute code inside a loop.
++
++        FIXED (fix/loop-context): iterations now share the caller's
++        persistent FieldContext, so loops can accumulate state. The old
++        code called execute() without a context, which built a fresh
++        context every iteration — the same defect class as the broken
++        time-stepping runner (state silently reset each pass).
++        """
+         # Execute the loop code multiple times (or until convergence)
+         result = None
+         for iteration in range(10):  # Max 10 iterations
+-            result = self.execute(loop_code)
+-            # Could add convergence check here
++            result = self.execute(loop_code, context)
++            # TODO: convergence check — per Φπε proofs, ε-convergence
++            # (micro-ignition settling below threshold) is the natural
++            # loop-exit criterion, replacing the fixed 10-iteration cap.
+         return result
+ 
+     # ===== OPERATOR IMPLEMENTATIONS =====
+diff --git a/tests/test_loop_context.py b/tests/test_loop_context.py
+new file mode 100644
+index 0000000..67080a2
+--- /dev/null
++++ b/tests/test_loop_context.py
+@@ -0,0 +1,37 @@
++# Regression tests for fix/loop-context
++#
++# Before this fix, execute_loop() called execute() without passing the
++# caller's context, so every loop iteration ran against a fresh
++# FieldContext — loops could never accumulate state.
++
++import contextlib
++import io
++import sys
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).parent.parent))
++
++from phi_pi_e_interpreter import PhiPiEInterpreterFixed
++
++
++class TestLoopContextPersistence:
++    def test_loop_accumulates_state(self):
++        """'[Ψ 1]' runs the pulse 10 times on ONE context:
++        psi must reach 10.0, not 1.0 (and not 0.0)."""
++        interp = PhiPiEInterpreterFixed()
++        with contextlib.redirect_stdout(io.StringIO()):
++            interp.execute("[Ψ 1]")
++        assert interp.last_context.state.psi_signal == 10.0
++
++    def test_loop_does_not_reset_context(self):
++        """State set before a loop must survive into and past it,
++        and the loop must build on it rather than start from zero."""
++        interp = PhiPiEInterpreterFixed()
++        with contextlib.redirect_stdout(io.StringIO()):
++            interp.execute("Φ 5.0\nΨ 2.0\n[ε 0.01]\nΣ")
++        state = interp.last_context.state
++        assert state.phi_state == 5.0          # pre-loop state survived
++        assert state.psi_signal == 2.0         # pre-loop state survived
++        assert abs(state.epsilon_drift - 0.1) < 1e-9   # 10 × 0.01 accumulated
++        # Σ after the loop sees the accumulated drift:
++        assert abs(state.stabilized_value - (2.0 + 5.0) * (1 - 0.1)) < 1e-9
+-- 
+2.34.1
+

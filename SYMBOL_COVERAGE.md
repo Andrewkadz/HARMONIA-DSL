@@ -1,0 +1,87 @@
+# Symbol Coverage Inventory
+
+Generated 2026-08-03 on `fix/time-history-semantics`, from live handler source
+(`phi_pi_e_interpreter.py`) and test-suite cross-reference. "Semantic fields"
+means the ΦπεNode state that carries program meaning (psi_signal, phi_state,
+epsilon_drift, stabilized_value); phase/charge are internal field mechanics.
+
+## Status codes
+
+- **BOUND** — accepts a numeric argument that binds into semantic state
+- **CEREMONIAL** — executes, mutates only phase/charge, ignores any argument
+- **SEMANTIC** — no argument, but reads/writes semantic fields
+
+| Symbol | Handler | Numeric arg | Structured arg | Semantic fields touched | Tested | Status |
+|---|---|---|---|---|---|---|
+| Φ | stabilize | yes (1: φ, or 3: ψ,φ,ε init) | no | phi_state; 3-arg also psi, eps | yes | BOUND |
+| Ψ | pulse | yes (additive) | no | psi_signal | yes | BOUND |
+| ε | micro_ignite | yes (additive) | no | epsilon_drift | yes | BOUND |
+| Σ | coexist | no | no | reads ψ,φ,ε → writes stabilized_value; returns it | yes | SEMANTIC |
+| Κ | probe | no | no | psi_signal, probe_count | yes | SEMANTIC |
+| Υ | consensus_merge | no | no | phi_state, epsilon_drift | yes | SEMANTIC |
+| Β | reflection_echo | no | no | depth | yes | SEMANTIC |
+| Ε | ignite | no | no | — (charge/phase only) | yes | CEREMONIAL |
+| Π | transcend | no | no | — | no | CEREMONIAL |
+| Δ | fuse | no | no | — | no | CEREMONIAL |
+| δ | micro_transform | no | no | — | no | CEREMONIAL |
+| Λ | illuminate | no | no | — | no | CEREMONIAL |
+| λ | entangle | no | no | — | no | CEREMONIAL |
+| Γ | grow | no | no | — | yes | CEREMONIAL |
+| Ω | close | no | no | — | yes | CEREMONIAL |
+| ω | will_force | no | no | — | no | CEREMONIAL |
+| Ξ | emerge | no | no | — | no | CEREMONIAL |
+| ζ | recurrence | no | no | — | no | CEREMONIAL |
+| Τ | synchronize | no | no | — | no | CEREMONIAL |
+| Ρ | perceive | no | no | — | no | CEREMONIAL |
+| Θ | intend | no | no | — | no | CEREMONIAL |
+| η / n | index | no | no | — (no mutation at all) | no | CEREMONIAL |
+| χ | measure | no | no | — | no | CEREMONIAL |
+
+## Operators
+
+| Op | Handler | Semantic fields | Tested | Status |
+|---|---|---|---|---|
+| = | stabilize | phi_state | yes | BOUND (alias of Φ) |
+| → | flow | — | yes | CEREMONIAL |
+| [] | loop | — (re-executes body ×10, fresh context each pass) | yes | CEREMONIAL* |
+| + | simultaneity | — | no | CEREMONIAL |
+| : | interact | — | no | CEREMONIAL |
+| / | disrupt | — | no | CEREMONIAL |
+| \| | orthogonal | — | no | CEREMONIAL |
+
+*`[]` loop bug note: `execute_loop` calls `execute()` which builds a fresh
+context per iteration, so loop iterations cannot accumulate state. Same
+defect class as the fixed time-stepping runner. Not yet repaired.
+
+## Summary
+
+- 3 of 25 symbols are BOUND (honest argument binding)
+- 4 are SEMANTIC without arguments
+- 18 symbols + 5 operators are CEREMONIAL: they execute, log, and rotate
+  phase/charge, but carry no program-visible meaning
+- No symbol accepts structured (non-numeric) arguments
+- Documented behavior vs actual: docstrings claim rich semantics
+  ("entanglement", "will-force", "perception modulation") that the handlers
+  do not implement beyond phase/charge arithmetic
+
+## Recommendation
+
+Ceremonial symbols are dispatch-reachable and harmless; the next structural
+decision is whether to (a) extend numeric binding symbol-by-symbol, or
+(b) introduce a small AST with three node categories — state setters
+(Φ Ψ ε), reducers (Σ Υ), and modulators (everything else) — and give each
+category a uniform argument rule. Given 22 symbols share one shape,
+(b) is less total work and removes the per-symbol lookahead special cases.
+Prerequisite for either: fix `execute_loop` context persistence (now easy —
+`execute` already accepts an external context).
+
+## Canonical fixture (must never break)
+
+```
+Φ 5.0    # equilibrium      tokens: Φ 5.0 Ψ 3.0 ε 0.2 Σ
+Ψ 3.0    # pulse            state:  φ=5.0 ψ=3.0 ε=0.2
+ε 0.2    # drift            output: (3+5)·(1−0.2) = 6.4
+Σ        # stabilize
+```
+
+Enforced by `tests/test_lexical_semantic_path.py::TestCanonicalFixture`.
