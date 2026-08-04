@@ -49,6 +49,7 @@ class BaselineSwarm:
         for rnd in range(1, self.max_rounds + 1):
             trace.rounds_used = rnd
             trace.dsl_calls_per_round.append(0)  # baseline: DSL never used
+            events = []
 
             # (2) claim ready tasks greedily
             for agent in agents:
@@ -57,6 +58,8 @@ class BaselineSwarm:
                     if ready:
                         agent.task = ready[0]
                         claimed.add(ready[0].id)
+                        events.append({"t": "claim", "a": agent.id,
+                                       "task": ready[0].id})
 
             # blocked-task retry storm: idle agents poll blocked tasks
             blocked = self.scenario.blocked_tasks(trace.completed)
@@ -66,6 +69,8 @@ class BaselineSwarm:
                     # dep-check every round, forever
                     target = max(blocked, key=lambda t: (t.priority, t.id))
                     trace.attempts[target.id] += 1
+                    events.append({"t": "retry_blocked", "a": agent.id,
+                                   "task": target.id})
 
             # (3) two-phase resource acquisition
             for phase in range(2):
@@ -87,15 +92,25 @@ class BaselineSwarm:
                     agent.progress += 1
                     if agent.progress >= agent.task.duration:
                         trace.completed.add(agent.task.id)
+                        events.append({"t": "complete", "a": agent.id,
+                                       "task": agent.task.id})
                         claimed.discard(agent.task.id)
                         free.update(agent.held)
                         agent.task, agent.held, agent.progress = None, [], 0
                 elif agent.held:
                     # naive backoff: release everything, try again later
                     trace.flip_flops[agent.task.id] += 1
+                    events.append({"t": "flip", "a": agent.id,
+                                   "task": agent.task.id})
                     free.update(agent.held)
                     agent.held = []
                     agent.progress = 0
+
+            trace.snapshot(
+                rnd,
+                {a.id: a.held for a in agents},
+                events, {},
+                {a.id: a.task.id for a in agents if a.task is not None})
 
             if len(trace.completed) == len(self.scenario.tasks):
                 trace.terminated_early = True

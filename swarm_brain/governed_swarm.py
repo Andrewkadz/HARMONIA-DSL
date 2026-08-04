@@ -92,6 +92,7 @@ class GovernedSwarm:
         for rnd in range(1, self.max_rounds + 1):
             trace.rounds_used = rnd
             trace.dsl_calls_per_round.append(0)
+            events = []
 
             # claim ready tasks (refused tasks excluded — permanent)
             for agent in agents:
@@ -101,6 +102,8 @@ class GovernedSwarm:
                     if ready:
                         self._claim(agent, ready[0])
                         claimed.add(agent.task.id)
+                        events.append({"t": "claim", "a": agent.id,
+                                       "task": agent.task.id})
 
             # idle agents adopt the highest-priority blocked task as a
             # WATCH target (bounded observation, unlike naive polling)
@@ -111,6 +114,8 @@ class GovernedSwarm:
                     target = max(blocked, key=lambda t: (t.priority, t.id))
                     self._claim(agent, target)
                     claimed.add(target.id)
+                    events.append({"t": "watch", "a": agent.id,
+                                   "task": target.id})
                     blocked = [t for t in blocked if t.id != target.id]
 
             # two-phase resource acquisition (workable tasks only;
@@ -152,6 +157,12 @@ class GovernedSwarm:
                         agent.held = []
                         agent.backoff = 1
                         trace.voluntary_idles[agent.id] += 1
+                        events.append({"t": "idle", "a": agent.id,
+                                       "task": agent.task.id,
+                                       "why": "coherence: yielded to "
+                                              f"agent {winner.id} "
+                                              f"(λ {winner.lambda_obs:.3f} > "
+                                              f"{agent.lambda_obs:.3f})"})
 
             # work / observe / refuse
             for agent in agents:
@@ -174,8 +185,12 @@ class GovernedSwarm:
                     if after != before:
                         trace.epsilon_steps[(agent.id, task.id)] += 1
                         agent.progress += 1
+                        events.append({"t": "eps", "a": agent.id,
+                                       "task": task.id})
                     if agent.progress >= task.duration:
                         trace.completed.add(task.id)
+                        events.append({"t": "complete", "a": agent.id,
+                                       "task": task.id})
                         claimed.discard(task.id)
                         free.update(agent.held)
                         agent.task, agent.held, agent.progress = None, [], 0
@@ -198,9 +213,21 @@ class GovernedSwarm:
 
                 if agent.no_improve_rounds >= REFUSAL_WINDOW:
                     trace.refused.add(task.id)
+                    events.append({"t": "refuse", "a": agent.id,
+                                   "task": task.id,
+                                   "why": f"observable stagnant for "
+                                          f"{REFUSAL_WINDOW} rounds "
+                                          f"(structural blockage)"})
                     claimed.discard(task.id)
                     free.update(agent.held)
                     agent.task, agent.held, agent.progress = None, [], 0
+
+            trace.snapshot(
+                rnd,
+                {a.id: a.held for a in agents},
+                events,
+                {a.id: a.lambda_obs for a in agents if a.lambda_obs},
+                {a.id: a.task.id for a in agents if a.task is not None})
 
             resolved = trace.completed | trace.refused
             if resolved == set(self.scenario.tasks):

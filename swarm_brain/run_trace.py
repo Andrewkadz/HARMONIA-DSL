@@ -28,9 +28,28 @@ class RunTrace:
     # attempts recorded after a task was refused (must stay 0: permanent refusal)
     attempts_after_refusal: Dict[str, int] = field(default_factory=lambda: defaultdict(int))
 
+    # per-round snapshots for visualization (additive; tests and
+    # governance logic never read these)
+    per_round: List[dict] = field(default_factory=list)
+
     @property
     def total_voluntary_idles(self) -> int:
         return sum(self.voluntary_idles.values())
+
+    def snapshot(self, rnd: int, holdings: Dict[int, List[str]],
+                 events: List[dict], lam: Dict[int, float],
+                 assignments: Dict[int, str]) -> None:
+        """Record one round's state for the visualizer."""
+        self.per_round.append({
+            "r": rnd,
+            "hold": {str(a): list(rs) for a, rs in holdings.items() if rs},
+            "assign": {str(a): t for a, t in assignments.items()},
+            "done": sorted(self.completed),
+            "ref": sorted(self.refused),
+            "ev": events,
+            "lam": {str(a): round(v, 4) for a, v in lam.items()},
+            "dsl": self.dsl_calls_per_round[-1] if self.dsl_calls_per_round else 0,
+        })
 
     @property
     def total_flip_flops(self) -> int:
