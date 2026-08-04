@@ -1,9 +1,8 @@
 # BRIDGE_DESIGN — ℂ ↔ Context Bridge Architecture
 
-Status: **ratified design, pre-implementation.** Agreed 2026-08-03
-(Andrew / Claude / Perplexity review). Per CONTRIBUTING, this document
-governs the `feat/complex-bridge` implementation; deviations require
-updating this document first.
+Status: Ratified 2026-08-03 (Andrew / Claude / Perplexity review).
+Governs `feat/complex-bridge`. Any deviation must be reflected here
+before implementation.
 
 ## Decision 1: ℂ residency — shadow register layer
 
@@ -88,6 +87,10 @@ Each step lands only with its tests; full suite green throughout;
 INVARIANTS.md checked at every step.
 
 ## Open items (settle during step 2, before syntax freezes)
+
+These items must be resolved during Step 2 of the implementation plan.
+Until then, they are considered provisional and must not be
+implemented implicitly.
 
 - Register naming syntax (proposal: `@name`; must not collide with
   existing allowed-character set — parser change required either way).
