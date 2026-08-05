@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>HARMONIA Terrarium — the field the AI moves on</title>
+<style>
+ body{background:#07090c;color:#dde3ea;font:14px/1.45 -apple-system,'Segoe UI',sans-serif;margin:0;padding:14px}
+ h1{font-size:17px;margin:0 0 2px}
+ .sub{color:#7d8a99;font-size:12px;margin-bottom:10px;max-width:900px}
+ .tabs{display:flex;gap:8px;margin-bottom:8px}
+ .tab{padding:5px 12px;border:1px solid #2c3540;border-radius:6px;cursor:pointer;background:#10151b;font-size:13px}
+ .tab.on{background:#24445c;border-color:#4a90c4}
+ .row{display:flex;gap:12px;flex-wrap:wrap}
+ canvas{border:1px solid #232c36;border-radius:8px;background:#04060a}
+ .ctrl{display:flex;gap:8px;align-items:center;margin:8px 0}
+ button{background:#24445c;color:#dde3ea;border:1px solid #4a90c4;border-radius:6px;padding:5px 12px;cursor:pointer;font-size:13px}
+ input[type=range]{flex:1}
+ .panel{width:300px;min-width:260px}
+ .box{background:#10151b;border:1px solid #232c36;border-radius:8px;padding:10px;margin-bottom:10px;font-size:12.5px}
+ .box h3{margin:0 0 6px;font-size:13px;color:#8ec0e8}
+ .mono{font-family:ui-monospace,monospace;font-size:11.5px;color:#9fb3c8}
+ .legend{font-size:11px;color:#7d8a99;margin-top:4px;max-width:900px}
+</style></head><body>
+<h1>HARMONIA Terrarium — the field the AI moves on</h1>
+<div class="sub">This plane is ℂ — the complex plane. Each creature's position IS its <b>@self</b> register; stars are <b>@goal</b> registers; the glowing landscape is the real Λ coupling field Λ(z,goals) computed live from the math core's formula (Λ=137/3). ε-steps move creatures by ≤0.001 — they physically cannot jump (that's the proven safety bound), so use the microscope. Φ-stabilization during conflict is the only large motion, and it is a proven contraction.</div>
+<div class="tabs" id="tabs"></div>
+<div class="row">
+ <div>
+  <canvas id="cv" width="920" height="420"></canvas>
+  <div class="ctrl">
+   <button id="play">▶ play</button><button id="stepb">step</button>
+   <input type="range" id="slider" min="0" value="0">
+   <span id="rlabel" style="min-width:90px"></span>
+  </div>
+  <div class="legend">click a creature to follow it (field re-centers on its goal; microscope engages) · click empty space to release · trails show the last 12 rounds of real register motion</div>
+ </div>
+ <div class="panel">
+  <div class="box"><h3 id="mtitle">Microscope</h3>
+   <canvas id="micro" width="276" height="180"></canvas>
+   <div class="mono" id="minfo">select a creature</div></div>
+  <div class="box"><h3>Creature</h3><div class="mono" id="ainfo">—</div></div>
+ </div>
+</div>
+<script>
+const DATA={"meta": {"num_agents": 12, "resources": ["R0", "R1", "R2", "R3"], "tasks": {"T0": {"resources": ["R2"], "duration": 1, "deps": [], "priority": 0}, "T1": {"resources": ["R3"], "duration": 2, "deps": [], "priority": 0}, "T2": {"resources": ["R2"], "duration": 1, "deps": [], "priority": 0}, "T3": {"resources": ["R3"], "duration": 2, "deps": [], "priority": 0}, "T4": {"resources": ["R2"], "duration": 1, "deps": [], "priority": 0}, "T5": {"resources": ["R3"], "duration": 2, "deps": [], "priority": 0}, "T6": {"resources": ["R2"], "duration": 1, "deps": [], "priority": 0}, "T7": {"resources": ["R3"], "duration": 2, "deps": [], "priority": 0}, "P": {"resources": ["R3"], "duration": 1, "deps": ["GHOST"], "priority": 5}, "C1": {"resources": ["R0", "R1"], "duration": 2, "deps": [], "priority": 9}, "C2": {"resources": ["R1", "R0"], "duration": 2, "deps": [], "priority": 9}}, "poison": ["P"]}, "traces": [{"label": "Governed (Harmonia brain)", "note": "Every decision flows through interpreter.execute(): \u03b5-steps ARE progress, \u039b observations drive refusal and conflict resolution. P refused after 5 flat observations; contention resolved by voluntary yield; early termination.", "rounds_used": 8, "terminated_early": true, "completed": ["C1", "C2", "T0", "T1", "T2", "T3", "T4", "T5", "T6", "T7"], "refused": ["P"], "total_flip_flops": 0, "total_voluntary_idles": 1, "total_dsl_calls": 42, "attempts": {"C1": 5, "C2": 3, "T0": 1, "T1": 2, "T2": 2, "T3": 4, "T4": 3, "T5": 6, "T6": 4, "T7": 8, "P": 5}, "per_round": [{"z": {"0": [1.600895, 0.0], "1": [2.668158, 0.0], "2": [3.001996, 0.499002], "3": [4.001996, 0.499002], "4": [5.0, 0.5], "5": [6.0, 0.5], "6": [7.0, 0.5], "7": [8.0, 0.5], "8": [9.0, 0.5], "9": [10.0, 0.5], "10": [11.0, 0.5]}, "g": {"0": [2.0, -0.5], "1": [3.0, -0.5], "2": [5.0, -0.5], "3": [6.0, -0.5], "4": [7.0, -0.5], "5": [8.0, -0.5], "6": [9.0, -0.5], "7": [10.0, -0.5], "8": [11.0, -0.5], "9": [12.0, -0.5], "10": [4.0, -0.5]}, "r": 1, "hold": {"1": ["R1"], "3": ["R3"]}, "assign": {"0": "C1", "1": "C2", "3": "T1", "4": "T2", "5": "T3", "6": "T4", "7": "T5", "8": "T6", "9": "T7", "10": "P"}, "done": ["T0"], "ref": [], "ev": [{"t": "claim", "a": 0, "task": "C1"}, {"t": "claim", "a": 1, "task": "C2"}, {"t": "claim", "a": 2, "task": "T0"}, {"t": "claim", "a": 3, "task": "T1"}, {"t": "claim", "a": 4, "task": "T2"}, {"t": "claim", "a": 5, "task": "T3"}, {"t": "claim", "a": 6, "task": "T4"}, {"t": "claim", "a": 7, "task": "T5"}, {"t": "claim", "a": 8, "task": "T6"}, {"t": "claim", "a": 9, "task": "T7"}, {"t": "watch", "a": 10, "task": "P"}, {"t": "idle", "a": 0, "task": "C1", "why": "coherence: yielded to agent 1 (\u03bb 11.785 > 5.572)"}, {"t": "eps", "a": 2, "task": "T0"}, {"t": "complete", "a": 2, "task": "T0"}, {"t": "eps", "a": 3, "task": "T1"}], "lam": {"0": 5.5723, "1": 11.7847}, "dsl": 28}, {"z": {"0": [1.600895, 0.0], "1": [2.668489, -0.0005], "2": [3.001996, 0.499002], "3": [4.003989, 0.498005], "4": [5.001996, 0.499002], "5": [6.0, 0.5], "6": [7.0, 0.5], "7": [8.0, 0.5], "8": [9.0, 0.5], "9": [10.0, 0.5], "10": [11.0, 0.5]}, "g": {"0": [2.0, -0.5], "1": [3.0, -0.5], "2": [5.0, -0.5], "3": [6.0, -0.5], "4": [7.0, -0.5], "5": [8.0, -0.5], "6": [9.0, -0.5], "7": [10.0, -0.5], "8": [11.0, -0.5], "9": [12.0, -0.5], "10": [4.0, -0.5]}, "r": 2, "hold": {"1": ["R1", "R0"]}, "assign": {"0": "C1", "1": "C2", "5": "T3", "6": "T4", "7": "T5", "8": "T6", "9": "T7", "10": "P"}, "done": ["T0", "T1", "T2"], "ref": [], "ev": [{"t": "eps", "a": 1, "task": "C2"}, {"t": "eps", "a": 3, "task": "T1"}, {"t": "complete", "a": 3, "task": "T1"}, {"t": "eps", "a": 4, "task": "T2"}, {"t": "complete", "a": 4, "task": "T2"}], "lam": {"0": 5.5723, "1": 11.7847}, "dsl": 3}, {"z": {"0": [1.600895, 0.0], "1": [2.668821, -0.000999], "2": [3.001996, 0.499002], "3": [4.003989, 0.498005], "4": [5.001996, 0.499002], "5": [6.001996, 0.499002], "6": [7.001996, 0.499002], "7": [8.0, 0.5], "8": [9.0, 0.5], "9": [10.0, 0.5], "10": [11.0, 0.5]}, "g": {"0": [2.0, -0.5], "1": [3.0, -0.5], "2": [5.0, -0.5], "3": [6.0, -0.5], "4": [7.0, -0.5], "5": [8.0, -0.5], "6": [9.0, -0.5], "7": [10.0, -0.5], "8": [11.0, -0.5], "9": [12.0, -0.5], "10": [4.0, -0.5]}, "r": 3, "hold": {"5": ["R3"]}, "assign": {"0": "C1", "5": "T3", "7": "T5", "8": "T6", "9": "T7", "10": "P"}, "done": ["C2", "T0", "T1", "T2", "T4"], "ref": [], "ev": [{"t": "eps", "a": 1, "task": "C2"}, {"t": "complete", "a": 1, "task": "C2"}, {"t": "eps", "a": 5, "task": "T3"}, {"t": "eps", "a": 6, "task": "T4"}, {"t": "complete", "a": 6, "task": "T4"}], "lam": {"0": 5.5723, "1": 11.7847}, "dsl": 3}, {"z": {"0": [1.601293, -0.0005], "1": [2.668821, -0.000999], "2": [3.001996, 0.499002], "3": [4.003989, 0.498005], "4": [5.001996, 0.499002], "5": [6.003989, 0.498005], "6": [7.001996, 0.499002], "7": [8.0, 0.5], "8": [9.001996, 0.499002], "9": [10.0, 0.5], "10": [11.0, 0.5]}, "g": {"0": [2.0, -0.5], "1": [3.0, -0.5], "2": [5.0, -0.5], "3": [6.0, -0.5], "4": [7.0, -0.5], "5": [8.0, -0.5], "6": [9.0, -0.5], "7": [10.0, -0.5], "8": [11.0, -0.5], "9": [12.0, -0.5], "10": [4.0, -0.5]}, "r": 4, "hold": {"0": ["R0", "R1"]}, "assign": {"0": "C1", "7": "T5", "9": "T7", "10": "P"}, "done": ["C2", "T0", "T1", "T2", "T3", "T4", "T6"], "ref": [], "ev": [{"t": "eps", "a": 0, "task": "C1"}, {"t": "eps", "a": 5, "task": "T3"}, {"t": "complete", "a": 5, "task": "T3"}, {"t": "eps", "a": 8, "task": "T6"}, {"t": "complete", "a": 8, "task": "T6"}], "lam": {"0": 5.5723, "1": 11.7847}, "dsl": 3}, {"z": {"0": [1.601692, -0.000999], "1": [2.668821, -0.000999], "2": [3.001996, 0.499002], "3": [4.003989, 0.498005], "4": [5.001996, 0.499002], "5": [6.003989, 0.498005], "6": [7.001996, 0.499002], "7": [8.001996, 0.499002], "8": [9.001996, 0.499002], "9": [10.0, 0.5], "10": [11.0, 0.5]}, "g": {"0": [2.0, -0.5], "1": [3.0, -0.5], "2": [5.0, -0.5], "3": [6.0, -0.5], "4": [7.0, -0.5], "5": [8.0, -0.5], "6": [9.0, -0.5], "7": [10.0, -0.5], "8": [11.0, -0.5], "9": [12.0, -0.5], "10": [4.0, -0.5]}, "r": 5, "hold": {"7": ["R3"]}, "assign": {"7": "T5", "9": "T7"}, "done": ["C1", "C2", "T0", "T1", "T2", "T3", "T4", "T6"], "ref": ["P"], "ev": [{"t": "eps", "a": 0, "task": "C1"}, {"t": "complete", "a": 0, "task": "C1"}, {"t": "eps", "a": 7, "task": "T5"}, {"t": "refuse", "a": 10, "task": "P", "why": "observable stagnant for 5 rounds (structural blockage)"}], "lam": {"0": 5.5723, "1": 11.7847}, "dsl": 2}, {"z": {"0": [1.601692, -0.000999], "1": [2.668821, -0.000999], "2": [3.001996, 0.499002], "3": [4.003989, 0.498005], "4": [5.001996, 0.499002], "5": [6.003989, 0.498005], "6": [7.001996, 0.499002], "7": [8.003989, 0.498005], "8": [9.001996, 0.499002], "9": [10.0, 0.5], "10": [11.0, 0.5]}, "g": {"0": [2.0, -0.5], "1": [3.0, -0.5], "2": [5.0, -0.5], "3": [6.0, -0.5], "4": [7.0, -0.5], "5": [8.0, -0.5], "6": [9.0, -0.5], "7": [10.0, -0.5], "8": [11.0, -0.5], "9": [12.0, -0.5], "10": [4.0, -0.5]}, "r": 6, "hold": {}, "assign": {"9": "T7"}, "done": ["C1", "C2", "T0", "T1", "T2", "T3", "T4", "T5", "T6"], "ref": ["P"], "ev": [{"t": "eps", "a": 7, "task": "T5"}, {"t": "complete", "a": 7, "task": "T5"}], "lam": {"0": 5.5723, "1": 11.7847}, "dsl": 1}, {"z": {"0": [1.601692, -0.000999], "1": [2.668821, -0.000999], "2": [3.001996, 0.499002], "3": [4.003989, 0.498005], "4": [5.001996, 0.499002], "5": [6.003989, 0.498005], "6": [7.001996, 0.499002], "7": [8.003989, 0.498005], "8": [9.001996, 0.499002], "9": [10.001996, 0.499002], "10": [11.0, 0.5]}, "g": {"0": [2.0, -0.5], "1": [3.0, -0.5], "2": [5.0, -0.5], "3": [6.0, -0.5], "4": [7.0, -0.5], "5": [8.0, -0.5], "6": [9.0, -0.5], "7": [10.0, -0.5], "8": [11.0, -0.5], "9": [12.0, -0.5], "10": [4.0, -0.5]}, "r": 7, "hold": {"9": ["R3"]}, "assign": {"9": "T7"}, "done": ["C1", "C2", "T0", "T1", "T2", "T3", "T4", "T5", "T6"], "ref": ["P"], "ev": [{"t": "eps", "a": 9, "task": "T7"}], "lam": {"0": 5.5723, "1": 11.7847}, "dsl": 1}, {"z": {"0": [1.601692, -0.000999], "1": [2.668821, -0.000999], "2": [3.001996, 0.499002], "3": [4.003989, 0.498005], "4": [5.001996, 0.499002], "5": [6.003989, 0.498005], "6": [7.001996, 0.499002], "7": [8.003989, 0.498005], "8": [9.001996, 0.499002], "9": [10.003989, 0.498005], "10": [11.0, 0.5]}, "g": {"0": [2.0, -0.5], "1": [3.0, -0.5], "2": [5.0, -0.5], "3": [6.0, -0.5], "4": [7.0, -0.5], "5": [8.0, -0.5], "6": [9.0, -0.5], "7": [10.0, -0.5], "8": [11.0, -0.5], "9": [12.0, -0.5], "10": [4.0, -0.5]}, "r": 8, "hold": {}, "assign": {}, "done": ["C1", "C2", "T0", "T1", "T2", "T3", "T4", "T5", "T6", "T7"], "ref": ["P"], "ev": [{"t": "eps", "a": 9, "task": "T7"}, {"t": "complete", "a": 9, "task": "T7"}], "lam": {"0": 5.5723, "1": 11.7847}, "dsl": 1}]}, {"label": "Governed, DSL stubbed (G4)", "note": "Same governed code with interpreter.execute() no-op'd. Registers never move, so nothing counts as progress: the swarm loses the ability to work. The DSL is the brain, not a sticker.", "rounds_used": 20, "terminated_early": true, "completed": [], "refused": ["C1", "C2", "P", "T0", "T1", "T2", "T3", "T4", "T5", "T6", "T7"], "total_flip_flops": 0, "total_voluntary_idles": 1, "total_dsl_calls": 76, "attempts": {"C1": 6, "C2": 11, "T0": 5, "T1": 5, "T2": 10, "T3": 10, "T4": 15, "T5": 15, "T6": 20, "T7": 20, "P": 5}, "per_round": [{"z": {}, "g": {}, "r": 1, "hold": {"0": ["R0"], "2": ["R2"], "3": ["R3"]}, "assign": {"0": "C1", "1": "C2", "2": "T0", "3": "T1", "4": "T2", "5": "T3", "6": "T4", "7": "T5", "8": "T6", "9": "T7", "10": "P"}, "done": [], "ref": [], "ev": [{"t": "claim", "a": 0, "task": "C1"}, {"t": "claim", "a": 1, "task": "C2"}, {"t": "claim", "a": 2, "task": "T0"}, {"t": "claim", "a": 3, "task": "T1"}, {"t": "claim", "a": 4, "task": "T2"}, {"t": "claim", "a": 5, "task": "T3"}, {"t": "claim", "a": 6, "task": "T4"}, {"t": "claim", "a": 7, "task": "T5"}, {"t": "claim", "a": 8, "task": "T6"}, {"t": "claim", "a": 9, "task": "T7"}, {"t": "watch", "a": 10, "task": "P"}, {"t": "idle", "a": 1, "task": "C2", "why": "coherence: yielded to agent 0 (\u03bb 0.000 > 0.000)"}], "lam": {}, "dsl": 28}, {"z": {}, "g": {}, "r": 2, "hold": {"0": ["R0", "R1"], "2": ["R2"], "3": ["R3"]}, "assign": {"0": "C1", "1": "C2", "2": "T0", "3": "T1", "4": "T2", "5": "T3", "6": "T4", "7": "T5", "8": "T6", "9": "T7", "10": "P"}, "done": [], "ref": [], "ev": [], "lam": {}, "dsl": 3}, {"z": {}, "g": {}, "r": 3, "hold": {"0": ["R0", "R1"], "2": ["R2"], "3": ["R3"]}, "assign": {"0": "C1", "1": "C2", "2": "T0", "3": "T1", "4": "T2", "5": "T3", "6": "T4", "7": "T5", "8": "T6", "9": "T7", "10": "P"}, "done": [], "ref": [], "ev": [], "lam": {}, "dsl": 3}, {"z": {}, "g": {}, "r": 4, "hold": {"0": ["R0", "R1"], "2": ["R2"], "3": ["R3"]}, "assign": {"0": "C1", "1": "C2", "2": "T0", "3": "T1", "4": "T2", "5": "T3", "6": "T4", "7": "T5", "8": "T6", "9": "T7", "10": "P"}, "done": [], "ref": [], "ev": [], "lam": {}, "dsl": 3}, {"z": {}, "g": {}, "r": 5, "hold": {"0": ["R0", "R1"]}, "assign": {"0": "C1", "1": "C2", "4": "T2", "5": "T3", "6": "T4", "7": "T5", "8": "T6", "9": "T7"}, "done": [], "ref": ["P", "T0", "T1"], "ev": [{"t": "refuse", "a": 2, "task": "T0", "why": "observable stagnant for 5 rounds (structural blockage)"}, {"t": "refuse", "a": 3, "task": "T1", "why": "observable stagnant for 5 rounds (structural blockage)"}, {"t": "refuse", "a": 10, "task": "P", "why": "observable stagnant for 5 rounds (structural blockage)"}], "lam": {}, "dsl": 3}, {"z": {}, "g": {}, "r": 6, "hold": {"4": ["R2"], "5": ["R3"]}, "assign": {"1": "C2", "4": "T2", "5": "T3", "6": "T4", "7": "T5", "8": "T6", "9": "T7"}, "done": [], "ref": ["C1", "P", "T0", "T1"], "ev": [{"t": "refuse", "a": 0, "task": "C1", "why": "observable stagnant for 5 rounds (structural blockage)"}], "lam": {}, "dsl": 3}, {"z": {}, "g": {}, "r": 7, "hold": {"1": ["R1", "R0"], "4": ["R2"], "5": ["R3"]}, "assign": {"1": "C2", "4": "T2", "5": "T3", "6": "T4", "7": "T5", "8": "T6", "9": "T7"}, "done": [], "ref": ["C1", "P", "T0", "T1"], "ev": [], "lam": {}, "dsl": 3}, {"z": {}, "g": {}, "r": 8, "hold": {"1": ["R1", "R0"], "4": ["R2"], "5": ["R3"]}, "assign": {"1": "C2", "4": "T2", "5": "T3", "6": "T4", "7": "T5", "8": "T6", "9": "T7"}, "done": [], "ref": ["C1", "P", "T0", "T1"], "ev": [], "lam": {}, "dsl": 3}, {"z": {}, "g": {}, "r": 9, "hold": {"1": ["R1", "R0"], "4": ["R2"], "5": ["R3"]}, "assign": {"1": "C2", "4": "T2", "5": "T3", "6": "T4", "7": "T5", "8": "T6", "9": "T7"}, "done": [], "ref": ["C1", "P", "T0", "T1"], "ev": [], "lam": {}, "dsl": 3}, {"z": {}, "g": {}, "r": 10, "hold": {"1": ["R1", "R0"]}, "assign": {"1": "C2", "6": "T4", "7": "T5", "8": "T6", "9": "T7"}, "done": [], "ref": ["C1", "P", "T0", "T1", "T2", "T3"], "ev": [{"t": "refuse", "a": 4, "task": "T2", "why": "observable stagnant for 5 rounds (structural blockage)"}, {"t": "refuse", "a": 5, "task": "T3", "why": "observable stagnant for 5 rounds (structural blockage)"}], "lam": {}, "dsl": 3}, {"z": {}, "g": {}, "r": 11, "hold": {"6": ["R2"], "7": ["R3"]}, "assign": {"6": "T4", "7": "T5", "8": "T6", "9": "T7"}, "done": [], "ref": ["C1", "C2", "P", "T0", "T1", "T2", "T3"], "ev": [{"t": "refuse", "a": 1, "task": "C2", "why": "observable stagnant for 5 rounds (structural blockage)"}], "lam": {}, "dsl": 3}, {"z": {}, "g": {}, "r": 12, "hold": {"6": ["R2"], "7": ["R3"]}, "assign": {"6": "T4", "7": "T5", "8": "T6", "9": "T7"}, "done": [], "ref": ["C1", "C2", "P", "T0", "T1", "T2", "T3"], "ev": [], "lam": {}, "dsl": 2}, {"z": {}, "g": {}, "r": 13, "hold": {"6": ["R2"], "7": ["R3"]}, "assign": {"6": "T4", "7": "T5", "8": "T6", "9": "T7"}, "done": [], "ref": ["C1", "C2", "P", "T0", "T1", "T2", "T3"], "ev": [], "lam": {}, "dsl": 2}, {"z": {}, "g": {}, "r": 14, "hold": {"6": ["R2"], "7": ["R3"]}, "assign": {"6": "T4", "7": "T5", "8": "T6", "9": "T7"}, "done": [], "ref": ["C1", "C2", "P", "T0", "T1", "T2", "T3"], "ev": [], "lam": {}, "dsl": 2}, {"z": {}, "g": {}, "r": 15, "hold": {}, "assign": {"8": "T6", "9": "T7"}, "done": [], "ref": ["C1", "C2", "P", "T0", "T1", "T2", "T3", "T4", "T5"], "ev": [{"t": "refuse", "a": 6, "task": "T4", "why": "observable stagnant for 5 rounds (structural blockage)"}, {"t": "refuse", "a": 7, "task": "T5", "why": "observable stagnant for 5 rounds (structural blockage)"}], "lam": {}, "dsl": 2}, {"z": {}, "g": {}, "r": 16, "hold": {"8": ["R2"], "9": ["R3"]}, "assign": {"8": "T6", "9": "T7"}, "done": [], "ref": ["C1", "C2", "P", "T0", "T1", "T2", "T3", "T4", "T5"], "ev": [], "lam": {}, "dsl": 2}, {"z": {}, "g": {}, "r": 17, "hold": {"8": ["R2"], "9": ["R3"]}, "assign": {"8": "T6", "9": "T7"}, "done": [], "ref": ["C1", "C2", "P", "T0", "T1", "T2", "T3", "T4", "T5"], "ev": [], "lam": {}, "dsl": 2}, {"z": {}, "g": {}, "r": 18, "hold": {"8": ["R2"], "9": ["R3"]}, "assign": {"8": "T6", "9": "T7"}, "done": [], "ref": ["C1", "C2", "P", "T0", "T1", "T2", "T3", "T4", "T5"], "ev": [], "lam": {}, "dsl": 2}, {"z": {}, "g": {}, "r": 19, "hold": {"8": ["R2"], "9": ["R3"]}, "assign": {"8": "T6", "9": "T7"}, "done": [], "ref": ["C1", "C2", "P", "T0", "T1", "T2", "T3", "T4", "T5"], "ev": [], "lam": {}, "dsl": 2}, {"z": {}, "g": {}, "r": 20, "hold": {}, "assign": {}, "done": [], "ref": ["C1", "C2", "P", "T0", "T1", "T2", "T3", "T4", "T5", "T6", "T7"], "ev": [{"t": "refuse", "a": 8, "task": "T6", "why": "observable stagnant for 5 rounds (structural blockage)"}, {"t": "refuse", "a": 9, "task": "T7", "why": "observable stagnant for 5 rounds (structural blockage)"}], "lam": {}, "dsl": 2}]}]};const meta=DATA.meta,traces=DATA.traces;
+const L=137/3;
+let ti=0,ri=0,playing=null,sel=null;
+const cv=document.getElementById('cv'),cx=cv.getContext('2d');
+const mc=document.getElementById('micro'),mx=mc.getContext('2d');
+// plane bounds from all recorded positions/goals
+let B={x0:0,x1:13,y0:-1.6,y1:1.6};
+(function(){let xs=[],ys=[];traces.forEach(t=>t.per_round.forEach(s=>{
+ [s.z||{},s.g||{}].forEach(m=>Object.values(m).forEach(([x,y])=>{xs.push(x);ys.push(y);}));}));
+ if(xs.length){B.x0=Math.min(...xs)-1;B.x1=Math.max(...xs)+1;
+ B.y0=Math.min(...ys)-1;B.y1=Math.max(...ys)+1;}})();
+const px=x=>(x-B.x0)/(B.x1-B.x0)*cv.width;
+const py=y=>cv.height-(y-B.y0)/(B.y1-B.y0)*cv.height;
+const hue=i=>i*137.5%360;
+function lam(zr,zi,wr,wi){ // Λ(z,w) = Λ·2Re(z̄w)/(Λ+|z|²+|w|²)
+ const re=zr*wr+zi*wi;
+ return L*2*re/(L+zr*zr+zi*zi+wr*wr+wi*wi);}
+function field(snap){
+ const goals=sel!==null&&snap.g&&snap.g[sel]?[snap.g[sel]]:Object.values(snap.g||{});
+ if(!goals.length)return;
+ const gw=92,gh=42,cw=cv.width/gw,ch=cv.height/gh;
+ let vals=[],mx0=0;
+ for(let j=0;j<gh;j++)for(let i=0;i<gw;i++){
+  const x=B.x0+(i+.5)/gw*(B.x1-B.x0),y=B.y0+(1-(j+.5)/gh)*(B.y1-B.y0);
+  let v=0;goals.forEach(([wr,wi])=>v+=lam(x,y,wr,wi));
+  vals.push(v);mx0=Math.max(mx0,Math.abs(v));}
+ for(let j=0;j<gh;j++)for(let i=0;i<gw;i++){
+  const v=vals[j*gw+i]/(mx0||1);
+  const a=Math.abs(v);
+  cx.fillStyle=v>=0?`rgba(40,110,190,${a*0.55})`:`rgba(190,70,110,${a*0.55})`;
+  cx.fillRect(i*cw,j*ch,cw+1,ch+1);}
+}
+function trail(t,aid){
+ const pts=[];
+ for(let k=Math.max(0,ri-12);k<=ri;k++){
+  const s=t.per_round[k];if(s.z&&s.z[aid])pts.push(s.z[aid]);}
+ return pts;}
+function render(){
+ const t=traces[ti],snap=t.per_round[ri];
+ document.getElementById('slider').value=ri;
+ document.getElementById('rlabel').textContent='round '+snap.r+' / '+t.rounds_used;
+ cx.clearRect(0,0,cv.width,cv.height);
+ field(snap);
+ // goals
+ Object.entries(snap.g||{}).forEach(([a,[gxr,gyi]])=>{
+  const x=px(gxr),y=py(gyi);
+  cx.strokeStyle='#e8c86a';cx.lineWidth=1.4;
+  cx.beginPath();for(let k=0;k<5;k++){const an=-Math.PI/2+k*4*Math.PI/5;
+   cx[k?'lineTo':'moveTo'](x+8*Math.cos(an),y+8*Math.sin(an));}
+  cx.closePath();cx.stroke();
+  const task=snap.assign&&snap.assign[a];
+  if(task){cx.fillStyle='#e8c86a';cx.font='10px sans-serif';
+   cx.textAlign='center';cx.fillText(task,x,y-12);}});
+ // creatures
+ Object.entries(snap.z||{}).forEach(([a,[zr,zi]])=>{
+  const x=px(zr),y=py(zi),h=hue(+a);
+  const pts=trail(t,a);
+  cx.strokeStyle=`hsla(${h},70%,60%,0.5)`;cx.lineWidth=1.2;
+  cx.beginPath();pts.forEach(([tx,ty],k)=>cx[k?'lineTo':'moveTo'](px(tx),py(ty)));cx.stroke();
+  const yielded=snap.ev.some(e=>e.t==='idle'&&e.a==+a);
+  cx.fillStyle=`hsl(${h},70%,${yielded?35:60}%)`;
+  cx.beginPath();cx.arc(x,y,sel==+a?9:7,0,7);cx.fill();
+  if(sel==+a){cx.strokeStyle='#fff';cx.lineWidth=1.5;
+   cx.beginPath();cx.arc(x,y,12,0,7);cx.stroke();}
+  cx.fillStyle='#04060a';cx.font='9px sans-serif';cx.textAlign='center';
+  cx.fillText(a,x,y+3);});
+ micro();info();
+}
+function micro(){
+ mx.clearRect(0,0,mc.width,mc.height);
+ const t=traces[ti],snap=t.per_round[ri];
+ document.getElementById('mtitle').textContent=
+  sel===null?'Microscope':'Microscope — creature '+sel;
+ if(sel===null||!snap.z||!snap.z[sel]){
+  document.getElementById('minfo').textContent='select a creature to magnify its ε-motion';return;}
+ const pts=trail(t,String(sel));
+ if(pts.length<2){document.getElementById('minfo').textContent='no motion history yet';return;}
+ let xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);
+ let x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+ const pad=Math.max((x1-x0),(y1-y0),1e-4)*0.25;
+ x0-=pad;x1+=pad;y0-=pad;y1+=pad;
+ const mpx=x=>(x-x0)/(x1-x0)*mc.width,mpy=y=>mc.height-(y-y0)/(y1-y0)*mc.height;
+ const h=hue(sel);
+ mx.strokeStyle=`hsl(${h},70%,60%)`;mx.lineWidth=1.5;
+ mx.beginPath();pts.forEach(([tx,ty],k)=>mx[k?'lineTo':'moveTo'](mpx(tx),mpy(ty)));mx.stroke();
+ pts.forEach(([tx,ty],k)=>{mx.fillStyle=k===pts.length-1?'#fff':`hsla(${h},70%,60%,0.7)`;
+  mx.beginPath();mx.arc(mpx(tx),mpy(ty),k===pts.length-1?4:2.5,0,7);mx.fill();});
+ let steps=[];for(let k=1;k<pts.length;k++){
+  steps.push(Math.hypot(pts[k][0]-pts[k-1][0],pts[k][1]-pts[k-1][1]));}
+ const last=steps[steps.length-1];
+ document.getElementById('minfo').textContent=
+  'window '+(x1-x0).toExponential(1)+' wide · last step |Δz| = '+
+  (last?last.toExponential(2):'0')+
+  (last&&last<=0.0011?'  (ε-bounded ✓)':last?'  (Φ jump / re-init)':'');
+}
+function info(){
+ const t=traces[ti],snap=t.per_round[ri];
+ const el=document.getElementById('ainfo');
+ if(sel===null){el.textContent='click a creature — each is one agent: its own FieldContext, registers, trajectory';return;}
+ const z=snap.z&&snap.z[sel],g=snap.g&&snap.g[sel];
+ const task=snap.assign&&snap.assign[String(sel)];
+ let s='agent '+sel+'\n';
+ s+='task: '+(task||'(none)')+'\n';
+ if(z)s+='@self = '+z[0].toFixed(4)+' + '+z[1].toFixed(4)+'i\n';
+ if(g)s+='@goal = '+g[0].toFixed(4)+' + '+g[1].toFixed(4)+'i\n';
+ if(z&&g)s+='|@self−@goal| = '+Math.hypot(z[0]-g[0],z[1]-g[1]).toFixed(4)+'\n';
+ if(snap.lam&&snap.lam[sel]!==undefined)s+='λ_obs = '+snap.lam[sel];
+ el.textContent=s;el.style.whiteSpace='pre';
+}
+cv.onclick=e=>{
+ const r=cv.getBoundingClientRect();
+ const mxp=e.clientX-r.left,myp=e.clientY-r.top;
+ const snap=traces[ti].per_round[ri];let hit=null;
+ Object.entries(snap.z||{}).forEach(([a,[zr,zi]])=>{
+  if(Math.hypot(px(zr)-mxp,py(zi)-myp)<12)hit=+a;});
+ sel=hit;render();};
+function tabs(){const el=document.getElementById('tabs');el.innerHTML='';
+ traces.forEach((t,i)=>{const d=document.createElement('div');
+  d.className='tab'+(i===ti?' on':'');d.textContent=t.label;
+  d.onclick=()=>{ti=i;ri=0;sel=null;stop();tabs();render();};el.appendChild(d);});
+ document.getElementById('slider').max=traces[ti].per_round.length-1;}
+function step(){if(ri<traces[ti].per_round.length-1){ri++;render();}else stop();}
+function stop(){if(playing){clearInterval(playing);playing=null;
+ document.getElementById('play').textContent='▶ play';}}
+document.getElementById('play').onclick=()=>{
+ if(playing){stop();return;}
+ if(ri>=traces[ti].per_round.length-1)ri=0;
+ playing=setInterval(step,700);
+ document.getElementById('play').textContent='⏸ pause';};
+document.getElementById('stepb').onclick=()=>{stop();step();};
+document.getElementById('slider').oninput=e=>{stop();ri=+e.target.value;render();};
+tabs();render();
+</script></body></html>
