@@ -51,7 +51,7 @@ class Scenario:
 
 
 def make_scenario(poison: bool = True, contention: bool = True,
-                  seed: int = 7) -> Scenario:
+                  seed: int = 7, num_agents: int = 12) -> Scenario:
     """Default Phase-1 scenario per SWARM_BRAIN_PHASE1.md.
 
     - 12 agents, 4 exclusive resources (R0-R3)
@@ -74,4 +74,4 @@ def make_scenario(poison: bool = True, contention: bool = True,
         tasks["C2"] = Task(id="C2", resources=["R1", "R0"], duration=2,
                            priority=9)
     return Scenario(tasks=tasks, resources=["R0", "R1", "R2", "R3"],
-                    num_agents=12, seed=seed)
+                    num_agents=num_agents, seed=seed)

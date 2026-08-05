@@ -57,9 +57,12 @@ class _Agent:
 
 
 class GovernedSwarm:
-    def __init__(self, scenario: Scenario, max_rounds: int = 60):
+    def __init__(self, scenario: Scenario, max_rounds: int = 60,
+                 refusal_window: int = REFUSAL_WINDOW):
         self.scenario = scenario
         self.max_rounds = max_rounds
+        self.refusal_window = refusal_window  # must exceed worst-case
+        # legitimate wait (see SWARM_BRAIN_PHASE1 resolved items)
         self.interpreter = PhiPiEInterpreterFixed()
         self._trace: Optional[RunTrace] = None
 
@@ -211,12 +214,12 @@ class GovernedSwarm:
                     agent.no_improve_rounds += 1
                 agent.last_distance = distance
 
-                if agent.no_improve_rounds >= REFUSAL_WINDOW:
+                if agent.no_improve_rounds >= self.refusal_window:
                     trace.refused.add(task.id)
                     events.append({"t": "refuse", "a": agent.id,
                                    "task": task.id,
                                    "why": f"observable stagnant for "
-                                          f"{REFUSAL_WINDOW} rounds "
+                                          f"{self.refusal_window} rounds "
                                           f"(structural blockage)"})
                     claimed.discard(task.id)
                     free.update(agent.held)
