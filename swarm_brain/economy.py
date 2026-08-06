@@ -99,7 +99,8 @@ class Market:
     def __init__(self, mode: str, seed: int = 11, floor: float = FLOOR,
                  shock_mag: float = SHOCK_MAG, stress: float = STRESS,
                  rounds: int = ROUNDS, n_agents: int = 4,
-                 stub_dsl: bool = False):
+                 stub_dsl: bool = False, eps_gain: float = EPS_GAIN):
+        self.eps_gain = eps_gain   # the velocity dial (cost-curve sweep)
         assert mode in ("teleport", "bounded")
         self.mode = mode
         self.floor = floor
@@ -152,7 +153,7 @@ class Market:
         dist = abs(complex(target, 0.0) - before)
         if dist < 1e-12:
             return a.inventory
-        frac = min(1.0, (abs(after - before) / dist) * EPS_GAIN)
+        frac = min(1.0, (abs(after - before) / dist) * self.eps_gain)
         return a.inventory + (target - a.inventory) * frac
 
     def run(self) -> MarketTrace:

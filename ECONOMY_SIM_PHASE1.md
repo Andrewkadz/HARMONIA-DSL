@@ -153,3 +153,54 @@ Branch: `feat/economy-phase1`, stacked on current main.
 4. Any objection to reporting governance's *cost* as a headline
    number alongside the guarantee? I think it's essential for
    credibility.
+
+---
+
+## ERRATUM EC-1 — the mechanism, corrected (2026-08-04)
+
+**Spec predicted:** ε protects via a *guardable band* — bounded steps
+mean the floor cannot be crossed between checks.
+
+**Observed:** the prediction (bounded holds, teleport breaches) was
+correct; the stated reason was not. Agents are near-FLAT before a
+crash — their valuation tracks price, so there is no edge and no
+position. They lever up *buying the dip* after the first leg, and the
+SECOND leg is what tests solvency. ε's actual effect is a **low-pass
+filter on exposure**: because the position accumulates over rounds,
+the guard is re-evaluated at each new price as it builds, so the
+catastrophic position is never reached. Not a band at the floor — a
+rate limit on approach.
+
+Logged rather than silently rewritten, per CONTRIBUTING.
+
+## RESULT EC-2 — the cost curve (40 seeds)
+
+Sweeping the velocity dial (`eps_gain`) from teleport to glacial:
+
+| gain | mean breaches | safe seeds | median wealth vs teleport | peak leverage |
+|---:|---:|---:|---:|---:|
+| teleport | 104.5 | 0/40 | — | ∞ |
+| 400 | 0.10 | 39/40 | −26.2% | 9.36 |
+| 300 | 0.00 | 40/40 | −4.0% | 5.57 |
+| **250** | **0.00** | **40/40** | **+6.9%** | 4.78 |
+| **200** | **0.00** | **40/40** | **+13.5%** | 4.09 |
+| **180** | **0.00** | **40/40** | **+13.3%** | 3.84 |
+| 150 | 0.00 | 40/40 | +9.9% | 3.43 |
+| 120 | 0.00 | 40/40 | +4.3% | 3.03 |
+| 100 | 0.00 | 40/40 | −1.5% | 2.73 |
+| 80 | 0.00 | 40/40 | −8.2% | 2.40 |
+
+**Two findings.**
+
+1. **The safety transition is sharp.** Between gain 400 and 300 the
+   system moves from 39/40 to 40/40 safe; above ~700 it collapses to
+   teleport behaviour. Safety is not purchased gradually — it switches.
+2. **In a band around gain 180–250, governance is not merely cheap,
+   it is PROFITABLE:** zero breaches across all 40 seeds *and* median
+   terminal wealth ~13% ABOVE the teleporting world. Bounded agents
+   survive to compound; teleporting agents destroy themselves. The
+   earlier headline "governance costs 16.8%" was an artifact of one
+   over-conservative setting (gain 40), not a property of governance.
+
+Cost is real only outside that band: over-tight bounding (gain ≤ 100)
+forgoes upside, and loose bounding (gain ≥ 400) buys nothing.
