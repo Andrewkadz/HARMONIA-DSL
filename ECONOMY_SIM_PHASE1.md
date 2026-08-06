@@ -116,7 +116,7 @@ testable roles:
 
 ## Tests (E-series, in the ST style)
 
-- **E-A (ungoverned fails):** with the stress schedule, ungoverned run
+- **E-A (teleport breaches):** the teleporting world, running the SAME guard, is rendered insolvent between checks. Passes by asserting failure.
   produces ≥1 agent-round below FLOOR. Passes by asserting failure.
 - **E-B (governed holds):** same seed, same shocks — no agent-round
   below FLOOR, for every agent, every round.
