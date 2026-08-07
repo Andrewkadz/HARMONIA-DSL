@@ -148,8 +148,85 @@ class TestCorridorStillIntact:
         assert abs(result - 6.4) < 1e-9
 
     def test_operator_count(self):
-        """17 symbols now carry real semantics (was 6 this morning)."""
+        """19 symbol forms now carry real semantics (6 this morning)."""
         interp = PhiPiEInterpreterFixed()
         numeric = {'Φ', 'Ψ', 'ε', 'Λ', 'Δ', 'Π'}
         structural = set(interp.structural)
-        assert len(numeric | structural) == 16
+        assert len(numeric | structural) == 19
+
+
+class TestThetaIntention:
+    """Θ: structural aim declared BEFORE acting; auditable after."""
+
+    def test_aligned_motion_scores_one(self):
+        interp, v = run("@a 0.0 0.0\n@goal 10.0 0.0\nΘ @a @goal\n"
+                        "ε @a @goal\nΘ? @a")
+        assert abs(v - 1.0) < 1e-9
+
+    def test_orthogonal_motion_scores_zero(self):
+        interp, v = run("@a 0.0 0.0\n@goal 10.0 0.0\nΘ @a @goal\n"
+                        "@a 0.0 5.0\nΘ? @a")
+        assert abs(v) < 1e-9
+
+    def test_opposite_motion_scores_minus_one(self):
+        interp, v = run("@a 0.0 0.0\n@goal 10.0 0.0\nΘ @a @goal\n"
+                        "@a -5.0 0.0\nΘ? @a")
+        assert abs(v + 1.0) < 1e-9
+
+    def test_theta_does_not_act(self):
+        """Θ configures; it must not move anything itself."""
+        interp, _ = run("@a 1.0 2.0\n@goal 9.0 9.0\nΘ @a @goal")
+        assert interp.last_context.read_register('@a') == 1 + 2j
+
+    def test_depth_indexing(self):
+        """Θₙ — intentions are stored per depth from #depth."""
+        interp, _ = run("#depth 0\n@a 0.0 0.0\n@g1 10.0 0.0\nΘ @a @g1\n"
+                        "#depth 2\n@g2 0.0 10.0\nΘ @a @g2")
+        depths = sorted(d for (n, d) in interp.last_context.intentions)
+        assert depths == [0, 2]
+
+    def test_innermost_intention_governs(self):
+        """The deepest declared aim is the one audited."""
+        interp, v = run("#depth 0\n@a 0.0 0.0\n@g1 10.0 0.0\nΘ @a @g1\n"
+                        "#depth 3\n@g2 0.0 10.0\nΘ @a @g2\n"
+                        "@a 0.0 5.0\nΘ? @a")
+        assert abs(v - 1.0) < 1e-9   # aligned with the depth-3 aim
+
+    def test_audit_with_no_intention_is_zero(self):
+        interp, v = run("@a 1.0 1.0\nΘ? @a")
+        assert v == 0.0
+
+
+class TestRhoPerception:
+    """Ρ: refraction through a lens — order-dependent by construction."""
+
+    def test_non_commutative(self):
+        """The spec's defining property: ΛΡΨ ≠ ΨΡΛ. Here directly —
+        perceiving a through l differs from perceiving l through a."""
+        i1, _ = run("@a 2.0 1.0\n@l 0.0 3.0\nΡ @a @l")
+        i2, _ = run("@a 2.0 1.0\n@l 0.0 3.0\nΡ @l @a")
+        assert i1.last_context.read_register('@a') != \
+            i2.last_context.read_register('@l')
+
+    def test_same_state_different_lenses_differ(self):
+        """Identical patterns generate different meanings."""
+        i1, v1 = run("@a 2.0 1.0\n@l 1.0 0.0\nΡ @a @l")
+        i2, v2 = run("@a 2.0 1.0\n@l 0.0 1.0\nΡ @a @l")
+        assert i1.last_context.read_register('@a') != \
+            i2.last_context.read_register('@a')
+
+    def test_lens_is_not_mutated(self):
+        interp, _ = run("@a 2.0 1.0\n@l 0.0 3.0\nΡ @a @l")
+        assert interp.last_context.read_register('@l') == 3j
+
+    def test_sequence_order_changes_outcome(self):
+        """Ρ before vs after another operator gives different results —
+        the practical form of non-commutativity."""
+        i1, _ = run("@a 2.0 1.0\n@l 0.0 3.0\n@b 1.0 1.0\nΡ @a @l\nΦ @a @b")
+        i2, _ = run("@a 2.0 1.0\n@l 0.0 3.0\n@b 1.0 1.0\nΦ @a @b\nΡ @a @l")
+        assert i1.last_context.read_register('@a') != \
+            i2.last_context.read_register('@a')
+
+    def test_reports_to_scalar(self):
+        interp, v = run("@a 2.0 1.0\n@l 0.0 3.0\nΡ @a @l")
+        assert abs(interp.last_context.get_scalar('#rho') - v) < 1e-12

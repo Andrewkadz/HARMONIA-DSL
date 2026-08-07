@@ -243,6 +243,9 @@ class PhiPiEInterpreterFixed:
             'λ!': self._lambda_resolve,
             'Υ': self._upsilon_consensus,
             'Κ': self._kappa_probe,
+            'Θ': self._theta_intend,
+            'Θ?': self._theta_audit,
+            'Ρ': self._rho_perceive,
         }
 
         self.categories = {
@@ -329,6 +332,79 @@ class PhiPiEInterpreterFixed:
         alignment = 1.0 - diff / math.pi
         ctx.set_scalar('#tau', alignment)
         return alignment
+
+    def _theta_intend(self, ctx, ops):
+        """Θ @self @aim — declare a structural aim BEFORE acting.
+
+        Spec role: "structural aim embedding prior to activation,"
+        via angular directional dynamics; indexed by depth (Θₙ).
+        Realization: records (position_at_declaration, aim_direction)
+        under (register, depth), where depth comes from `#depth`.
+        Nothing is applied — Θ configures, it does not act.
+        Job: pre-commitment. Declared intent becomes auditable
+        against realized behaviour.
+        """
+        if not hasattr(ctx, 'intentions'):
+            ctx.intentions = {}
+        name = ops[0]
+        aim = ctx.read_register(ops[1]) if len(ops) > 1 else complex(1, 0)
+        depth = int(ctx.get_scalar('#depth'))
+        here = ctx.read_register(name)
+        direction = aim - here
+        ctx.intentions[(name, depth)] = (here, direction)
+        ctx.set_scalar('#theta', float(depth))
+        return float(depth)
+
+    def _theta_audit(self, ctx, ops):
+        """Θ? @self — did behaviour match the declared aim?
+
+        Reports cosine alignment ∈ [-1, 1] between realized
+        displacement and the declared direction, to `#theta_align`.
+        1 = moved exactly as intended, 0 = orthogonal, -1 = opposite,
+        0 with no motion. Deeper intentions are checked first
+        (innermost aim governs).
+        """
+        intentions = getattr(ctx, 'intentions', {})
+        name = ops[0]
+        depths = sorted((d for (n, d) in intentions if n == name),
+                        reverse=True)
+        if not depths:
+            ctx.set_scalar('#theta_align', 0.0)
+            return 0.0
+        start, direction = intentions[(name, depths[0])]
+        realized = ctx.read_register(name) - start
+        if abs(realized) < 1e-12 or abs(direction) < 1e-12:
+            ctx.set_scalar('#theta_align', 0.0)
+            return 0.0
+        cos = (realized.real * direction.real
+               + realized.imag * direction.imag) / (abs(realized) * abs(direction))
+        cos = max(-1.0, min(1.0, cos))
+        ctx.set_scalar('#theta_align', cos)
+        return cos
+
+    def _rho_perceive(self, ctx, ops):
+        """Ρ @a @lens — refract a state through a perspective.
+
+        Spec role: "identical patterns generate different meanings
+        based on refractive properties," and explicitly NON-
+        COMMUTATIVE (ΛΡΨ ≠ ΨΡΛ).
+        Realization: the subject is rotated by the lens's phase and
+        attenuated by their separation:
+            Ρ(a, l) = a · e^{i·arg(l)} / (1 + |l − a|)
+        Asymmetric by construction: Ρ(a,l) ≠ Ρ(l,a) in general.
+        Job: order-dependent observation — the same state read
+        through different lenses, or in a different sequence, yields
+        different meanings.
+        """
+        a = ctx.read_register(ops[0])
+        lens = ctx.read_register(ops[1]) if len(ops) > 1 else complex(1, 0)
+        if lens == 0:
+            ctx.set_scalar('#rho', abs(a))
+            return abs(a)
+        perceived = a * cmath.exp(1j * cmath.phase(lens)) / (1 + abs(lens - a))
+        ctx.write_register(ops[0], perceived)
+        ctx.set_scalar('#rho', abs(perceived))
+        return abs(perceived)
 
     def _lambda_entangle(self, ctx, ops):
         """λ @a @b — bind two registers: writing either propagates to
@@ -446,7 +522,7 @@ class PhiPiEInterpreterFixed:
 
         # Proper allowed characters including all Greek letters, newline, '-',
         # and (Step 2) '@' + ascii letters/underscore for register identifiers.
-        allowed_chars = set('ΦΠΕεΔδΨΛλΓΩωΣΞζΤΡΘηχnΥΚΒ→+::/|[]=()0123456789.,- \n@#!_'
+        allowed_chars = set('ΦΠΕεΔδΨΛλΓΩωΣΞζΤΡΘηχnΥΚΒ→+::/|[]=()0123456789.,- \n@#!?_'
                             'abcdefghijklmnopqrstuvwxyz'
                             'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
         code = ''.join(c for c in code if c in allowed_chars)
@@ -491,9 +567,13 @@ class PhiPiEInterpreterFixed:
                 i += 1
                 continue
 
-            # bang-suffixed operators (Σ! λ!) — two chars, one token
+            # suffixed operators (Σ! λ! Θ?) — two chars, one token
             if char in ('Σ', 'λ') and i + 1 < len(code) and code[i + 1] == '!':
                 tokens.append(char + '!')
+                i += 2
+                continue
+            if char == 'Θ' and i + 1 < len(code) and code[i + 1] == '?':
+                tokens.append('Θ?')
                 i += 2
                 continue
 
