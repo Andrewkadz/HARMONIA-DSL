@@ -239,6 +239,10 @@ class PhiPiEInterpreterFixed:
             'Ξ': self._xi_compose,
             'Γ': self._gamma_evolve,
             'Τ': self._tau_phaselock,
+            'λ': self._lambda_entangle,
+            'λ!': self._lambda_resolve,
+            'Υ': self._upsilon_consensus,
+            'Κ': self._kappa_probe,
         }
 
         self.categories = {
@@ -326,6 +330,66 @@ class PhiPiEInterpreterFixed:
         ctx.set_scalar('#tau', alignment)
         return alignment
 
+    def _lambda_entangle(self, ctx, ops):
+        """λ @a @b — bind two registers: writing either propagates to
+        the other on the next entanglement resolution.
+
+        Spec role: "nonlocal binding between fields." Realization: a
+        symmetric link set; `λ! @a` resolves by averaging all members
+        of @a's entanglement group (Φ-stabilized, so binding cannot
+        amplify). Job: shared state between cooperating agents.
+        """
+        if not hasattr(ctx, 'entangled'):
+            ctx.entangled = {}
+        group = set(ops)
+        for name in ops:
+            group |= ctx.entangled.get(name, set())
+        for name in group:
+            ctx.entangled[name] = group - {name}
+        ctx.set_scalar('#lambda', float(len(group)))
+        return float(len(group))
+
+    def _lambda_resolve(self, ctx, ops):
+        """λ! @a — collapse an entangled group to their shared value."""
+        entangled = getattr(ctx, 'entangled', {})
+        group = {ops[0]} | entangled.get(ops[0], set())
+        if len(group) < 2:
+            return 0.0
+        vals = [ctx.read_register(n) for n in sorted(group)]
+        shared = sum(vals) / len(vals)
+        for n in group:
+            ctx.write_register(n, shared)
+        return abs(shared)
+
+    def _upsilon_consensus(self, ctx, ops):
+        """Υ @a @b [...] — consensus merge over registers.
+
+        Spec role: consensus merge. Realization: the Φ-stabilized mean
+        of all operands written to EVERY operand, plus a dispersion
+        readout in #upsilon (0 = perfect agreement). Job: multi-agent
+        agreement with a measurable disagreement signal.
+        """
+        vals = [ctx.read_register(o) for o in ops]
+        merged = sum(vals) / len(vals)
+        dispersion = (sum(abs(v - merged) for v in vals) / len(vals)) \
+            if len(vals) > 1 else 0.0
+        for o in ops:
+            ctx.write_register(o, merged)
+        ctx.set_scalar('#upsilon', dispersion)
+        return dispersion
+
+    def _kappa_probe(self, ctx, ops):
+        """Κ @a [@b] — NON-MUTATING read.
+
+        Spec role: query probe. Realization: reports |@a| (or the
+        distance |@a−@b| with two operands) to #kappa and changes
+        nothing. Job: inspect a peer before negotiating with it.
+        """
+        z = ctx.read_register(ops[0])
+        val = abs(z) if len(ops) == 1 else abs(z - ctx.read_register(ops[1]))
+        ctx.set_scalar('#kappa', val)
+        return val
+
     @staticmethod
     def harmonic_pair(z: complex, w: complex) -> complex:
         """Φ-stabilized combination, used by Ξ composition."""
@@ -382,7 +446,7 @@ class PhiPiEInterpreterFixed:
 
         # Proper allowed characters including all Greek letters, newline, '-',
         # and (Step 2) '@' + ascii letters/underscore for register identifiers.
-        allowed_chars = set('ΦΠΕεΔδΨΛλΓΩωΣΞζΤΡΘηχn→+::/|[]=()0123456789.,- \n@#!_'
+        allowed_chars = set('ΦΠΕεΔδΨΛλΓΩωΣΞζΤΡΘηχnΥΚΒ→+::/|[]=()0123456789.,- \n@#!_'
                             'abcdefghijklmnopqrstuvwxyz'
                             'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
         code = ''.join(c for c in code if c in allowed_chars)
@@ -427,9 +491,9 @@ class PhiPiEInterpreterFixed:
                 i += 1
                 continue
 
-            # Σ! collapse operator — two chars, one token
-            if char == 'Σ' and i + 1 < len(code) and code[i + 1] == '!':
-                tokens.append('Σ!')
+            # bang-suffixed operators (Σ! λ!) — two chars, one token
+            if char in ('Σ', 'λ') and i + 1 < len(code) and code[i + 1] == '!':
+                tokens.append(char + '!')
                 i += 2
                 continue
 
@@ -579,7 +643,7 @@ class PhiPiEInterpreterFixed:
                     context.write_register(
                         token, complex(float(nums[0]), float(nums[1])))
                     i += 2
-                elif token in ('Φ', 'Ψ', 'ε') and i + 1 < len(tokens) \
+                elif token in ('Φ', 'Ψ', 'ε', 'Δ', 'Π') and i + 1 < len(tokens) \
                         and same_line(i, i + 1) \
                         and self.is_register_token(tokens[i + 1]):
                     # Binary register forms (BRIDGE_DESIGN Step 3):
@@ -593,14 +657,23 @@ class PhiPiEInterpreterFixed:
                             f"register operands: '{token} @z @w' — mixed or "
                             f"partial forms are forbidden")
                     from phi_pi_e_math_core import (
-                        harmonic_equilibrium, incremental_insight,
-                        recursive_animation)
-                    op = {'Φ': harmonic_equilibrium,
-                          'Ψ': recursive_animation,
-                          'ε': incremental_insight}[token]
+                        fusion_transformation, harmonic_equilibrium,
+                        incremental_insight, recursive_animation,
+                        transcendent_continuity)
                     z = context.read_register(operands[0])
                     w = context.read_register(operands[1])
-                    context.write_register(operands[0], op(z, w))
+                    if token == 'Π':
+                        # π spiral: depth from #depth (default 1); w≠0
+                        n = int(context.get_scalar('#depth')) or 1
+                        result = transcendent_continuity(z, w, n=max(1, n)) \
+                            if w != 0 else z
+                    else:
+                        op = {'Φ': harmonic_equilibrium,
+                              'Ψ': recursive_animation,
+                              'ε': incremental_insight,
+                              'Δ': fusion_transformation}[token]
+                        result = op(z, w)
+                    context.write_register(operands[0], result)
                     # current_value passes through unchanged (register ops
                     # live in the ℂ layer; only Λ reduces to ℝ)
                     i += 2
@@ -661,6 +734,36 @@ class PhiPiEInterpreterFixed:
                             pass  # keep current_value
                         else:
                             current_value = result
+                elif token == '→' and i + 1 < len(tokens) \
+                        and same_line(i, i + 1):
+                    # COMPOSITION TIER: pipe. 'X → @dst' writes the
+                    # current value into @dst; 'X → #s' into a scalar.
+                    # Makes programs expressions rather than statements.
+                    dst = tokens[i + 1]
+                    if self.is_register_token(dst) and current_value is not None:
+                        context.write_register(dst, complex(current_value))
+                        i += 1
+                    elif self.is_scalar_token(dst) and current_value is not None:
+                        context.set_scalar(dst, float(abs(current_value))
+                                           if isinstance(current_value, complex)
+                                           else float(current_value))
+                        i += 1
+                    else:
+                        current_value = self.flow(current_value, context)
+                elif token == '+' and i + 2 < len(tokens) \
+                        and same_line(i, i + 2) \
+                        and self.is_register_token(tokens[i + 1]) \
+                        and self.is_register_token(tokens[i + 2]):
+                    # COMPOSITION TIER: parallel coexistence.
+                    # '+ @a @b' — both advance without interacting;
+                    # commutative and independence-preserving per spec.
+                    a, b = tokens[i + 1], tokens[i + 2]
+                    za, zb = context.read_register(a), context.read_register(b)
+                    context.write_register(a, za)
+                    context.write_register(b, zb)
+                    context.set_scalar('#parallel', 2.0)
+                    current_value = abs(za) + abs(zb)
+                    i += 2
                 elif token in self.operators:
                     # Execute operator (needs special handling for binary ops)
                     handler = self.operators[token]

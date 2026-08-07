@@ -133,3 +133,42 @@ prescribes. Same for the other reused glyphs.
    test.
 
 Branch: `feat/logic-nodes`, stacked on current main.
+
+---
+
+## ROUND 2 (2026-08-04): register forms, coordination nodes, composition
+
+**Δ and Π register forms.** `Δ @a @b` and `Π @a @b` dispatch to the
+math core's existing tested functions — no new mathematics, just the
+wiring. Π reads its recursion depth from `#depth` (default 1) and
+holds position when the reference register is 0, since π is undefined
+there (proofs Thm 3.2).
+
+**Coordination nodes** (computational realizations, honesty clause
+above applies):
+
+- `λ @a @b` entangles registers into a symmetric group (transitive);
+  `λ! @a` resolves the group to their shared mean. Job: shared state
+  between cooperating agents.
+- `Υ @a @b [...]` consensus merge — writes the mean to every operand
+  and reports dispersion to `#upsilon` (0 = perfect agreement,
+  idempotent). Job: multi-agent agreement WITH a measurable
+  disagreement signal.
+- `Κ @a [@b]` probe — reports magnitude, or distance with two
+  operands, to `#kappa`, and mutates nothing. Job: inspect a peer
+  before negotiating.
+
+**Composition tier.** This is the structural change: programs become
+expressions rather than flat statement sequences.
+
+- `→ @dst` / `→ #dst` pipes the current value into a register or
+  scalar, so operator outputs can be named and reused:
+  `Λ @a @b → #obs`.
+- `+ @a @b` parallel coexistence — both present, neither transformed,
+  commutative (spec: independence-preserving, non-transformative).
+- Bare `→` with no valid destination keeps its legacy modulator
+  behaviour, so nothing in the corridor moves.
+
+**Count:** 16 symbols now carry real semantics (6 at the start of the
+day). Remaining ceremonial: Ε Θ Ρ Ω ω δ η χ n Β and the connectives
+`: / |`. Ω stays unimplemented by its own Theorem 3.2.
