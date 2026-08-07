@@ -133,8 +133,13 @@ class TestStepTwoProhibitions:
         interp, _ = run("@z 1.0 2.0\n@w 3.0 4.0\nΦ @z @w")
         assert interp.last_context.read_register('@z') != 1 + 2j
 
-    def test_reducer_sigma_rejects_registers(self):
-        run_raises("@z 1.0 2.0\nΣ @z")
+    def test_reducer_sigma_now_superposes(self):
+        """SUPERSEDED by LOGIC_NODES_DESIGN: 'Σ @z' is no longer a
+        prohibition — with register operands Σ is the tier-2
+        superposition node. Bare 'Σ' keeps its reducer semantics
+        (pinned by the canonical fixture), so the corridor is intact."""
+        interp, _ = run("@z 1.0 2.0\n@w 3.0 4.0\nΣ @z @w")
+        assert interp.last_context.superpositions['@z'] == [1 + 2j, 3 + 4j]
 
 
 class TestPersistenceThroughSyntax:
