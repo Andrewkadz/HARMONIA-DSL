@@ -134,7 +134,14 @@ class FieldContext:
         Ints/floats are coerced to complex (imag=0). Per BRIDGE_DESIGN,
         registers are the ONLY residence of ℂ values; this method never
         touches real scalar state.
+
+        Sealed registers (closed by Ω) REFUSE writes: the write is
+        ignored and counted in `#sealed_refusals`. Closure is terminal.
         """
+        if name in getattr(self, 'closed', ()) and name in self.zfield:
+            self.scalars['#sealed_refusals'] = \
+                self.scalars.get('#sealed_refusals', 0.0) + 1.0
+            return
         self.zfield[name] = complex(value)
 
     def read_register(self, name: str) -> complex:
@@ -246,6 +253,8 @@ class PhiPiEInterpreterFixed:
             'Θ': self._theta_intend,
             'Θ?': self._theta_audit,
             'Ρ': self._rho_perceive,
+            'Ω': self._omega_close,
+            'Ω?': self._omega_query,
         }
 
         self.categories = {
@@ -332,6 +341,34 @@ class PhiPiEInterpreterFixed:
         alignment = 1.0 - diff / math.pi
         ctx.set_scalar('#tau', alignment)
         return alignment
+
+    def _omega_close(self, ctx, ops):
+        """Ω @a — closure as n⁰: the state collapses to unity and seals.
+
+        IMPORTANT — this is NOT the proofs' qualia-gateway Ω
+        (ℂ×ℂ → 𝒬), which is proven to have no numerical value
+        (Thm 3.2) and stays unimplemented in the math core. This is the
+        SECOND role the interpreter has always assigned the glyph:
+        recursive closure. n⁰ = 1 gives it exact semantics — any state,
+        closed, becomes unity — and sealing makes that terminal.
+
+        Job: finalization. A sealed register is a commitment that
+        cannot be revised; further writes are REFUSED and counted.
+        """
+        name = ops[0]
+        if not hasattr(ctx, 'closed'):
+            ctx.closed = set()
+        ctx.write_register(name, complex(1.0, 0.0))   # n⁰ = 1
+        ctx.closed.add(name)
+        ctx.set_scalar('#omega', float(len(ctx.closed)))
+        return 1.0
+
+    def _omega_query(self, ctx, ops):
+        """Ω? @a — is this register sealed? 1.0 / 0.0."""
+        closed = getattr(ctx, 'closed', set())
+        v = 1.0 if ops[0] in closed else 0.0
+        ctx.set_scalar('#closed', v)
+        return v
 
     def _theta_intend(self, ctx, ops):
         """Θ @self @aim — declare a structural aim BEFORE acting.
@@ -574,8 +611,8 @@ class PhiPiEInterpreterFixed:
                 tokens.append(char + '!')
                 i += 2
                 continue
-            if char == 'Θ' and i + 1 < len(code) and code[i + 1] == '?':
-                tokens.append('Θ?')
+            if char in ('Θ', 'Ω') and i + 1 < len(code) and code[i + 1] == '?':
+                tokens.append(char + '?')
                 i += 2
                 continue
 

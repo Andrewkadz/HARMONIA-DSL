@@ -143,3 +143,50 @@ class TestCorridorIntact:
     def test_loops_still_work(self):
         interp, _ = run("[Ψ 1]")
         assert interp.last_context.state.psi_signal == 10.0
+
+
+class TestOmegaClosure:
+    """Ω as n⁰ — closure collapses to unity and seals.
+
+    NOTE: this is the interpreter's CLOSURE role for the glyph, not
+    the proofs' qualia-gateway Ω (ℂ×ℂ → 𝒬), which is proven to have
+    no numerical value and stays unimplemented in the math core.
+    """
+
+    def test_closes_to_unity(self):
+        interp, v = run("@a 7.0 3.0\nΩ @a")
+        assert interp.last_context.read_register('@a') == 1 + 0j
+        assert v == 1.0
+
+    def test_sealed_register_refuses_writes(self):
+        interp, _ = run("@a 7.0 3.0\nΩ @a\n@b 2.0 0.0\nΦ @a @b")
+        assert interp.last_context.read_register('@a') == 1 + 0j
+        assert interp.last_context.get_scalar('#sealed_refusals') >= 1.0
+
+    def test_closure_is_terminal_across_operators(self):
+        """No operator may revive a sealed register."""
+        interp, _ = run("@a 5.0 0.0\n@b 3.0 0.0\nΩ @a\n"
+                        "ε @a @b\nΓ @a\nΡ @a @b")
+        assert interp.last_context.read_register('@a') == 1 + 0j
+
+    def test_query_reports_seal_state(self):
+        i1, v1 = run("@a 1.0 0.0\nΩ? @a")
+        i2, v2 = run("@a 1.0 0.0\nΩ @a\nΩ? @a")
+        assert v1 == 0.0 and v2 == 1.0
+
+    def test_closure_count(self):
+        interp, _ = run("@a 1.0 0.0\n@b 2.0 0.0\nΩ @a\nΩ @b")
+        assert interp.last_context.get_scalar('#omega') == 2.0
+
+    def test_seal_composes_with_guards(self):
+        """'Ω? @a #done 1.0' — act only on sealed state."""
+        interp, _ = run("@a 1.0 0.0\nΩ @a\nΩ? @a #done 1.0")
+        assert interp.last_context.get_scalar('#done') == 1.0
+
+    def test_math_core_omega_still_refuses(self):
+        """The qualia-gateway Ω remains unimplementable, as proven."""
+        import pytest
+        from phi_pi_e_math_core import (CATEGORICAL_OPERATORS,
+                                        CategoricalBoundaryError)
+        with pytest.raises(CategoricalBoundaryError):
+            CATEGORICAL_OPERATORS['Ω'](1 + 1j, 2 - 1j)

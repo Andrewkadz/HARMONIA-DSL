@@ -148,11 +148,11 @@ class TestCorridorStillIntact:
         assert abs(result - 6.4) < 1e-9
 
     def test_operator_count(self):
-        """19 symbol forms now carry real semantics (6 this morning)."""
+        """21 symbol forms now carry real semantics (6 this morning)."""
         interp = PhiPiEInterpreterFixed()
         numeric = {'Φ', 'Ψ', 'ε', 'Λ', 'Δ', 'Π'}
         structural = set(interp.structural)
-        assert len(numeric | structural) == 19
+        assert len(numeric | structural) == 21
 
 
 class TestThetaIntention:

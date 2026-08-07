@@ -232,3 +232,31 @@ The pieces that turn a statement sequence into a structured program.
 **Count: 24 symbol forms with real semantics** (6 at the start of the
 day). Remaining ceremonial: Ε ω δ η χ n Β and `|`. Ω stays
 unimplemented by its own Theorem 3.2.
+
+## ROUND 5: Ω as n⁰ — closure
+
+**Two operators share this glyph, and only one is implementable.**
+The proofs' Ω is the *qualia gateway* (ℂ×ℂ → 𝒬), proven to have no
+numerical value (Thm 3.2); it remains unimplemented in the math core
+and still raises `CategoricalBoundaryError`. The interpreter's symbol
+table has always assigned Ω a SECOND role — recursive closure — and
+that one is implementable.
+
+**`Ω @a` — closure as n⁰.** Anything raised to the zeroth power is
+unity, so closure collapses the register to `1 + 0j` and SEALS it.
+Sealing is terminal: subsequent writes from any operator are REFUSED
+and counted in `#sealed_refusals`. `Ω? @a` reports seal state, and
+composes with guards: `Ω? @a #done 1.0`.
+
+**Job:** finalization — a commitment that cannot be revised. Nothing
+else in the language provides immutability, and a governance language
+without it cannot express "this decision is final."
+**Falsifier (tested):** after Ω, `ε`, `Γ`, and `Ρ` all fail to move
+the register; the refusal counter increments.
+
+This is the first operator whose semantics came from the operator's
+*name* rather than its spec entry — n⁰ = 1 is what "closure" means
+arithmetically, and it turned out to give exactly the right behaviour.
+
+**Count: 26 symbol forms with real semantics** (6 at the start of the
+day). Remaining ceremonial: Ε ω δ η χ n Β and `|`.
