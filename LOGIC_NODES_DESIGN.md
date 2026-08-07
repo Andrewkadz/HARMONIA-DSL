@@ -205,3 +205,30 @@ This is the spec's own defining property, and it holds.
 **Count: 19 symbol forms with real semantics** (6 at the start of the
 day). Remaining ceremonial: Ε ω δ η χ n Β Ω and the connectives
 `: / |`. Ω stays unimplemented by its own Theorem 3.2.
+
+## ROUND 4: connectives — `< > ( ) / : ^`
+
+The pieces that turn a statement sequence into a structured program.
+
+- **`> A B` / `< A B` — guard.** Compares scalars, register
+  magnitudes, or literals; writes 1/0 to `#cmp`; and if the test
+  FAILS, abandons the rest of the line. This is Harmonia's
+  conditional execution: `> #drift 0.5 Φ @a @b` stabilizes only when
+  drift is high. Gating is line-scoped — the next line always runs.
+- **`( ... )` — grouping.** Evaluates a sub-expression whose result
+  becomes the current value, so operator output can be piped:
+  `( Λ @a @b ) → #obs`. Nestable.
+- **`^` / `^ n` — depth escalation.** Nests one level, or sets the
+  level outright. Feeds `#depth`, which Θₙ and Π both read, so
+  intentions and spiral recursion share one notion of depth.
+- **`: @a @b` — relational interface.** Records a contact pair and
+  reports their tension to `#tension`, WITHOUT merging — the spec's
+  "active relational recursion without immediate merger." Both
+  registers are left untouched.
+- **`/ @a` — disruption.** Perturbs a register by `#disrupt`
+  (default 0.1) as a rotation rather than a scaling, so it changes
+  direction, not just magnitude.
+
+**Count: 24 symbol forms with real semantics** (6 at the start of the
+day). Remaining ceremonial: Ε ω δ η χ n Β and `|`. Ω stays
+unimplemented by its own Theorem 3.2.

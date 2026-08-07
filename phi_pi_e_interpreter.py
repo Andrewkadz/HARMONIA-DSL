@@ -522,7 +522,7 @@ class PhiPiEInterpreterFixed:
 
         # Proper allowed characters including all Greek letters, newline, '-',
         # and (Step 2) '@' + ascii letters/underscore for register identifiers.
-        allowed_chars = set('ΦΠΕεΔδΨΛλΓΩωΣΞζΤΡΘηχnΥΚΒ→+::/|[]=()0123456789.,- \n@#!?_'
+        allowed_chars = set('ΦΠΕεΔδΨΛλΓΩωΣΞζΤΡΘηχnΥΚΒ→+::/|[]=()<>^0123456789.,- \n@#!?_'
                             'abcdefghijklmnopqrstuvwxyz'
                             'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
         code = ''.join(c for c in code if c in allowed_chars)
@@ -535,6 +535,8 @@ class PhiPiEInterpreterFixed:
     _REGISTER_RE = re.compile(r'@[A-Za-z_][A-Za-z0-9_]*')
     # Matches a scalar attribute (LOGIC_NODES_DESIGN): #name
     _SCALAR_RE = re.compile(r'#[A-Za-z_][A-Za-z0-9_]*')
+    # Connective tokens outside the symbol/operator tables
+    CONNECTIVES = frozenset('<>^')
 
     @classmethod
     def is_number_token(cls, token: str) -> bool:
@@ -609,6 +611,20 @@ class PhiPiEInterpreterFixed:
                 i = m.end()
                 continue
 
+            # Grouping: ( ... ) as a single token, like [ ... ]
+            if char == '(':
+                depth = 1
+                j = i + 1
+                while j < len(code) and depth > 0:
+                    if code[j] == '(':
+                        depth += 1
+                    elif code[j] == ')':
+                        depth -= 1
+                    j += 1
+                tokens.append(code[i:j])
+                i = j
+                continue
+
             # Handle brackets as single tokens
             if char == '[':
                 # Find matching ]
@@ -626,6 +642,10 @@ class PhiPiEInterpreterFixed:
                 tokens.append(char)
                 i += 1
             elif char in self.operators:
+                tokens.append(char)
+                i += 1
+            elif char in self.CONNECTIVES:
+                # guard/depth connectives: < > ^
                 tokens.append(char)
                 i += 1
             else:
@@ -683,7 +703,13 @@ class PhiPiEInterpreterFixed:
                 token = tokens[i]
                 print(f"\nExecuting token: {token}")
 
-                if token.startswith('[') and token.endswith(']'):
+                if token.startswith('(') and token.endswith(')'):
+                    # GROUPING: evaluate the sub-expression once; its
+                    # result becomes the current value, so it can be
+                    # piped: '( Λ @a @b ) → #obs'
+                    inner = token[1:-1]
+                    current_value = self.execute(inner, context)
+                elif token.startswith('[') and token.endswith(']'):
                     # Handle loop
                     loop_code = token[1:-1]  # Remove brackets
                     current_value = self.execute_loop(loop_code, context)
@@ -814,6 +840,69 @@ class PhiPiEInterpreterFixed:
                             pass  # keep current_value
                         else:
                             current_value = result
+                elif token in ('<', '>') and i + 2 < len(tokens) \
+                        and same_line(i, i + 2):
+                    # GUARD: '> A B' / '< A B' — compare, and if the
+                    # test FAILS, skip the rest of the line. This is
+                    # the language's conditional execution.
+                    def _val(tok):
+                        if self.is_scalar_token(tok):
+                            return context.get_scalar(tok)
+                        if self.is_register_token(tok):
+                            return abs(context.read_register(tok))
+                        if self.is_number_token(tok):
+                            return float(tok)
+                        return 0.0
+                    lhs, rhs = _val(tokens[i + 1]), _val(tokens[i + 2])
+                    passed = (lhs > rhs) if token == '>' else (lhs < rhs)
+                    context.set_scalar('#cmp', 1.0 if passed else 0.0)
+                    current_value = 1.0 if passed else 0.0
+                    i += 2
+                    if not passed:
+                        while i + 1 < len(tokens) and same_line(i, i + 1):
+                            i += 1        # gate: abandon the rest of the line
+                elif token == '^':
+                    # DEPTH ESCALATION: '^' nests one level, '^ n' sets
+                    # the level. Pairs with Θₙ and Π's recursion depth.
+                    if i + 1 < len(tokens) and same_line(i, i + 1) \
+                            and self.is_number_token(tokens[i + 1]):
+                        context.set_scalar('#depth', float(tokens[i + 1]))
+                        i += 1
+                    else:
+                        context.set_scalar('#depth',
+                                           context.get_scalar('#depth') + 1.0)
+                    current_value = context.get_scalar('#depth')
+                elif token == ':' and i + 2 < len(tokens) \
+                        and same_line(i, i + 2) \
+                        and self.is_register_token(tokens[i + 1]) \
+                        and self.is_register_token(tokens[i + 2]):
+                    # RELATIONAL INTERFACE: ': @a @b' creates a contact
+                    # zone WITHOUT merging (spec: "active relational
+                    # recursion without immediate merger"). Records the
+                    # pair and reports the tension between them.
+                    a, b = tokens[i + 1], tokens[i + 2]
+                    if not hasattr(context, 'relations'):
+                        context.relations = []
+                    context.relations.append((a, b))
+                    tension = abs(context.read_register(a)
+                                  - context.read_register(b))
+                    context.set_scalar('#tension', tension)
+                    current_value = tension
+                    i += 2
+                elif token == '/' and i + 1 < len(tokens) \
+                        and same_line(i, i + 1) \
+                        and self.is_register_token(tokens[i + 1]):
+                    # DISRUPTION: '/ @a' perturbs a register
+                    # deterministically (spec: disruption/interference).
+                    # Magnitude from #disrupt (default 0.1); rotation by
+                    # a quarter turn so it is a real perturbation, not
+                    # a scaling.
+                    name = tokens[i + 1]
+                    mag = context.get_scalar('#disrupt') or 0.1
+                    z = context.read_register(name)
+                    context.write_register(name, z + z * 1j * mag)
+                    current_value = abs(z) * mag
+                    i += 1
                 elif token == '→' and i + 1 < len(tokens) \
                         and same_line(i, i + 1):
                     # COMPOSITION TIER: pipe. 'X → @dst' writes the
