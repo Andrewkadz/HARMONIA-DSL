@@ -117,6 +117,9 @@ class TestProhibitionsStillHold:
     def test_single_register_epsilon(self):
         run_raises("@z 1.0 2.0\nε @z")
 
-    def test_other_symbols_still_reject_registers(self):
-        run_raises("@z 1.0 2.0\nΣ @z")
-        run_raises("@z 1.0 2.0\nΓ @z")
+    def test_non_structural_symbols_still_reject_registers(self):
+        """Σ and Γ moved to the tier-2 structural set
+        (LOGIC_NODES_DESIGN); symbols outside BOTH tiers still reject
+        register operands."""
+        run_raises("@z 1.0 2.0\nΩ @z")
+        run_raises("@z 1.0 2.0\nΛ @z 1.0")   # mixed form, still banned

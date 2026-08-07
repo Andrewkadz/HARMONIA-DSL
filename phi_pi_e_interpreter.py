@@ -20,8 +20,11 @@ For the complete theoretical foundations, see /theory/RI1_GRANDHARMONICEQUATION.
 
 from dataclasses import dataclass, field
 from typing import Dict, List, Tuple, Any, Union, Optional, Set
+import cmath
 import math
 import re
+
+PHI_RATIONAL_LOCAL = 89 / 55   # Fibonacci convergent, used by Ξ
 import numpy as np
 from collections import defaultdict, deque
 from enum import Enum
@@ -99,6 +102,31 @@ class FieldContext:
         # Real-valued; the ONLY landing site for ℂ→ℝ reduction. Never
         # aliased to pinned scalars.
         self.lambda_obs: float = 0.0
+        # ===== LOGIC_NODES_DESIGN: scalar field + structural slots =====
+        # #name attributes at root. Never alias pinned ΦπεNode state.
+        self.scalars: Dict[str, float] = {}
+        # Σ superposition: name -> ordered list of complex members
+        self.superpositions: Dict[str, List[complex]] = {}
+        # Ξ composition: name -> membership list
+        self.composites: Dict[str, List[str]] = {}
+        # Γ lineage: name -> list of prior values (generation = len)
+        self.lineage: Dict[str, List[complex]] = {}
+        # ζ recurrence: name -> bounded history of register signatures
+        self.history: Dict[str, List[complex]] = {}
+        self.history_maxlen: int = 64
+
+    # ---- scalar field ----
+    def set_scalar(self, name: str, value: float) -> None:
+        self.scalars[name] = float(value)
+
+    def get_scalar(self, name: str) -> float:
+        return self.scalars.get(name, 0.0)
+
+    def record_history(self, name: str, value: complex) -> None:
+        h = self.history.setdefault(name, [])
+        h.append(value)
+        if len(h) > self.history_maxlen:
+            del h[0]
 
     def write_register(self, name: str, value: complex) -> None:
         """Write a complex value to a named shadow register.
@@ -131,6 +159,12 @@ class FieldContext:
         self.state.add_child(new_state.id)
         child = FieldContext(new_state, zfield=self.zfield)
         child.lambda_obs = self.lambda_obs  # carried like phase/charge
+        # structural layers are execution-global, like zfield
+        child.scalars = self.scalars
+        child.superpositions = self.superpositions
+        child.composites = self.composites
+        child.lineage = self.lineage
+        child.history = self.history
         return child
 
     def merge(self, other: 'FieldContext') -> None:
@@ -193,6 +227,20 @@ class PhiPiEInterpreterFixed:
         # This replaces per-symbol special-casing in the dispatcher and is
         # the seed of a future AST. Full semantics for modulators are
         # intentionally NOT implemented yet — see SYMBOL_COVERAGE.md.
+        # Tier-2 structural operators (LOGIC_NODES_DESIGN). Dispatched
+        # only when followed by register operands, so the tier-1
+        # semantics of reused glyphs (Σ as reducer, Γ/ζ/Τ as
+        # modulators) are untouched — operand-kind dispatch, exactly
+        # as BRIDGE_DESIGN Decision 2 prescribes.
+        self.structural = {
+            'Σ': self._sigma_superpose,
+            'Σ!': self._sigma_collapse,
+            'ζ': self._zeta_recurrence,
+            'Ξ': self._xi_compose,
+            'Γ': self._gamma_evolve,
+            'Τ': self._tau_phaselock,
+        }
+
         self.categories = {
             'setter': {'Φ', 'Ψ', 'ε'},
             'reducer': {'Σ', 'Κ', 'Υ', 'Β'},
@@ -202,6 +250,86 @@ class PhiPiEInterpreterFixed:
             'modulator': {'Π', 'Ε', 'Δ', 'δ', 'Λ', 'λ', 'Γ', 'Ω', 'ω',
                           'Ξ', 'ζ', 'Τ', 'Ρ', 'Θ', 'η', 'χ', 'n'},
         }
+
+    # ===== TIER 2: structural operators (LOGIC_NODES_DESIGN) =====
+    # Computational realizations chosen to fulfil the roles the proofs
+    # assign — NOT derivations from the proofs. Each takes a list of
+    # register names and returns a scalar/None.
+
+    def _sigma_superpose(self, ctx, ops):
+        """Σ @a @b [...] — hold plurality without collapsing it."""
+        members = [ctx.read_register(o) for o in ops]
+        ctx.superpositions[ops[0]] = list(members)
+        ctx.set_scalar('#sigma', float(len(members)))
+        return float(len(members))
+
+    def _sigma_collapse(self, ctx, ops):
+        """Σ! @a — collapse to the strongest member (max |z|)."""
+        members = ctx.superpositions.get(ops[0], [])
+        if not members:
+            return None
+        winner = max(members, key=lambda z: (abs(z), -members.index(z)))
+        ctx.write_register(ops[0], winner)
+        ctx.superpositions[ops[0]] = [winner]
+        return abs(winner)
+
+    def _zeta_recurrence(self, ctx, ops):
+        """ζ @a — distance to the most recent identical signature.
+
+        0 = no recurrence. Detects CYCLES, which flat-round counting
+        cannot see (the state keeps changing while repeating).
+        """
+        name = ops[0]
+        sig = complex(round(ctx.read_register(name).real, 6),
+                      round(ctx.read_register(name).imag, 6))
+        hist = ctx.history.get(name, [])
+        depth = 0.0
+        for back, past in enumerate(reversed(hist), start=1):
+            if past == sig:
+                depth = float(back)
+                break
+        ctx.record_history(name, sig)
+        ctx.set_scalar('#zeta', depth)
+        return depth
+
+    def _xi_compose(self, ctx, ops):
+        """Ξ @a @b — composite written to @a, membership recorded."""
+        z, w = ctx.read_register(ops[0]), ctx.read_register(ops[1])
+        composite = self.harmonic_pair(z, w)
+        ctx.write_register(ops[0], composite)
+        ctx.composites[ops[0]] = list(ops)
+        ctx.set_scalar('#xi', float(len(ops)))
+        return abs(composite)
+
+    def _gamma_evolve(self, ctx, ops):
+        """Γ @a — advance a generation, retaining lineage."""
+        name = ops[0]
+        prior = ctx.read_register(name)
+        ctx.lineage.setdefault(name, []).append(prior)
+        grown = prior * 1.05 if prior != 0 else complex(0.05, 0)
+        ctx.write_register(name, grown)
+        gen = float(len(ctx.lineage[name]))
+        ctx.set_scalar('#gamma', gen)
+        return gen
+
+    def _tau_phaselock(self, ctx, ops):
+        """Τ @a @ref — align phase; report alignment in #tau ∈ [0,1]."""
+        z, r = ctx.read_register(ops[0]), ctx.read_register(ops[1])
+        if z == 0 or r == 0:
+            ctx.set_scalar('#tau', 0.0)
+            return 0.0
+        target = cmath.phase(r)
+        locked = abs(z) * cmath.exp(1j * target)
+        ctx.write_register(ops[0], locked)
+        diff = abs((cmath.phase(z) - target + math.pi) % (2 * math.pi) - math.pi)
+        alignment = 1.0 - diff / math.pi
+        ctx.set_scalar('#tau', alignment)
+        return alignment
+
+    @staticmethod
+    def harmonic_pair(z: complex, w: complex) -> complex:
+        """Φ-stabilized combination, used by Ξ composition."""
+        return PHI_RATIONAL_LOCAL * (z + w) / (PHI_RATIONAL_LOCAL + abs(z - w))
 
     def category_of(self, symbol: str) -> Optional[str]:
         """Return the execution category of a symbol, or None."""
@@ -225,8 +353,23 @@ class PhiPiEInterpreterFixed:
             # Remove everything after // or # (comments)
             if '//' in line:
                 line = line.split('//')[0]
+            # '#' starts a comment UNLESS immediately followed by a
+            # name character — '#name' is a scalar attribute
+            # (LOGIC_NODES_DESIGN). '# text' remains a comment, which
+            # preserves the canonical fixture's inline comments.
             if '#' in line:
-                line = line.split('#')[0]
+                out, k = [], 0
+                while k < len(line):
+                    if line[k] == '#':
+                        nxt = line[k + 1] if k + 1 < len(line) else ''
+                        if nxt.isalpha() or nxt == '_':
+                            out.append(line[k])
+                            k += 1
+                            continue
+                        break          # a real comment: drop the rest
+                    out.append(line[k])
+                    k += 1
+                line = ''.join(out)
             line = line.strip()
             if line:
                 cleaned_lines.append(line)
@@ -239,7 +382,7 @@ class PhiPiEInterpreterFixed:
 
         # Proper allowed characters including all Greek letters, newline, '-',
         # and (Step 2) '@' + ascii letters/underscore for register identifiers.
-        allowed_chars = set('ΦΠΕεΔδΨΛλΓΩωΣΞζΤΡΘηχn→+::/|[]=()0123456789.,- \n@_'
+        allowed_chars = set('ΦΠΕεΔδΨΛλΓΩωΣΞζΤΡΘηχn→+::/|[]=()0123456789.,- \n@#!_'
                             'abcdefghijklmnopqrstuvwxyz'
                             'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
         code = ''.join(c for c in code if c in allowed_chars)
@@ -250,6 +393,8 @@ class PhiPiEInterpreterFixed:
     _NUMBER_RE = re.compile(r'-?(\d+\.\d*|\.\d+|\d+)')
     # Matches a register identifier (BRIDGE_DESIGN Step 2): @name
     _REGISTER_RE = re.compile(r'@[A-Za-z_][A-Za-z0-9_]*')
+    # Matches a scalar attribute (LOGIC_NODES_DESIGN): #name
+    _SCALAR_RE = re.compile(r'#[A-Za-z_][A-Za-z0-9_]*')
 
     @classmethod
     def is_number_token(cls, token: str) -> bool:
@@ -260,6 +405,11 @@ class PhiPiEInterpreterFixed:
     def is_register_token(cls, token: str) -> bool:
         """True if the token is a register identifier (e.g. '@z')."""
         return bool(cls._REGISTER_RE.fullmatch(token))
+
+    @classmethod
+    def is_scalar_token(cls, token: str) -> bool:
+        """True if the token is a scalar attribute (e.g. '#budget')."""
+        return bool(cls._SCALAR_RE.fullmatch(token))
 
     def tokenize(self, code: str) -> List[str]:
         """Tokenize code into operators and NUMBER literals.
@@ -274,6 +424,25 @@ class PhiPiEInterpreterFixed:
 
             # Skip whitespace
             if char in ' \t\n\r':
+                i += 1
+                continue
+
+            # Σ! collapse operator — two chars, one token
+            if char == 'Σ' and i + 1 < len(code) and code[i + 1] == '!':
+                tokens.append('Σ!')
+                i += 2
+                continue
+
+            # Scalar attribute (LOGIC_NODES_DESIGN): #name
+            # NOTE: '#' only starts a scalar when followed by a name;
+            # comment stripping already ran in clean_input, so any '#'
+            # reaching here is syntax, not a comment.
+            if char == '#':
+                m = self._SCALAR_RE.match(code, i)
+                if m:
+                    tokens.append(m.group(0))
+                    i = m.end()
+                    continue
                 i += 1
                 continue
 
@@ -374,6 +543,25 @@ class PhiPiEInterpreterFixed:
                     # Handle loop
                     loop_code = token[1:-1]  # Remove brackets
                     current_value = self.execute_loop(loop_code, context)
+                elif self.is_scalar_token(token):
+                    # Scalar attribute: '#name v' sets, bare '#name' reads
+                    if (i + 1 < len(tokens) and same_line(i, i + 1)
+                            and self.is_number_token(tokens[i + 1])):
+                        context.set_scalar(token, float(tokens[i + 1]))
+                        i += 1
+                    else:
+                        current_value = context.get_scalar(token)
+                elif token in self.structural and i + 1 < len(tokens) \
+                        and same_line(i, i + 1) \
+                        and self.is_register_token(tokens[i + 1]):
+                    # Structural (tier-2) operators — LOGIC_NODES_DESIGN
+                    ops = []
+                    j = i + 1
+                    while (j < len(tokens) and same_line(i, j)
+                           and self.is_register_token(tokens[j])):
+                        ops.append(tokens[j]); j += 1
+                    current_value = self.structural[token](context, ops)
+                    i = j - 1
                 elif self.is_register_token(token):
                     # Register initialization: @name RE IM  (exactly two
                     # numeric args on the SAME line — resolved item 2)
