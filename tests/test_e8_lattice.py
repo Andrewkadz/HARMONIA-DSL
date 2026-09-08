@@ -14,7 +14,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from e8_lattice import (
+from topologies.e8_lattice import (
     COVERING_RADIUS_SQUARED,
     DIMENSION,
     first_shell,
