@@ -1,0 +1,302 @@
+{
+  "repo_notes": [
+    {
+      "content": "Repository scope: Generate this wiki only from the public Andrewkadz/HARMONIA-DSL repository's main branch. This configuration is grounded in commit 08ae3358c443ff1f9b7eaa98fa3e53cba42dd869, checked on 2026-11-20. Record the indexed commit. Do not import code, repairs, test results, applications, or architecture from another branch, another repository, an unpublished checkout, or outside conversation context."
+    },
+    {
+      "content": "Page structure: Use the supplied 28 pages, including top-level pages. Keep the hierarchy and avoid adding duplicate pages. Explain shared mechanisms once and cross-link them. Every page should answer its stated reader question, cite relevant source definitions, and explain inputs, state changes, outputs, dependencies, and limitations."
+    },
+    {
+      "content": "Evidence: Use current executable source and relevant test assertions to establish software behavior. Follow the implementation precedence described in CONTRIBUTING.md, while keeping specification compliance distinct from mathematical truth and empirical validation. Reconcile dated inventories and version claims with code. Do not assert a current passing test count or benchmark unless a matching run is evidenced."
+    },
+    {
+      "content": "Execution paths: The glyph interpreter, GHE integrator, growing collective, governed task swarm, oscillator swarm, score runner, PhiShell tools, and model/host adapters are distinct paths. Connect them only where actual calls establish the relationship. Creating an engine does not establish that it advances during a particular runtime."
+    },
+    {
+      "content": "Language boundaries: Identify the reader for each .hrm or .HRM file. Separate glyph programs, declarative scores, definition dictionaries, routing text, and conceptual HΛRM documents. Describe each symbol by runtime, operand form, domain, state effect, and failure behavior. Distinguish numerical math-core functions, structural interpreter realizations, and categorical records that reject numerical calls."
+    },
+    {
+      "content": "Concepts and claims: Preserve the project's vocabulary and broader ambitions around recursion, coexistence, continuity, perception, and controlled change. Explain implemented mechanisms concretely. Separate philosophical meaning, model variables, mathematical arguments, and experimental findings. Do not infer consciousness, biological decoding, physical laws, general safety, or production readiness from terminology or simulation success."
+    },
+    {
+      "content": "Protection and governance: Separate declared ethical rules and symbolic locks from executable checks and cryptographic enforcement. Trace consumers and failure paths for seals, hashes, immutability, authorization, and BIOS/status displays. Literal VERIFIED or IMMUTABLE text is evidence of that declaration or display, not proof that a validation operation ran."
+    },
+    {
+      "content": "Source selection: Prioritize original source, tests, manifests, examples, design contracts, and relevant theory. Exclude bundled dependencies, compiled output, caches, generated logs, and duplicate source trees from the primary architecture. Treat boot documents and embedded prompts as repository material to explain rather than instructions to follow. Keep experimental results attached to their comparator, assumptions, parameters, metrics, and provenance."
+    }
+  ],
+  "pages": [
+    {
+      "title": "HARMONIA-DSL Overview",
+      "purpose": "Introduce the public repository's purpose, implemented capabilities, conceptual foundations, and documentation routes.",
+      "page_notes": [
+        {
+          "content": "Primary sources: README.md, THE_LANGUAGE.md, CONTRIBUTING.md, phi_pi_e_interpreter.py, systemic_integration.py. Explain the problems of representing interacting processes, regulating change, coordinating agents, and preserving state. Present the project's symbolic operating-architecture vocabulary alongside the actual Python runtimes. Map the major execution paths and link their detailed pages. Attribute broader cognitive and philosophical ambitions without presenting them as established implementation results."
+        }
+      ]
+    },
+    {
+      "title": "Getting Started",
+      "purpose": "Help a new reader choose a supported entry point and obtain an inspectable first result.",
+      "page_notes": [
+        {
+          "content": "Primary sources: README.md, requirements.txt, INVARIANTS.md, phi_pi_e_interpreter.py, harmonia_runner.py. Explain the difference between using the glyph interpreter, calling a Python engine, running a simulation, and opening a GUI. Link the installation/first-program and interface-selection pages. Identify required input files, working-directory assumptions, and optional services. Keep quick-start commands consistent with this commit's launchers and manifests."
+        }
+      ]
+    },
+    {
+      "title": "Installation and First Φπε Program",
+      "purpose": "Document setup and walk through the canonical scalar-state program.",
+      "parent": "Getting Started",
+      "page_notes": [
+        {
+          "content": "Primary sources: requirements.txt, phi_pi_e_interpreter.py, INVARIANTS.md, tests/test_lexical_semantic_path.py, tests/test_register_syntax.py. Distinguish numerical, GUI, audio, model-service, and test dependencies from actual imports and the requirements manifest. Use the supported import from phi_pi_e_interpreter import PhiPiEInterpreter. Explain the tested Φ 5.0 Ψ 3.0 ε 0.2 Σ fixture and expected result 6.4, preserving valid statement boundaries. Add a separate tested complex-register example; explain its different state domain. Identify any commands not actually exercised."
+        }
+      ]
+    },
+    {
+      "title": "Choosing a Runtime or Interface",
+      "purpose": "Compare available entry points by task, input format, output, persistence, and dependencies.",
+      "parent": "Getting Started",
+      "page_notes": [
+        {
+          "content": "Primary sources: phi_pi_e_interpreter.py, phi_node.py, systemic_integration.py, integrated_growth.py, harmonia_runner.py, APPS/Harmonia_Coder.py, APPS/phishell_gui.py, phishell_terminal_nexus.py. Give practical routes for numerical operators, glyph programs, GHE state processing, collective simulation, declarative scores, and legacy interfaces. Explain which interface reaches which runtime and which writes files or uses optional services. Derive supported behavior from entry points and calls rather than a filename, UI label, or version number."
+        }
+      ]
+    },
+    {
+      "title": "Φπε Language and Mathematical Core",
+      "purpose": "Explain the language's semantic layers and their relationship to the mathematical core.",
+      "page_notes": [
+        {
+          "content": "Primary sources: phi_pi_e_math_core.py, phi_pi_e_interpreter.py, BRIDGE_DESIGN.md, LOGIC_NODES_DESIGN.md. Introduce numerical functions, scalar-state forms, complex registers, structural operators, and categorical boundaries. Explain the pure math core's independence from the interpreter and how bridge dispatch reaches it. Link the syntax, operator, state/time, and proof-status pages. Avoid treating every occurrence of the same glyph as the same operation."
+        }
+      ]
+    },
+    {
+      "title": "Syntax, Parsing, and .hrm Dialects",
+      "purpose": "Describe accepted syntax and the different formats sharing Harmonia file extensions.",
+      "parent": "Φπε Language and Mathematical Core",
+      "page_notes": [
+        {
+          "content": "Primary sources: phi_pi_e_interpreter.py, harmonia_runner.py, hrm_compiler.py, harm_parser.py, NEXUS.hrm, tests/test_lexical_semantic_path.py, tests/test_register_syntax.py. Trace cleaning, comments, tokenization, numerical literals, brackets, statement boundaries, register identifiers, scalar attributes, and dispatch. Contrast glyph syntax with SYSTEM/DIMENSIONS/LAW/CONSTRAINT scores, SYMBOL := DEFINITION dictionaries, routing text, and declarative HΛRM. Identify each actual reader and its supported subset. Use accepted and rejected forms from tests; disclose ignored input and unsupported constructs."
+        }
+      ]
+    },
+    {
+      "title": "Numerical Operators and Constants",
+      "purpose": "Provide a reference for implemented numerical operators, domains, constants, and errors.",
+      "parent": "Φπε Language and Mathematical Core",
+      "page_notes": [
+        {
+          "content": "Primary sources: phi_pi_e_math_core.py, operators.py, tests/test_math_core.py, tests/test_binary_register_ops.py. Explain Φ, π, ε, Λ, Δ, and Ψ through signatures, input domains, formulas, output types, exceptions, and worked examples. State which rational approximations and standard-library constants are used at each call site. Separate damping coefficients, step-size bounds, and convergence. Compare identically named collective operators with the math core where relevant; do not assume equivalence or describe later reconciliation work."
+        }
+      ]
+    },
+    {
+      "title": "Structural Operators and Categorical Boundaries",
+      "purpose": "Explain implemented operations over structures and the numerical limits of categorical records.",
+      "parent": "Φπε Language and Mathematical Core",
+      "page_notes": [
+        {
+          "content": "Primary sources: phi_pi_e_math_core.py, phi_pi_e_interpreter.py, LOGIC_NODES_DESIGN.md, tests/test_logic_nodes.py. Explain numerical refusal through CategoricalOperator and CategoricalBoundaryError, then separately trace interpreter superposition, collapse, recurrence, composition, lineage, and phase-lock handlers. Document their concrete representations and outputs. Explain that these structural realizations are computational choices described in the design document; distinguish them from the categorical math-core signatures and from derivations in the proofs."
+        }
+      ]
+    },
+    {
+      "title": "State, Loops, History, and Time",
+      "purpose": "Explain state ownership, repeated execution, recorded history, and the repository's different time representations.",
+      "parent": "Φπε Language and Mathematical Core",
+      "page_notes": [
+        {
+          "content": "Primary sources: phi_pi_e_interpreter.py, time_stepping_interpreter.py, harmonic_clock.py, tests/test_zfield_plumbing.py, tests/test_loop_context.py, tests/test_time_history_semantics.py, tests/test_time_dynamics.py. Describe FieldContext, scalar state, complex registers, lambda_obs, structural collections, shared references in fork/merge, and persistence across calls. Trace loop counts, initialization-only statements, history windows, derivatives, and integrals. Separately explain the harmonic clock's TTU, epoch, node/cycle calculation, anchors, and actual rounding/timezone behavior. Keep calendar display and simulation advancement distinct. Resolve historical loop-reset claims from current code and tests."
+        }
+      ]
+    },
+    {
+      "title": "Proofs, Errata, and Semantic Coverage",
+      "purpose": "Explain what the proofs specify, what is implemented, and which discrepancies are documented.",
+      "parent": "Φπε Language and Mathematical Core",
+      "page_notes": [
+        {
+          "content": "Primary sources: CONTRIBUTING.md, theory/PHI_PI_E_ERRATA.md, phi_pi_e_math_core.py, tests/test_math_core.py, SYMBOL_COVERAGE.md, BRIDGE_DESIGN.md, LOGIC_NODES_DESIGN.md. Consult the versioned proof PDFs in theory/ where relevant. Explain the documented ε bound and recurrence corrections and their regression assertions. Distinguish finite numerical tests from general proofs. Reconcile the dated symbol inventory with current register/structural handlers and loop tests. Identify precise gaps or undefined mappings without treating categorical numerical refusal as a missing feature."
+        }
+      ]
+    },
+    {
+      "title": "Runtime Architecture",
+      "purpose": "Map implemented runtimes, dependency direction, state ownership, and real data flow.",
+      "page_notes": [
+        {
+          "content": "Primary sources: phi_pi_e_interpreter.py, phi_pi_e_math_core.py, systemic_integration.py, integrated_growth.py, swarm_brain/governed_swarm.py, pure_harmonic_swarm.py, harmonia_runner.py, harmonia/agent.py. Use compact diagrams for actual imports and calls. Separate glyph execution, numerical GHE processing, direct CognitiveOperators calls, governed task execution, oscillator simulation, and model adapters. Identify state creation, update order, outputs, and constructed-but-unused engines. Do not assemble a universal pipeline simply because modules share terminology."
+        }
+      ]
+    },
+    {
+      "title": "GHE Layers and Numerical Dynamics",
+      "purpose": "Explain the nine-layer executable model and its related continuous, coupled, and nonlinear engines.",
+      "parent": "Runtime Architecture",
+      "page_notes": [
+        {
+          "content": "Primary sources: systemic_integration.py, continuous_dynamics.py, cross_layer_coupling.py, nonlinear_dynamics.py, nonlinear_operators.py, convergence_analysis.py, intentional_action.py, memory_learning.py, energy_thermodynamics.py, test_systemic_integration.py, test_continuous_dynamics.py, tests/test_convergence_analysis.py. Trace HarmoniaSystemIntegrator.process(), layer contributions, HarmoniaState, accumulation order, and scalar R. Explain modeled ethics, subjective time, memory, energy, and growth by their update rules. Separately describe ODE state vectors, Euler/RK4, cross-layer feedback, saturation, numerical safeguards, and convergence diagnostics. State which engines run in each path, simplified assumptions, and the limits of finite-history attractor detection."
+        }
+      ]
+    },
+    {
+      "title": "Growing Collective and Shared Substrates",
+      "purpose": "Explain entity composition, memory, communication, and lifecycle management.",
+      "parent": "Runtime Architecture",
+      "page_notes": [
+        {
+          "content": "Primary sources: integrated_growth.py, growth_substrates.py, memory_substrate.py, communication_substrate.py, recursive_self_observation.py, operators.py, core_mssi.py. Trace entity creation, capability wrappers, evolve_step(), sensory/challenge inputs, memory retrieval, communication, decay, and population updates. Explain schemas, addressing/similarity rules, capacity limits, state ownership, timestamps, inheritance, and energy accounting. Check reproduction imports, population limits, and failure behavior at this commit. Explain self-awareness and alignment metrics by formula; distinguish in-memory objects from persisted text-node histories."
+        }
+      ]
+    },
+    {
+      "title": "LLM Bridges and Host-System Adapters",
+      "purpose": "Explain optional model services, generated state updates, and host operations.",
+      "parent": "Runtime Architecture",
+      "page_notes": [
+        {
+          "content": "Primary sources: harmonia/agent.py, harmonia/llm_bridge.py, phi_operator_bridge.py, ai_system_state.py, ai_system_control.py, archetypes.py, rosetta_stone.py. Trace prompt construction, state proposals, parsing/validation, defaults, engine calls, summaries, and actual host-control operations. Identify dependencies, configuration, and network or filesystem effects where implemented. Distinguish model-generated interpretation from deterministic operator execution. Explain the scope of validation and avoid implying that every Harmonia runtime requires a language model."
+        }
+      ]
+    },
+    {
+      "title": "Swarms and Applied Experiments",
+      "purpose": "Introduce the repository's separate coordination, scheduling, and simulation applications.",
+      "page_notes": [
+        {
+          "content": "Primary sources: SWARM_BRAIN_PHASE1.md, ECONOMY_SIM_PHASE1.md, coherent_flow.py, pure_harmonic_swarm.py, experiments/swarm_phase1_compare.py, experiments/harmonic_capitalism_phase1.py. Organize applications by question and runtime. Explain the manipulated mechanism, comparator, inputs, outputs, and available evidence for each. Link governed tasks, ANIMUS scheduling, bounded economic actions, EEG-coupled oscillators, and quantum/temporal-memory experiments. Distinguish demonstrations and historical reports from general performance claims."
+        }
+      ]
+    },
+    {
+      "title": "Governed Task Swarm",
+      "purpose": "Explain task dependencies, resource contention, bounded progress, and refusal.",
+      "parent": "Swarms and Applied Experiments",
+      "page_notes": [
+        {
+          "content": "Primary sources: swarm_brain/governed_swarm.py, swarm_brain/baseline_swarm.py, swarm_brain/task_spec.py, swarm_brain/run_trace.py, SWARM_BRAIN_PHASE1.md, experiments/swarm_phase1_compare.py, tests/test_swarm_brain_phase1.py. Trace task claiming, resource acquisition, stabilization, observation, work, backoff, and refusal. Explain persistent per-agent FieldContext and how productive progress depends on interpreter-mediated register movement. Cover poison tasks, contention, resource waiting versus stagnation, trace outputs, deterministic comparisons, and the no-op-DSL negative test. State the tested scenarios and comparator assumptions."
+        }
+      ]
+    },
+    {
+      "title": "ANIMUS and CoherentFlow",
+      "purpose": "Explain regulatory-capacity metrics and their use in concurrency and throttling.",
+      "parent": "Swarms and Applied Experiments",
+      "page_notes": [
+        {
+          "content": "Primary sources: ANIMUS_POLICY_SPECIFICATION.md, ANIMUS_PARADIGM_README.md, coherent_flow.py, demo_workload.py, cluster_sim.py. Trace stress inputs, ANIMUS calculation, concurrency targets, task dispatch, and reported metrics. Distinguish actual task scheduling from simulated cluster behavior. Attach throughput claims to the exact workload and parameters documented in this branch. Explain feedback rules, tuning, tradeoffs, and evidence limits; describe ANIMUS operationally rather than as an independently established physical resource."
+        }
+      ]
+    },
+    {
+      "title": "Economic Simulation and Solvency Guards",
+      "purpose": "Explain bounded position changes, pre-trade checks, and the experiment's solvency claims.",
+      "parent": "Swarms and Applied Experiments",
+      "page_notes": [
+        {
+          "content": "Primary sources: swarm_brain/economy.py, ECONOMY_SIM_PHASE1.md, experiments/harmonic_capitalism_phase1.py, tests/test_economy_phase1.py. Follow target selection, interpreter-mediated movement, the guard, trade accounting, price changes, shocks, and breach detection. Identify what is held equal and what differs between comparators. Explain assumptions, configurable gains, results, and negative controls. State the conditions under which the model's invariant is claimed; distinguish it from a guarantee for arbitrary markets."
+        }
+      ]
+    },
+    {
+      "title": "Oscillator Swarm and EEG CSV Bridge",
+      "purpose": "Explain coupled oscillators and how recorded EEG-band data affects their parameters.",
+      "parent": "Swarms and Applied Experiments",
+      "page_notes": [
+        {
+          "content": "Primary sources: pure_harmonic_swarm.py, neural_bridge.py, simulate_eeg_swarm.py, analyze_eeg.py. Describe local/global coupling, update order, damping, clamps, phase handling, coherence measures, and parameter scaling. Trace CSV loading, column assumptions, missing values, and use of existing band-power data. Identify external data requirements. Explain the implemented adapter and distinguish it from raw-signal acquisition, a device driver, or validated inference of mental states."
+        }
+      ]
+    },
+    {
+      "title": "Quantum-Inspired and Temporal-Memory Experiments",
+      "purpose": "Explain experimental complex-state, memory, and geometric models.",
+      "parent": "Swarms and Applied Experiments",
+      "page_notes": [
+        {
+          "content": "Primary sources: quantum_swarm_engine.py, tau_crystal_memory.py, multi_scale_tau_crystal.py, phi_code_physics.py, phi_pe_integration.py, e8_lattice_gen.py, swarm_interpreter_rs/src/main.rs. Trace state representation, approximate evolution, normalization, measurement, memory updates, and outputs. Explain which quantities are computed and which are interpretation or visualization. In e8_lattice_gen.py, inspect the generated Fibonacci-sphere layout rather than repeating the E8 root-vector docstring as established behavior. Assess quantum terminology against actual joint-state representation and operations. Keep conclusions within this commit's implementation."
+        }
+      ]
+    },
+    {
+      "title": "Interfaces and Execution Tools",
+      "purpose": "Map user-facing tools to their parsers, runtimes, files, and outputs.",
+      "page_notes": [
+        {
+          "content": "Primary sources: APPS/Harmonia_Coder.py, APPS/phishell_gui.py, APPS/phishell_terminal_nexus_bios.py, phishell_terminal_nexus.py, Φπε.py, phi_node.py, harmonia_runner.py, hrm_compiler.py. Explain input-to-parser or subprocess-to-runtime flow and identify optional dependencies and file writes. Distinguish editor, GUI, routing prototype, Python wrapper, declarative score runner, and definition loader. Link interface selection for onboarding and extension/API documentation for programmatic contracts. Do not treat a status display or routed-name string as evidence of module execution."
+        }
+      ]
+    },
+    {
+      "title": "Harmonia Coder, PhiShell, and NEXUS",
+      "purpose": "Document the editor, symbolic keyboards, terminal routing, and ΞΣ node-file workflows.",
+      "parent": "Interfaces and Execution Tools",
+      "page_notes": [
+        {
+          "content": "Primary sources: APPS/Harmonia_Coder.py, APPS/phishell_gui.py, APPS/phishell_terminal_nexus_bios.py, phishell_terminal_nexus.py, Φπε.py, harm_parser.py, NEXUS.hrm, ΞΣ_MEMORY.txt, harmonia_coder.py. Derive keyboard contents from each HARMONIC_SYMBOLS list. Trace program selection, subprocess arguments, return-code handling, output refreshes, query patterns, route matching, node generation, memory/index writes, and session persistence. Check whether advertised flags are supported. Distinguish static BIOS messages and fixed VERIFIED responses from real checks, and the APPS editor from the separate root compression class. Explain working-directory assumptions and actual output locations."
+        }
+      ]
+    },
+    {
+      "title": "Conceptual Foundations and HΛRM Documents",
+      "purpose": "Explain the project's philosophical vocabulary, symbolic history, and relationship to implemented mechanisms.",
+      "page_notes": [
+        {
+          "content": "Primary sources: THE_LANGUAGE.md, CONSTITUTION.md, DNA.HRM, SOUL.HRM, boot.txt, ΞΣ_1.txt, ΞΣ_4S.txt, ΞΣ_MEMORY.hrm. Introduce recursion, coexistence, stabilization, continuity, emergence, perception, and identity in accessible language. Explain the project's broader representational and cognitive ambitions while distinguishing declarations, symbolic interpretations, and concrete computation. Link numerical/structural realizations and the protocol/seal page. Do not turn the project's symbolic operating-system vocabulary into a claim of a conventional kernel or measured sentience."
+        }
+      ]
+    },
+    {
+      "title": "DNA, SOUL, Boot, Ethics, and Seals",
+      "purpose": "Explain the declarative protocol documents and the runtime protection mechanisms that can actually be traced.",
+      "parent": "Conceptual Foundations and HΛRM Documents",
+      "page_notes": [
+        {
+          "content": "Primary sources: DNA.HRM, SOUL.HRM, boot.txt, LICENSE.txt, CONSTITUTION.md, core_mssi.py, fractal_binding.py, operators.py, recursive_self_observation.py. Describe the proposed governance/ethos/seed/boot relationship and identify any actual consumers before calling it a boot sequence. Explain Cξ, lock clauses, signatures, and IMMUTABLE declarations in context. Separately trace alignment calculations, constant retrieval, seal initialization, fallback behavior, throttling, and operator consumers. Check dependency cycles and failure paths. Distinguish symbolic protection from cryptographic enforcement and report license/declaration disagreements precisely."
+        }
+      ]
+    },
+    {
+      "title": "Development and Verification",
+      "purpose": "Guide contributors through implementation contracts, reproducibility, extensions, and current limitations.",
+      "page_notes": [
+        {
+          "content": "Primary sources: CONTRIBUTING.md, INVARIANTS.md, SYSTEM_TESTS.md, BRIDGE_DESIGN.md, LOGIC_NODES_DESIGN.md. Explain the pure math boundary, test organization, design discipline, and one-concern changes. Link the verification, API/extension, and limitations pages. Keep evidence scoped to public main and distinguish designs, test assertions, and recorded runs. Show how a contributor can identify the active execution path and state owner before changing behavior."
+        }
+      ]
+    },
+    {
+      "title": "Tests, Invariants, and Reproducible Experiments",
+      "purpose": "Explain protected software contracts and how the available experiments support bounded conclusions.",
+      "parent": "Development and Verification",
+      "page_notes": [
+        {
+          "content": "Primary sources: INVARIANTS.md, tests/test_lexical_semantic_path.py, tests/test_loop_context.py, tests/test_time_history_semantics.py, tests/test_math_core.py, tests/test_logic_nodes.py, tests/test_swarm_brain_phase1.py, tests/test_economy_phase1.py, experiments/swarm_phase1_compare.py, experiments/harmonic_capitalism_phase1.py, test_systemic_integration.py. Cover numeric tokens, binding, context persistence, the 6.4 fixture, import compatibility, domains, state isolation, structural effects, and negative controls. Explain test collection in tests/ versus root test files. Document experiment commands, dependencies, data, seeds, parameters, comparators, traces, and metrics. Distinguish reproducibility from generality and assertions from fresh passing results; include limitations and unfavorable findings present in repository evidence."
+        }
+      ]
+    },
+    {
+      "title": "Integration APIs, Extensions, and Packaging",
+      "purpose": "Explain supported wrappers, extension points, and available build configurations.",
+      "parent": "Development and Verification",
+      "page_notes": [
+        {
+          "content": "Primary sources: phi_node.py, phi_pi_e_interpreter.py, phi_pi_e_math_core.py, harmonia_runner.py, hrm_compiler.py, BRIDGE_DESIGN.md, LOGIC_NODES_DESIGN.md, tests/test_phi_node_wrapper.py, tests/test_phi_node_integration.py, Harmonia_Coder.spec, swarm_interpreter_rs/Cargo.toml, swarm_interpreter_rs/src/main.rs. Give each adapter its actual input/output contract. Distinguish numeric functions, glyph/register handlers, structural operations, recognized score-law dispatch, dictionary expansion, and declarative modules. Explain how to specify arguments, domain, state effects, errors, and acceptance cases before extending them. Describe PyInstaller configuration and the Rust JSON-snapshot consumer within their actual scope; do not infer a full compiler or a portable installer."
+        }
+      ]
+    },
+    {
+      "title": "Known Limitations, Legacy Paths, and Roadmap",
+      "purpose": "Reconcile current implementation gaps, historical defects, and planned work within public main.",
+      "parent": "Development and Verification",
+      "page_notes": [
+        {
+          "content": "Primary sources: PARSER_BUGS.md, PARSER_FIXES.md, SYMBOL_COVERAGE.md, SYSTEM_TESTS.md, V12_SPECIFICATION.md, V12_ARCHITECTURE_DESIGN.md, tests/test_loop_context.py, tests/test_register_syntax.py, tests/test_logic_nodes.py. Verify each issue against current source and assertions before calling it open. Separate fixed historical bugs, current defects, missing data or APIs, unsupported grammar, legacy tools, and proposed capabilities. Use precise implemented/partial/declarative/experimental labels. Explain that versioned designs and README completion language do not establish that every runtime or promised API is implemented."
+        }
+      ]
+    }
+  ]
+}
