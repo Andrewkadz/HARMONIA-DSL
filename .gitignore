@@ -1,5 +1,6 @@
 __pycache__/
 *.pyc
+venv/
 .DS_Store
 frontend/node_modules/
 SWARM RUNS/

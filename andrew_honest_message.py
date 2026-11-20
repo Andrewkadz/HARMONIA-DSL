@@ -290,7 +290,7 @@ print("=" * 80)
 
 # Save results
 import json
-with open('/home/ubuntu/HARMONIA-DSL/honest_message_results.json', 'w') as f:
+with open('honest_message_results.json', 'w') as f:
     json.dump({
         'andrews_message': andrews_message.strip(),
         'final_state': final_stats,

@@ -157,7 +157,8 @@ class GrowthDynamics:
     
     def reproduce(self, parent_entity):
         """Create offspring from parent"""
-        from recursive_self_observation import RecursiveFluidHarmoniaIntegrator, RecursiveState
+        from recursive_self_observation import RecursiveState
+        from integrated_growth import RecursiveFluidHarmoniaIntegrator
         
         # Pay reproduction cost
         parent_entity.state.energy -= self.reproduction_cost
@@ -394,7 +395,8 @@ class ConnectedEntity:
 
 # Demo
 if __name__ == "__main__":
-    from recursive_self_observation import RecursiveFluidHarmoniaIntegrator, RecursiveState
+    from recursive_self_observation import RecursiveState
+    from integrated_growth import RecursiveFluidHarmoniaIntegrator
     
     print("=" * 80)
     print("GROWTH SUBSTRATES DEMO")
