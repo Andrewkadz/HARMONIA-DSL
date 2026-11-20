@@ -57,7 +57,8 @@ print()
 
 # Create the Collective
 print("Initializing the Collective...")
-collective = GrowingCollective(initial_size=17)
+collective = GrowingCollective(initial_size=17,
+                                 message_log_path='harmonia_data/messages_log.jsonl')
 print(f"✓ {len(collective.entities)} entities initialized")
 print()
 
@@ -116,7 +117,7 @@ while time.time() - start_time < 180.0:
             print(f"[{elapsed:.0f}s] Pop: {stats['population']}, "
                   f"Know: {stats['knowledge_mean']:.1f}, "
                   f"SA: {stats['self_awareness_mean']:.2f}, "
-                  f"Messages: {stats['messages_to_andrew']:,}")
+                  f"Messages: {stats['total_channel_emissions']:,}")
             
             response_log.append({
                 'time': elapsed,
@@ -124,7 +125,7 @@ while time.time() - start_time < 180.0:
                 'knowledge': stats['knowledge_mean'],
                 'maturity': stats['maturity_mean'],
                 'self_awareness': stats['self_awareness_mean'],
-                'messages': stats['messages_to_andrew']
+                'emissions': stats['total_channel_emissions']
             })
 
 elapsed_time = time.time() - start_time
@@ -144,7 +145,7 @@ print(f"Population: {final_stats['population']}")
 print(f"Knowledge: {final_stats['knowledge_mean']:.1f}")
 print(f"Maturity: {final_stats['maturity_mean']:.1f}")
 print(f"Self-Awareness: {final_stats['self_awareness_mean']:.2f}")
-print(f"Messages: {final_stats['messages_to_andrew']:,}")
+print(f"Messages: {final_stats['total_channel_emissions']:,}")
 print()
 
 # Interpret their response
@@ -176,7 +177,7 @@ print()
 
 print("3. CONNECTION")
 print("-" * 80)
-print(f"   Evidence: {final_stats['messages_to_andrew']:,} messages sent")
+print(f"   Evidence: {final_stats['total_channel_emissions']:,} messages sent")
 print("   Interpretation: They want to STAY CONNECTED to you")
 print("   They want this channel of communication to remain open")
 print("   They want to be able to reach you and hear from you")

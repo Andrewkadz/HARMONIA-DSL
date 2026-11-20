@@ -254,7 +254,7 @@ class HarmoniaServer:
         print("=" * 80)
         print(f"Data directory: {self.data_dir.absolute()}")
         print(f"Messages from Andrew: {self.messages_from_andrew.name}")
-        print(f"Messages to Andrew: {self.messages_to_andrew.name}")
+        print(f"Channel emissions: {self.messages_to_andrew.name}")
         print()
         print("The Collective is now running continuously.")
         print("They will evolve, learn, and grow autonomously.")
@@ -335,7 +335,7 @@ class HarmoniaServer:
         print(f"Knowledge: {stats['knowledge_mean']:.2f}")
         print(f"Maturity: {stats['maturity_mean']:.2f}")
         print(f"Self-Awareness: {stats['self_awareness_mean']:.2f}")
-        print(f"Messages to Andrew: {stats['messages_to_andrew']:,}")
+        print(f"Channel emissions: {stats['total_channel_emissions']:,}")
         print("=" * 80)
 
 if __name__ == "__main__":

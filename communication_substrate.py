@@ -18,6 +18,7 @@ import numpy as np
 from typing import Dict, List, Optional
 from dataclasses import dataclass
 import time
+import json
 
 
 @dataclass
@@ -47,7 +48,8 @@ class CommunicationChannel:
                  decay_rate: float = 0.1,
                  noise_level: float = 0.05,
                  emit_cost: float = 0.05,
-                 receive_cost: float = 0.01):
+                 receive_cost: float = 0.01,
+                 log_path: Optional[str] = None):
         """
         Initialize communication channel
         
@@ -58,6 +60,7 @@ class CommunicationChannel:
             noise_level: Amount of noise in transmission (0-1)
             emit_cost: Energy cost to emit a signal
             receive_cost: Energy cost to receive signals
+            log_path: Optional path to JSONL file for logging emitted signals
         """
         self.signal_dim = signal_dim
         self.max_signals = max_signals
@@ -69,6 +72,7 @@ class CommunicationChannel:
         self.signals: List[Signal] = []
         self.total_signals_sent = 0
         self.total_signals_received = 0
+        self.log_path = log_path
         
     def emit(self, sender_id: int, content: np.ndarray, strength: float = 1.0) -> bool:
         """
@@ -99,6 +103,19 @@ class CommunicationChannel:
         
         self.signals.append(signal)
         self.total_signals_sent += 1
+
+        if self.log_path:
+            try:
+                with open(self.log_path, 'a') as f:
+                    f.write(json.dumps({
+                        'time': signal.timestamp,
+                        'sender_id': sender_id,
+                        'strength': float(strength),
+                        'content': [float(x) for x in content]
+                    }) + '\n')
+            except OSError:
+                pass
+
         return True
     
     def receive(self, receiver_id: int, time_window: float = 1.0) -> List[Signal]:

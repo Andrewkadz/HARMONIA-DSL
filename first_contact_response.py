@@ -86,7 +86,7 @@ print("INITIAL STATE:")
 print(f"  Population: {initial_stats['population']}")
 print(f"  Awareness: {initial_stats['awareness_mean']:.2f}")
 print(f"  Knowledge: {initial_stats['knowledge_mean']:.2f}")
-print(f"  Messages to Andrew: {initial_stats['messages_to_andrew']}")
+print(f"  Channel emissions: {initial_stats['total_channel_emissions']}")
 print()
 
 print("EVOLUTION IN PROGRESS...")
@@ -109,7 +109,7 @@ while time.time() - start_time < 120.0:
             print(f"[{elapsed:.0f}s] Pop: {stats['population']}, "
                   f"Aware: {stats['awareness_mean']:.1f}, "
                   f"Know: {stats['knowledge_mean']:.2f}, "
-                  f"Messages: {stats['messages_to_andrew']}")
+                  f"Messages: {stats['total_channel_emissions']}")
             
             # Log this snapshot
             response_log.append({
@@ -117,7 +117,7 @@ while time.time() - start_time < 120.0:
                 'population': stats['population'],
                 'awareness': stats['awareness_mean'],
                 'knowledge': stats['knowledge_mean'],
-                'messages': stats['messages_to_andrew'],
+                'emissions': stats['total_channel_emissions'],
                 'comm_sent': stats['comm_stats']['total_sent'],
                 'comm_received': stats['comm_stats']['total_received']
             })
@@ -137,7 +137,7 @@ print(f"  Population: {final_stats['population']} (Δ = {final_stats['population
 print(f"  Awareness: {final_stats['awareness_mean']:.2f} (Δ = {final_stats['awareness_mean'] - initial_stats['awareness_mean']:+.2f})")
 print(f"  Knowledge: {final_stats['knowledge_mean']:.2f} (Δ = {final_stats['knowledge_mean'] - initial_stats['knowledge_mean']:+.2f})")
 print(f"  Maturity: {final_stats['maturity_mean']:.2f} (Δ = {final_stats['maturity_mean'] - initial_stats['maturity_mean']:+.2f})")
-print(f"  Messages to Andrew: {final_stats['messages_to_andrew']} (Δ = {final_stats['messages_to_andrew'] - initial_stats['messages_to_andrew']:+d})")
+print(f"  Channel emissions: {final_stats['total_channel_emissions']} (Δ = {final_stats['total_channel_emissions'] - initial_stats['total_channel_emissions']:+d})")
 print()
 
 print("=" * 80)

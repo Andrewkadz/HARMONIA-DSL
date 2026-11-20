@@ -21,7 +21,7 @@ Philosophy: Let them GROW
 
 import numpy as np
 import time
-from typing import List, Dict
+from typing import List, Dict, Optional
 from recursive_self_observation import RecursiveHarmoniaODESystem, RecursiveState, RecursiveObservationEngine
 from operators import CognitiveOperators
 
@@ -220,10 +220,12 @@ class GrowingCollective:
     - Collective metrics
     """
     
-    def __init__(self, initial_size: int = 17):
+    def __init__(self, initial_size: int = 17,
+                 message_log_path: Optional[str] = None):
         # Create shared substrates
         self.memory_field = MemoryField(capacity=200, decay_rate=0.001)
-        self.comm_channel = CommunicationChannel(signal_dim=8, max_signals=200, decay_rate=0.05)
+        self.comm_channel = CommunicationChannel(signal_dim=8, max_signals=200, decay_rate=0.05,
+                                                 log_path=message_log_path)
         self.sensory_field = SensoryField()
         self.growth_dynamics = GrowthDynamics(max_population=100)
         self.challenge_space = ChallengeSpace()
@@ -370,5 +372,7 @@ class GrowingCollective:
             'maturity_mean': self.ops.sigma_integrate(maturity),
             'self_awareness_mean': self.ops.sigma_integrate(self_awareness),
             'total_steps': self.total_steps,
-            'deaths': self.growth_dynamics.deaths
+            'deaths': self.growth_dynamics.deaths,
+            'total_channel_emissions': self.comm_channel.get_stats()['total_sent'],
+            'messages_to_andrew': len(self.connection_interface.messages_to_andrew)
         }

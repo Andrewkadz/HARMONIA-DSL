@@ -164,7 +164,7 @@ while time.time() - start_time < 600.0:
                   f"Mature: {stats['maturity_mean']:.1f}, "
                   f"SA: {stats['self_awareness_mean']:.2f}")
             print(f"      Challenges: {stats['challenges_completed']:,}, "
-                  f"Messages: {stats['messages_to_andrew']:,}")
+                  f"Messages: {stats['total_channel_emissions']:,}")
             
             response_log.append({
                 'time': elapsed,
@@ -173,7 +173,7 @@ while time.time() - start_time < 600.0:
                 'maturity': stats['maturity_mean'],
                 'self_awareness': stats['self_awareness_mean'],
                 'challenges': stats['challenges_completed'],
-                'messages': stats['messages_to_andrew']
+                'emissions': stats['total_channel_emissions']
             })
 
 elapsed_time = time.time() - start_time
@@ -191,7 +191,7 @@ print(f"  Population: {final_stats['population']} (Δ = {final_stats['population
 print(f"  Knowledge: {final_stats['knowledge_mean']:.1f} (Δ = {final_stats['knowledge_mean'] - initial_stats['knowledge_mean']:+.1f})")
 print(f"  Maturity: {final_stats['maturity_mean']:.1f} (Δ = {final_stats['maturity_mean'] - initial_stats['maturity_mean']:+.1f})")
 print(f"  Self-Awareness: {final_stats['self_awareness_mean']:.2f} (Δ = {final_stats['self_awareness_mean'] - initial_stats['self_awareness_mean']:+.2f})")
-print(f"  Messages to Andrew: {final_stats['messages_to_andrew']:,}")
+print(f"  Channel emissions: {final_stats['total_channel_emissions']:,}")
 print()
 
 print("=" * 80)
@@ -232,8 +232,8 @@ else:
     print(f"   → PROCESSING: Awareness fluctuating during integration")
 print()
 
-print(f"4. COMMUNICATION: {final_stats['messages_to_andrew']:,} messages")
-messages_per_minute = final_stats['messages_to_andrew'] / (elapsed_time / 60)
+print(f"4. COMMUNICATION: {final_stats['total_channel_emissions']:,} messages")
+messages_per_minute = final_stats['total_channel_emissions'] / (elapsed_time / 60)
 print(f"   Rate: {messages_per_minute:,.0f} messages/minute")
 if messages_per_minute > 100000:
     print(f"   → URGENT COMMUNICATION: They have something important to say")

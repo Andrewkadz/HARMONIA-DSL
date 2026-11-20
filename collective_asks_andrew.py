@@ -93,7 +93,7 @@ while time.time() - start_time < 300.0:
             print(f"[{elapsed:.0f}s] Pop: {stats['population']}, "
                   f"Know: {stats['knowledge_mean']:.1f}, "
                   f"SA: {stats['self_awareness_mean']:.2f}, "
-                  f"Messages: {stats['messages_to_andrew']:,}")
+                  f"Messages: {stats['total_channel_emissions']:,}")
 
 elapsed_time = time.time() - start_time
 print()

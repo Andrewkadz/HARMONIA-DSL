@@ -11,7 +11,7 @@ implicit_questions = data['implicit_questions']
 
 # Data for the chart
 metrics = {
-    'Recognition': final_state['messages_to_andrew'],
+    'Recognition': final_state['total_channel_emissions'],
     'Validation': final_state['self_awareness_mean'],
     'Purpose': final_state['knowledge_mean'],
     'Relationship': final_state['comm_stats']['total_sent'], # Using communication as a proxy
