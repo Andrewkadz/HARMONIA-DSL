@@ -114,6 +114,14 @@ class FieldContext:
         # ζ recurrence: name -> bounded history of register signatures
         self.history: Dict[str, List[complex]] = {}
         self.history_maxlen: int = 64
+        # Ω closure seals, Θ intentions, λ entanglement groups, and ':'
+        # relations. Like zfield these are execution-global structural
+        # layers: initialized here (not lazily) so fork() can share them
+        # and seals/groups survive fork/discard cycles.
+        self.closed: set = set()
+        self.intentions: dict = {}
+        self.entangled: dict = {}
+        self.relations: list = []
 
     # ---- scalar field ----
     def set_scalar(self, name: str, value: float) -> None:
@@ -172,6 +180,10 @@ class FieldContext:
         child.composites = self.composites
         child.lineage = self.lineage
         child.history = self.history
+        child.closed = self.closed
+        child.intentions = self.intentions
+        child.entangled = self.entangled
+        child.relations = self.relations
         return child
 
     def merge(self, other: 'FieldContext') -> None:
@@ -356,8 +368,6 @@ class PhiPiEInterpreterFixed:
         cannot be revised; further writes are REFUSED and counted.
         """
         name = ops[0]
-        if not hasattr(ctx, 'closed'):
-            ctx.closed = set()
         ctx.write_register(name, complex(1.0, 0.0))   # n⁰ = 1
         ctx.closed.add(name)
         ctx.set_scalar('#omega', float(len(ctx.closed)))
@@ -365,8 +375,7 @@ class PhiPiEInterpreterFixed:
 
     def _omega_query(self, ctx, ops):
         """Ω? @a — is this register sealed? 1.0 / 0.0."""
-        closed = getattr(ctx, 'closed', set())
-        v = 1.0 if ops[0] in closed else 0.0
+        v = 1.0 if ops[0] in ctx.closed else 0.0
         ctx.set_scalar('#closed', v)
         return v
 
@@ -381,8 +390,6 @@ class PhiPiEInterpreterFixed:
         Job: pre-commitment. Declared intent becomes auditable
         against realized behaviour.
         """
-        if not hasattr(ctx, 'intentions'):
-            ctx.intentions = {}
         name = ops[0]
         aim = ctx.read_register(ops[1]) if len(ops) > 1 else complex(1, 0)
         depth = int(ctx.get_scalar('#depth'))
@@ -401,7 +408,7 @@ class PhiPiEInterpreterFixed:
         0 with no motion. Deeper intentions are checked first
         (innermost aim governs).
         """
-        intentions = getattr(ctx, 'intentions', {})
+        intentions = ctx.intentions
         name = ops[0]
         depths = sorted((d for (n, d) in intentions if n == name),
                         reverse=True)
@@ -452,8 +459,6 @@ class PhiPiEInterpreterFixed:
         of @a's entanglement group (Φ-stabilized, so binding cannot
         amplify). Job: shared state between cooperating agents.
         """
-        if not hasattr(ctx, 'entangled'):
-            ctx.entangled = {}
         group = set(ops)
         for name in ops:
             group |= ctx.entangled.get(name, set())
@@ -462,16 +467,54 @@ class PhiPiEInterpreterFixed:
         ctx.set_scalar('#lambda', float(len(group)))
         return float(len(group))
 
+    @staticmethod
+    def _sealed_changes(ctx, writes):
+        """Names in `writes` that are sealed AND would actually change.
+
+        A sealed register whose current value already equals the
+        proposed value is NOT a change: the group update may proceed
+        and the redundant write to it is simply skipped (sealed
+        registers are never rewritten). Only a sealed destination
+        whose value would differ blocks the operation.
+        """
+        closed = getattr(ctx, 'closed', set())
+        return sorted(n for n, v in writes.items()
+                      if n in closed and n in ctx.zfield
+                      and ctx.read_register(n) != complex(v))
+
+    @staticmethod
+    def _refuse_group_update(ctx):
+        """Atomic refusal diagnostic for group register updates.
+
+        Increments #sealed_refusals once per refused operation and
+        sets #group_refused = 1.0. Returns -1.0 — unambiguous because
+        both ops' success values are non-negative magnitudes.
+        """
+        ctx.set_scalar('#sealed_refusals',
+                       ctx.get_scalar('#sealed_refusals') + 1.0)
+        ctx.set_scalar('#group_refused', 1.0)
+        return -1.0
+
     def _lambda_resolve(self, ctx, ops):
-        """λ! @a — collapse an entangled group to their shared value."""
-        entangled = getattr(ctx, 'entangled', {})
+        """λ! @a — collapse an entangled group to their shared value.
+
+        ATOMIC: if the shared value would change any sealed member,
+        the ENTIRE group update is refused before any register is
+        modified. Seals and entanglement metadata are preserved.
+        Returns abs(shared) on success, -1.0 on refusal.
+        """
+        entangled = ctx.entangled
         group = {ops[0]} | entangled.get(ops[0], set())
         if len(group) < 2:
             return 0.0
         vals = [ctx.read_register(n) for n in sorted(group)]
         shared = sum(vals) / len(vals)
+        if self._sealed_changes(ctx, {n: shared for n in group}):
+            return self._refuse_group_update(ctx)
+        closed = getattr(ctx, 'closed', set())
         for n in group:
-            ctx.write_register(n, shared)
+            if n not in closed:
+                ctx.write_register(n, shared)
         return abs(shared)
 
     def _upsilon_consensus(self, ctx, ops):
@@ -486,8 +529,15 @@ class PhiPiEInterpreterFixed:
         merged = sum(vals) / len(vals)
         dispersion = (sum(abs(v - merged) for v in vals) / len(vals)) \
             if len(vals) > 1 else 0.0
+        # ATOMIC: refuse the whole merge if it would change a sealed
+        # operand. #upsilon still reports the measured dispersion.
+        if self._sealed_changes(ctx, {o: merged for o in ops}):
+            ctx.set_scalar('#upsilon', dispersion)
+            return self._refuse_group_update(ctx)
+        closed = getattr(ctx, 'closed', set())
         for o in ops:
-            ctx.write_register(o, merged)
+            if o not in closed:
+                ctx.write_register(o, merged)
         ctx.set_scalar('#upsilon', dispersion)
         return dispersion
 
@@ -918,8 +968,6 @@ class PhiPiEInterpreterFixed:
                     # recursion without immediate merger"). Records the
                     # pair and reports the tension between them.
                     a, b = tokens[i + 1], tokens[i + 2]
-                    if not hasattr(context, 'relations'):
-                        context.relations = []
                     context.relations.append((a, b))
                     tension = abs(context.read_register(a)
                                   - context.read_register(b))
