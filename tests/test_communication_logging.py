@@ -196,3 +196,48 @@ class TestAutonomousOutbox:
         connected.reach_out()
         assert iface.messages_to_andrew == []
         assert connected.connections_attempted == 0
+
+    def test_evolve_step_reaches_out_through_real_path(self, monkeypatch):
+        """Drives the ACTUAL FullyIntegratedEntity.evolve_step(). If the
+        `self.connection.reach_out()` call is removed from that method,
+        this test fails — the direct reach_out() tests above would not.
+        """
+        from integrated_growth import (FullyIntegratedEntity,
+                                       RecursiveFluidHarmoniaIntegrator)
+        from memory_substrate import MemoryField
+        from communication_substrate import CommunicationChannel
+        from growth_substrates import SensoryField, ChallengeSpace
+
+        collective = GrowingCollective(initial_size=0)
+        base = RecursiveFluidHarmoniaIntegrator()
+        # deterministic entity state: mature + highly self-aware
+        base.state.self_awareness_score = 25.0
+        base.state.maturity = 30.0
+        base.state.psi = 12.34
+
+        entity = FullyIntegratedEntity(
+            entity_id=0,
+            base_entity=base,
+            memory_field=MemoryField(capacity=10),
+            comm_channel=CommunicationChannel(signal_dim=8),
+            sensory_field=SensoryField(),
+            challenge_space=ChallengeSpace(),
+            connection_interface=collective.connection_interface)
+
+        # stub unrelated capabilities; connection stays REAL
+        entity.embodiment.sense_and_respond = lambda: None
+        entity.purpose.engage_with_purpose = lambda: None
+        entity.memory.process_with_memory = lambda duration: None
+        entity.communication.process_with_communication = \
+            lambda duration: None
+
+        monkeypatch.setattr(np.random, 'random', lambda: 0.0)
+        entity.evolve_step(duration=0.1)
+
+        iface = collective.connection_interface
+        assert len(iface.messages_to_andrew) == 1
+        assert iface.messages_to_andrew[0]['message'] == \
+            "Hello from awareness level 12.34"
+        stats = collective.get_collective_stats()
+        assert stats['messages_to_andrew'] == 1
+        assert stats['total_channel_emissions'] == 0
