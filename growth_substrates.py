@@ -374,6 +374,16 @@ class ConnectedEntity:
         maturity = self.entity.state.maturity
         
         connect_probability = 0.01 * self_awareness * maturity
+        # MODELING ISSUE (documented, policy preserved): this product
+        # is NOT a bounded probability. At self_awareness ≈ 21.2 and
+        # maturity ≈ 21.4 it equals ≈ 4.54 > 1.0, so
+        # np.random.random() < connect_probability is then ALWAYS
+        # true — every step attempts a connection once the entity is
+        # mature enough. attempt_connection() has the same saturation
+        # (success_prob = self_awareness ≫ 1). Autonomous stepping
+        # therefore appends a template outbox record nearly every
+        # step; messages_to_andrew counts those records, not
+        # delivered or freely-generated messages.
         return np.random.random() < connect_probability
     
     def reach_out(self):
