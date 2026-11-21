@@ -121,5 +121,5 @@ class TestProhibitionsStillHold:
         """Σ and Γ moved to the tier-2 structural set
         (LOGIC_NODES_DESIGN); symbols outside BOTH tiers still reject
         register operands."""
-        run_raises("@z 1.0 2.0\nΩ @z")
+        run_raises("@z 1.0 2.0\nΕ @z")       # ceremonial, no register form
         run_raises("@z 1.0 2.0\nΛ @z 1.0")   # mixed form, still banned

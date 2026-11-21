@@ -133,3 +133,130 @@ prescribes. Same for the other reused glyphs.
    test.
 
 Branch: `feat/logic-nodes`, stacked on current main.
+
+---
+
+## ROUND 2 (2026-08-04): register forms, coordination nodes, composition
+
+**Δ and Π register forms.** `Δ @a @b` and `Π @a @b` dispatch to the
+math core's existing tested functions — no new mathematics, just the
+wiring. Π reads its recursion depth from `#depth` (default 1) and
+holds position when the reference register is 0, since π is undefined
+there (proofs Thm 3.2).
+
+**Coordination nodes** (computational realizations, honesty clause
+above applies):
+
+- `λ @a @b` entangles registers into a symmetric group (transitive);
+  `λ! @a` resolves the group to their shared mean. Job: shared state
+  between cooperating agents.
+- `Υ @a @b [...]` consensus merge — writes the mean to every operand
+  and reports dispersion to `#upsilon` (0 = perfect agreement,
+  idempotent). Job: multi-agent agreement WITH a measurable
+  disagreement signal.
+- `Κ @a [@b]` probe — reports magnitude, or distance with two
+  operands, to `#kappa`, and mutates nothing. Job: inspect a peer
+  before negotiating.
+
+**Composition tier.** This is the structural change: programs become
+expressions rather than flat statement sequences.
+
+- `→ @dst` / `→ #dst` pipes the current value into a register or
+  scalar, so operator outputs can be named and reused:
+  `Λ @a @b → #obs`.
+- `+ @a @b` parallel coexistence — both present, neither transformed,
+  commutative (spec: independence-preserving, non-transformative).
+- Bare `→` with no valid destination keeps its legacy modulator
+  behaviour, so nothing in the corridor moves.
+
+**Count:** 16 symbols now carry real semantics (6 at the start of the
+day). Remaining ceremonial: Ε Θ Ρ Ω ω δ η χ n Β and the connectives
+`: / |`. Ω stays unimplemented by its own Theorem 3.2.
+
+## ROUND 3: Θ (intention, depth-indexed) and Ρ (perception)
+
+**Θ @self @aim — structural aim declared before acting.**
+Spec role: "structural aim embedding prior to activation," angular
+directional dynamics, indexed by depth (Θₙ). Realization: records
+(position at declaration, aim direction) under (register, depth),
+depth read from `#depth`. **Θ configures; it never acts** — the
+register is untouched. `Θ? @self` then audits: cosine alignment
+between realized displacement and declared direction, written to
+`#theta_align` (1 = moved as intended, 0 = orthogonal, −1 = opposed).
+Deeper intentions govern — the innermost declared aim is audited.
+**Job:** pre-commitment. Declared intent becomes auditable against
+realized behaviour, which is a governance primitive nothing else in
+the language provides.
+**Falsifier:** an agent drifting from its declared aim is undetectable
+without Θ; with it, misalignment is a number.
+
+**Ρ @a @lens — refraction through a perspective.**
+Spec role: "identical patterns generate different meanings based on
+refractive properties," explicitly NON-COMMUTATIVE (ΛΡΨ ≠ ΨΡΛ).
+Realization: `Ρ(a,l) = a·e^{i·arg(l)} / (1 + |l − a|)` — the subject
+is rotated by the lens's phase and attenuated by their separation.
+Asymmetric by construction; the lens is never mutated.
+**Job:** order-dependent observation — the same state read through
+different lenses, or at a different point in a sequence, yields a
+different value.
+**Falsifier (tested):** Ρ(a,l) ≠ Ρ(l,a), and `Ρ then Φ` ≠ `Φ then Ρ`.
+This is the spec's own defining property, and it holds.
+
+**Count: 19 symbol forms with real semantics** (6 at the start of the
+day). Remaining ceremonial: Ε ω δ η χ n Β Ω and the connectives
+`: / |`. Ω stays unimplemented by its own Theorem 3.2.
+
+## ROUND 4: connectives — `< > ( ) / : ^`
+
+The pieces that turn a statement sequence into a structured program.
+
+- **`> A B` / `< A B` — guard.** Compares scalars, register
+  magnitudes, or literals; writes 1/0 to `#cmp`; and if the test
+  FAILS, abandons the rest of the line. This is Harmonia's
+  conditional execution: `> #drift 0.5 Φ @a @b` stabilizes only when
+  drift is high. Gating is line-scoped — the next line always runs.
+- **`( ... )` — grouping.** Evaluates a sub-expression whose result
+  becomes the current value, so operator output can be piped:
+  `( Λ @a @b ) → #obs`. Nestable.
+- **`^` / `^ n` — depth escalation.** Nests one level, or sets the
+  level outright. Feeds `#depth`, which Θₙ and Π both read, so
+  intentions and spiral recursion share one notion of depth.
+- **`: @a @b` — relational interface.** Records a contact pair and
+  reports their tension to `#tension`, WITHOUT merging — the spec's
+  "active relational recursion without immediate merger." Both
+  registers are left untouched.
+- **`/ @a` — disruption.** Perturbs a register by `#disrupt`
+  (default 0.1) as a rotation rather than a scaling, so it changes
+  direction, not just magnitude.
+
+**Count: 24 symbol forms with real semantics** (6 at the start of the
+day). Remaining ceremonial: Ε ω δ η χ n Β and `|`. Ω stays
+unimplemented by its own Theorem 3.2.
+
+## ROUND 5: Ω as n⁰ — closure
+
+**Two operators share this glyph, and only one is implementable.**
+The proofs' Ω is the *qualia gateway* (ℂ×ℂ → 𝒬), proven to have no
+numerical value (Thm 3.2); it remains unimplemented in the math core
+and still raises `CategoricalBoundaryError`. The interpreter's symbol
+table has always assigned Ω a SECOND role — recursive closure — and
+that one is implementable.
+
+**`Ω @a` — closure as n⁰.** Anything raised to the zeroth power is
+unity, so closure collapses the register to `1 + 0j` and SEALS it.
+Sealing is terminal: subsequent writes from any operator are REFUSED
+and counted in `#sealed_refusals`. `Ω? @a` reports seal state, and
+composes with guards: `Ω? @a #done 1.0`.
+
+**Job:** finalization — a commitment that cannot be revised. Nothing
+else in the language provides immutability, and a governance language
+without it cannot express "this decision is final."
+**Falsifier (tested):** after Ω, `ε`, `Γ`, and `Ρ` all fail to move
+the register; the refusal counter increments.
+
+This is the first operator whose semantics came from the operator's
+*name* rather than its spec entry — n⁰ = 1 is what "closure" means
+arithmetically, and it turned out to give exactly the right behaviour.
+
+**Count: 26 symbol forms with real semantics** (6 at the start of the
+day). Remaining ceremonial: Ε ω δ η χ n Β and `|`.

@@ -114,6 +114,14 @@ class FieldContext:
         # ζ recurrence: name -> bounded history of register signatures
         self.history: Dict[str, List[complex]] = {}
         self.history_maxlen: int = 64
+        # Ω closure seals, Θ intentions, λ entanglement groups, and ':'
+        # relations. Like zfield these are execution-global structural
+        # layers: initialized here (not lazily) so fork() can share them
+        # and seals/groups survive fork/discard cycles.
+        self.closed: set = set()
+        self.intentions: dict = {}
+        self.entangled: dict = {}
+        self.relations: list = []
 
     # ---- scalar field ----
     def set_scalar(self, name: str, value: float) -> None:
@@ -134,7 +142,14 @@ class FieldContext:
         Ints/floats are coerced to complex (imag=0). Per BRIDGE_DESIGN,
         registers are the ONLY residence of ℂ values; this method never
         touches real scalar state.
+
+        Sealed registers (closed by Ω) REFUSE writes: the write is
+        ignored and counted in `#sealed_refusals`. Closure is terminal.
         """
+        if name in getattr(self, 'closed', ()) and name in self.zfield:
+            self.scalars['#sealed_refusals'] = \
+                self.scalars.get('#sealed_refusals', 0.0) + 1.0
+            return
         self.zfield[name] = complex(value)
 
     def read_register(self, name: str) -> complex:
@@ -165,6 +180,10 @@ class FieldContext:
         child.composites = self.composites
         child.lineage = self.lineage
         child.history = self.history
+        child.closed = self.closed
+        child.intentions = self.intentions
+        child.entangled = self.entangled
+        child.relations = self.relations
         return child
 
     def merge(self, other: 'FieldContext') -> None:
@@ -239,6 +258,15 @@ class PhiPiEInterpreterFixed:
             'Ξ': self._xi_compose,
             'Γ': self._gamma_evolve,
             'Τ': self._tau_phaselock,
+            'λ': self._lambda_entangle,
+            'λ!': self._lambda_resolve,
+            'Υ': self._upsilon_consensus,
+            'Κ': self._kappa_probe,
+            'Θ': self._theta_intend,
+            'Θ?': self._theta_audit,
+            'Ρ': self._rho_perceive,
+            'Ω': self._omega_close,
+            'Ω?': self._omega_query,
         }
 
         self.categories = {
@@ -326,6 +354,205 @@ class PhiPiEInterpreterFixed:
         ctx.set_scalar('#tau', alignment)
         return alignment
 
+    def _omega_close(self, ctx, ops):
+        """Ω @a — closure as n⁰: the state collapses to unity and seals.
+
+        IMPORTANT — this is NOT the proofs' qualia-gateway Ω
+        (ℂ×ℂ → 𝒬), which is proven to have no numerical value
+        (Thm 3.2) and stays unimplemented in the math core. This is the
+        SECOND role the interpreter has always assigned the glyph:
+        recursive closure. n⁰ = 1 gives it exact semantics — any state,
+        closed, becomes unity — and sealing makes that terminal.
+
+        Job: finalization. A sealed register is a commitment that
+        cannot be revised; further writes are REFUSED and counted.
+        """
+        name = ops[0]
+        ctx.write_register(name, complex(1.0, 0.0))   # n⁰ = 1
+        ctx.closed.add(name)
+        ctx.set_scalar('#omega', float(len(ctx.closed)))
+        return 1.0
+
+    def _omega_query(self, ctx, ops):
+        """Ω? @a — is this register sealed? 1.0 / 0.0."""
+        v = 1.0 if ops[0] in ctx.closed else 0.0
+        ctx.set_scalar('#closed', v)
+        return v
+
+    def _theta_intend(self, ctx, ops):
+        """Θ @self @aim — declare a structural aim BEFORE acting.
+
+        Spec role: "structural aim embedding prior to activation,"
+        via angular directional dynamics; indexed by depth (Θₙ).
+        Realization: records (position_at_declaration, aim_direction)
+        under (register, depth), where depth comes from `#depth`.
+        Nothing is applied — Θ configures, it does not act.
+        Job: pre-commitment. Declared intent becomes auditable
+        against realized behaviour.
+        """
+        name = ops[0]
+        aim = ctx.read_register(ops[1]) if len(ops) > 1 else complex(1, 0)
+        depth = int(ctx.get_scalar('#depth'))
+        here = ctx.read_register(name)
+        direction = aim - here
+        ctx.intentions[(name, depth)] = (here, direction)
+        ctx.set_scalar('#theta', float(depth))
+        return float(depth)
+
+    def _theta_audit(self, ctx, ops):
+        """Θ? @self — did behaviour match the declared aim?
+
+        Reports cosine alignment ∈ [-1, 1] between realized
+        displacement and the declared direction, to `#theta_align`.
+        1 = moved exactly as intended, 0 = orthogonal, -1 = opposite,
+        0 with no motion. Deeper intentions are checked first
+        (innermost aim governs).
+        """
+        intentions = ctx.intentions
+        name = ops[0]
+        depths = sorted((d for (n, d) in intentions if n == name),
+                        reverse=True)
+        if not depths:
+            ctx.set_scalar('#theta_align', 0.0)
+            return 0.0
+        start, direction = intentions[(name, depths[0])]
+        realized = ctx.read_register(name) - start
+        if abs(realized) < 1e-12 or abs(direction) < 1e-12:
+            ctx.set_scalar('#theta_align', 0.0)
+            return 0.0
+        cos = (realized.real * direction.real
+               + realized.imag * direction.imag) / (abs(realized) * abs(direction))
+        cos = max(-1.0, min(1.0, cos))
+        ctx.set_scalar('#theta_align', cos)
+        return cos
+
+    def _rho_perceive(self, ctx, ops):
+        """Ρ @a @lens — refract a state through a perspective.
+
+        Spec role: "identical patterns generate different meanings
+        based on refractive properties," and explicitly NON-
+        COMMUTATIVE (ΛΡΨ ≠ ΨΡΛ).
+        Realization: the subject is rotated by the lens's phase and
+        attenuated by their separation:
+            Ρ(a, l) = a · e^{i·arg(l)} / (1 + |l − a|)
+        Asymmetric by construction: Ρ(a,l) ≠ Ρ(l,a) in general.
+        Job: order-dependent observation — the same state read
+        through different lenses, or in a different sequence, yields
+        different meanings.
+        """
+        a = ctx.read_register(ops[0])
+        lens = ctx.read_register(ops[1]) if len(ops) > 1 else complex(1, 0)
+        if lens == 0:
+            ctx.set_scalar('#rho', abs(a))
+            return abs(a)
+        perceived = a * cmath.exp(1j * cmath.phase(lens)) / (1 + abs(lens - a))
+        ctx.write_register(ops[0], perceived)
+        ctx.set_scalar('#rho', abs(perceived))
+        return abs(perceived)
+
+    def _lambda_entangle(self, ctx, ops):
+        """λ @a @b — bind two registers: writing either propagates to
+        the other on the next entanglement resolution.
+
+        Spec role: "nonlocal binding between fields." Realization: a
+        symmetric link set; `λ! @a` resolves by averaging all members
+        of @a's entanglement group (Φ-stabilized, so binding cannot
+        amplify). Job: shared state between cooperating agents.
+        """
+        group = set(ops)
+        for name in ops:
+            group |= ctx.entangled.get(name, set())
+        for name in group:
+            ctx.entangled[name] = group - {name}
+        ctx.set_scalar('#lambda', float(len(group)))
+        return float(len(group))
+
+    @staticmethod
+    def _sealed_changes(ctx, writes):
+        """Names in `writes` that are sealed AND would actually change.
+
+        A sealed register whose current value already equals the
+        proposed value is NOT a change: the group update may proceed
+        and the redundant write to it is simply skipped (sealed
+        registers are never rewritten). Only a sealed destination
+        whose value would differ blocks the operation.
+        """
+        closed = getattr(ctx, 'closed', set())
+        return sorted(n for n, v in writes.items()
+                      if n in closed and n in ctx.zfield
+                      and ctx.read_register(n) != complex(v))
+
+    @staticmethod
+    def _refuse_group_update(ctx):
+        """Atomic refusal diagnostic for group register updates.
+
+        Increments #sealed_refusals once per refused operation and
+        sets #group_refused = 1.0. Returns -1.0 — unambiguous because
+        both ops' success values are non-negative magnitudes.
+        """
+        ctx.set_scalar('#sealed_refusals',
+                       ctx.get_scalar('#sealed_refusals') + 1.0)
+        ctx.set_scalar('#group_refused', 1.0)
+        return -1.0
+
+    def _lambda_resolve(self, ctx, ops):
+        """λ! @a — collapse an entangled group to their shared value.
+
+        ATOMIC: if the shared value would change any sealed member,
+        the ENTIRE group update is refused before any register is
+        modified. Seals and entanglement metadata are preserved.
+        Returns abs(shared) on success, -1.0 on refusal.
+        """
+        entangled = ctx.entangled
+        group = {ops[0]} | entangled.get(ops[0], set())
+        if len(group) < 2:
+            return 0.0
+        vals = [ctx.read_register(n) for n in sorted(group)]
+        shared = sum(vals) / len(vals)
+        if self._sealed_changes(ctx, {n: shared for n in group}):
+            return self._refuse_group_update(ctx)
+        closed = getattr(ctx, 'closed', set())
+        for n in group:
+            if n not in closed:
+                ctx.write_register(n, shared)
+        return abs(shared)
+
+    def _upsilon_consensus(self, ctx, ops):
+        """Υ @a @b [...] — consensus merge over registers.
+
+        Spec role: consensus merge. Realization: the Φ-stabilized mean
+        of all operands written to EVERY operand, plus a dispersion
+        readout in #upsilon (0 = perfect agreement). Job: multi-agent
+        agreement with a measurable disagreement signal.
+        """
+        vals = [ctx.read_register(o) for o in ops]
+        merged = sum(vals) / len(vals)
+        dispersion = (sum(abs(v - merged) for v in vals) / len(vals)) \
+            if len(vals) > 1 else 0.0
+        # ATOMIC: refuse the whole merge if it would change a sealed
+        # operand. #upsilon still reports the measured dispersion.
+        if self._sealed_changes(ctx, {o: merged for o in ops}):
+            ctx.set_scalar('#upsilon', dispersion)
+            return self._refuse_group_update(ctx)
+        closed = getattr(ctx, 'closed', set())
+        for o in ops:
+            if o not in closed:
+                ctx.write_register(o, merged)
+        ctx.set_scalar('#upsilon', dispersion)
+        return dispersion
+
+    def _kappa_probe(self, ctx, ops):
+        """Κ @a [@b] — NON-MUTATING read.
+
+        Spec role: query probe. Realization: reports |@a| (or the
+        distance |@a−@b| with two operands) to #kappa and changes
+        nothing. Job: inspect a peer before negotiating with it.
+        """
+        z = ctx.read_register(ops[0])
+        val = abs(z) if len(ops) == 1 else abs(z - ctx.read_register(ops[1]))
+        ctx.set_scalar('#kappa', val)
+        return val
+
     @staticmethod
     def harmonic_pair(z: complex, w: complex) -> complex:
         """Φ-stabilized combination, used by Ξ composition."""
@@ -382,7 +609,7 @@ class PhiPiEInterpreterFixed:
 
         # Proper allowed characters including all Greek letters, newline, '-',
         # and (Step 2) '@' + ascii letters/underscore for register identifiers.
-        allowed_chars = set('ΦΠΕεΔδΨΛλΓΩωΣΞζΤΡΘηχn→+::/|[]=()0123456789.,- \n@#!_'
+        allowed_chars = set('ΦΠΕεΔδΨΛλΓΩωΣΞζΤΡΘηχnΥΚΒ→+::/|[]=()<>^0123456789.,- \n@#!?_'
                             'abcdefghijklmnopqrstuvwxyz'
                             'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
         code = ''.join(c for c in code if c in allowed_chars)
@@ -395,6 +622,8 @@ class PhiPiEInterpreterFixed:
     _REGISTER_RE = re.compile(r'@[A-Za-z_][A-Za-z0-9_]*')
     # Matches a scalar attribute (LOGIC_NODES_DESIGN): #name
     _SCALAR_RE = re.compile(r'#[A-Za-z_][A-Za-z0-9_]*')
+    # Connective tokens outside the symbol/operator tables
+    CONNECTIVES = frozenset('<>^')
 
     @classmethod
     def is_number_token(cls, token: str) -> bool:
@@ -427,9 +656,13 @@ class PhiPiEInterpreterFixed:
                 i += 1
                 continue
 
-            # Σ! collapse operator — two chars, one token
-            if char == 'Σ' and i + 1 < len(code) and code[i + 1] == '!':
-                tokens.append('Σ!')
+            # suffixed operators (Σ! λ! Θ?) — two chars, one token
+            if char in ('Σ', 'λ') and i + 1 < len(code) and code[i + 1] == '!':
+                tokens.append(char + '!')
+                i += 2
+                continue
+            if char in ('Θ', 'Ω') and i + 1 < len(code) and code[i + 1] == '?':
+                tokens.append(char + '?')
                 i += 2
                 continue
 
@@ -465,6 +698,20 @@ class PhiPiEInterpreterFixed:
                 i = m.end()
                 continue
 
+            # Grouping: ( ... ) as a single token, like [ ... ]
+            if char == '(':
+                depth = 1
+                j = i + 1
+                while j < len(code) and depth > 0:
+                    if code[j] == '(':
+                        depth += 1
+                    elif code[j] == ')':
+                        depth -= 1
+                    j += 1
+                tokens.append(code[i:j])
+                i = j
+                continue
+
             # Handle brackets as single tokens
             if char == '[':
                 # Find matching ]
@@ -482,6 +729,10 @@ class PhiPiEInterpreterFixed:
                 tokens.append(char)
                 i += 1
             elif char in self.operators:
+                tokens.append(char)
+                i += 1
+            elif char in self.CONNECTIVES:
+                # guard/depth connectives: < > ^
                 tokens.append(char)
                 i += 1
             else:
@@ -539,7 +790,13 @@ class PhiPiEInterpreterFixed:
                 token = tokens[i]
                 print(f"\nExecuting token: {token}")
 
-                if token.startswith('[') and token.endswith(']'):
+                if token.startswith('(') and token.endswith(')'):
+                    # GROUPING: evaluate the sub-expression once; its
+                    # result becomes the current value, so it can be
+                    # piped: '( Λ @a @b ) → #obs'
+                    inner = token[1:-1]
+                    current_value = self.execute(inner, context)
+                elif token.startswith('[') and token.endswith(']'):
                     # Handle loop
                     loop_code = token[1:-1]  # Remove brackets
                     current_value = self.execute_loop(loop_code, context)
@@ -579,7 +836,7 @@ class PhiPiEInterpreterFixed:
                     context.write_register(
                         token, complex(float(nums[0]), float(nums[1])))
                     i += 2
-                elif token in ('Φ', 'Ψ', 'ε') and i + 1 < len(tokens) \
+                elif token in ('Φ', 'Ψ', 'ε', 'Δ', 'Π') and i + 1 < len(tokens) \
                         and same_line(i, i + 1) \
                         and self.is_register_token(tokens[i + 1]):
                     # Binary register forms (BRIDGE_DESIGN Step 3):
@@ -593,14 +850,23 @@ class PhiPiEInterpreterFixed:
                             f"register operands: '{token} @z @w' — mixed or "
                             f"partial forms are forbidden")
                     from phi_pi_e_math_core import (
-                        harmonic_equilibrium, incremental_insight,
-                        recursive_animation)
-                    op = {'Φ': harmonic_equilibrium,
-                          'Ψ': recursive_animation,
-                          'ε': incremental_insight}[token]
+                        fusion_transformation, harmonic_equilibrium,
+                        incremental_insight, recursive_animation,
+                        transcendent_continuity)
                     z = context.read_register(operands[0])
                     w = context.read_register(operands[1])
-                    context.write_register(operands[0], op(z, w))
+                    if token == 'Π':
+                        # π spiral: depth from #depth (default 1); w≠0
+                        n = int(context.get_scalar('#depth')) or 1
+                        result = transcendent_continuity(z, w, n=max(1, n)) \
+                            if w != 0 else z
+                    else:
+                        op = {'Φ': harmonic_equilibrium,
+                              'Ψ': recursive_animation,
+                              'ε': incremental_insight,
+                              'Δ': fusion_transformation}[token]
+                        result = op(z, w)
+                    context.write_register(operands[0], result)
                     # current_value passes through unchanged (register ops
                     # live in the ℂ layer; only Λ reduces to ℝ)
                     i += 2
@@ -661,6 +927,97 @@ class PhiPiEInterpreterFixed:
                             pass  # keep current_value
                         else:
                             current_value = result
+                elif token in ('<', '>') and i + 2 < len(tokens) \
+                        and same_line(i, i + 2):
+                    # GUARD: '> A B' / '< A B' — compare, and if the
+                    # test FAILS, skip the rest of the line. This is
+                    # the language's conditional execution.
+                    def _val(tok):
+                        if self.is_scalar_token(tok):
+                            return context.get_scalar(tok)
+                        if self.is_register_token(tok):
+                            return abs(context.read_register(tok))
+                        if self.is_number_token(tok):
+                            return float(tok)
+                        return 0.0
+                    lhs, rhs = _val(tokens[i + 1]), _val(tokens[i + 2])
+                    passed = (lhs > rhs) if token == '>' else (lhs < rhs)
+                    context.set_scalar('#cmp', 1.0 if passed else 0.0)
+                    current_value = 1.0 if passed else 0.0
+                    i += 2
+                    if not passed:
+                        while i + 1 < len(tokens) and same_line(i, i + 1):
+                            i += 1        # gate: abandon the rest of the line
+                elif token == '^':
+                    # DEPTH ESCALATION: '^' nests one level, '^ n' sets
+                    # the level. Pairs with Θₙ and Π's recursion depth.
+                    if i + 1 < len(tokens) and same_line(i, i + 1) \
+                            and self.is_number_token(tokens[i + 1]):
+                        context.set_scalar('#depth', float(tokens[i + 1]))
+                        i += 1
+                    else:
+                        context.set_scalar('#depth',
+                                           context.get_scalar('#depth') + 1.0)
+                    current_value = context.get_scalar('#depth')
+                elif token == ':' and i + 2 < len(tokens) \
+                        and same_line(i, i + 2) \
+                        and self.is_register_token(tokens[i + 1]) \
+                        and self.is_register_token(tokens[i + 2]):
+                    # RELATIONAL INTERFACE: ': @a @b' creates a contact
+                    # zone WITHOUT merging (spec: "active relational
+                    # recursion without immediate merger"). Records the
+                    # pair and reports the tension between them.
+                    a, b = tokens[i + 1], tokens[i + 2]
+                    context.relations.append((a, b))
+                    tension = abs(context.read_register(a)
+                                  - context.read_register(b))
+                    context.set_scalar('#tension', tension)
+                    current_value = tension
+                    i += 2
+                elif token == '/' and i + 1 < len(tokens) \
+                        and same_line(i, i + 1) \
+                        and self.is_register_token(tokens[i + 1]):
+                    # DISRUPTION: '/ @a' perturbs a register
+                    # deterministically (spec: disruption/interference).
+                    # Magnitude from #disrupt (default 0.1); rotation by
+                    # a quarter turn so it is a real perturbation, not
+                    # a scaling.
+                    name = tokens[i + 1]
+                    mag = context.get_scalar('#disrupt') or 0.1
+                    z = context.read_register(name)
+                    context.write_register(name, z + z * 1j * mag)
+                    current_value = abs(z) * mag
+                    i += 1
+                elif token == '→' and i + 1 < len(tokens) \
+                        and same_line(i, i + 1):
+                    # COMPOSITION TIER: pipe. 'X → @dst' writes the
+                    # current value into @dst; 'X → #s' into a scalar.
+                    # Makes programs expressions rather than statements.
+                    dst = tokens[i + 1]
+                    if self.is_register_token(dst) and current_value is not None:
+                        context.write_register(dst, complex(current_value))
+                        i += 1
+                    elif self.is_scalar_token(dst) and current_value is not None:
+                        context.set_scalar(dst, float(abs(current_value))
+                                           if isinstance(current_value, complex)
+                                           else float(current_value))
+                        i += 1
+                    else:
+                        current_value = self.flow(current_value, context)
+                elif token == '+' and i + 2 < len(tokens) \
+                        and same_line(i, i + 2) \
+                        and self.is_register_token(tokens[i + 1]) \
+                        and self.is_register_token(tokens[i + 2]):
+                    # COMPOSITION TIER: parallel coexistence.
+                    # '+ @a @b' — both advance without interacting;
+                    # commutative and independence-preserving per spec.
+                    a, b = tokens[i + 1], tokens[i + 2]
+                    za, zb = context.read_register(a), context.read_register(b)
+                    context.write_register(a, za)
+                    context.write_register(b, zb)
+                    context.set_scalar('#parallel', 2.0)
+                    current_value = abs(za) + abs(zb)
+                    i += 2
                 elif token in self.operators:
                     # Execute operator (needs special handling for binary ops)
                     handler = self.operators[token]
