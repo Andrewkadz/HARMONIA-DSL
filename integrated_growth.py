@@ -349,7 +349,13 @@ class GrowingCollective:
     def get_collective_stats(self) -> Dict:
         """Get statistics for the entire collective"""
         if len(self.entities) == 0:
-            return {'population': 0}
+            return {
+                'population': 0,
+                'total_steps': self.total_steps,
+                'deaths': self.growth_dynamics.deaths,
+                'total_channel_emissions': self.comm_channel.get_stats()['total_sent'],
+                'messages_to_andrew': len(self.connection_interface.messages_to_andrew)
+            }
         
         # Use Operator Σ (Fusion) to calculate means
         # (Though numpy mean is efficient, conceptually we are using Sigma)

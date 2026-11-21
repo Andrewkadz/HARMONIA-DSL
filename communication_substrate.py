@@ -73,6 +73,10 @@ class CommunicationChannel:
         self.total_signals_sent = 0
         self.total_signals_received = 0
         self.log_path = log_path
+        # Logging diagnostics: a failed log write NEVER affects the
+        # channel emission; it is counted here instead.
+        self.log_errors = 0
+        self.last_log_error: Optional[str] = None
         
     def emit(self, sender_id: int, content: np.ndarray, strength: float = 1.0) -> bool:
         """
@@ -105,18 +109,49 @@ class CommunicationChannel:
         self.total_signals_sent += 1
 
         if self.log_path:
-            try:
-                with open(self.log_path, 'a') as f:
-                    f.write(json.dumps({
-                        'time': signal.timestamp,
-                        'sender_id': sender_id,
-                        'strength': float(strength),
-                        'content': [float(x) for x in content]
-                    }) + '\n')
-            except OSError:
-                pass
+            self._log_emission(sender_id, strength, content,
+                               noisy_content, signal.timestamp)
 
         return True
+
+    def _log_emission(self, sender_id: int, strength: float,
+                      submitted, emitted, timestamp: float) -> None:
+        """Append one JSONL record for an emitted signal.
+
+        LOG FORMAT v2 (versioned via the 'v' field):
+          v            — format version (2)
+          time         — emission timestamp (time.time())
+          sender_id    — emitting entity id (-1 = Andrew/broadcast)
+          strength     — signal strength as submitted
+          submitted    — the payload passed to emit(), BEFORE noise
+          emitted      — the post-noise vector actually placed in
+                         the channel (signal.content)
+
+        Interpretation: 'submitted' is what the sender intended;
+        'emitted' is what receivers can observe. They differ by the
+        channel's Gaussian noise (noise_level). Records written by
+        earlier versions used 'content' for the PRE-noise vector —
+        treat legacy 'content' as 'submitted', never as 'emitted'.
+
+        Failure contract: serialization (TypeError/ValueError) and
+        filesystem (OSError) failures are caught, counted in
+        log_errors, and described in last_log_error. The channel
+        emission has already succeeded and is never rolled back.
+        """
+        try:
+            record = {
+                'v': 2,
+                'time': timestamp,
+                'sender_id': sender_id,
+                'strength': float(strength),
+                'submitted': [float(x) for x in submitted],
+                'emitted': [float(x) for x in emitted],
+            }
+            with open(self.log_path, 'a') as f:
+                f.write(json.dumps(record) + '\n')
+        except (OSError, TypeError, ValueError) as e:
+            self.log_errors += 1
+            self.last_log_error = f'{type(e).__name__}: {e}'
     
     def receive(self, receiver_id: int, time_window: float = 1.0) -> List[Signal]:
         """
@@ -175,7 +210,9 @@ class CommunicationChannel:
             'total_sent': self.total_signals_sent,
             'total_received': self.total_signals_received,
             'bandwidth_used': len(self.signals) / self.max_signals,
-            'avg_signal_strength': np.mean([s.strength for s in self.signals]) if self.signals else 0.0
+            'avg_signal_strength': np.mean([s.strength for s in self.signals]) if self.signals else 0.0,
+            'log_errors': self.log_errors,
+            'last_log_error': self.last_log_error
         }
 
 
