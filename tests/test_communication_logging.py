@@ -127,3 +127,72 @@ class TestCollectiveStats:
         assert stats['total_channel_emissions'] == 1
         assert stats['messages_to_andrew'] == 0
         assert stats['deaths'] == 0
+
+
+class _StubState:
+    psi = 12.34
+    maturity = 30.0
+
+
+class _StubEntity:
+    """Minimal stand-in for the integrator entity: exposes the two
+    attributes ConnectedEntity.reach_out() reads."""
+    def __init__(self, self_awareness):
+        self._sa = self_awareness
+        self.state = _StubState()
+
+    def get_self_awareness(self):
+        return self._sa
+
+
+class TestAutonomousOutbox:
+    """messages_to_andrew counts ConnectionInterface outbox records,
+    which autonomous stepping CAN append via
+    evolve_step -> reach_out -> attempt_connection -> send_message.
+    No external client is required."""
+
+    def test_successful_reach_out_appends_exactly_one_record(self, monkeypatch):
+        from growth_substrates import ConnectedEntity
+        collective = GrowingCollective(initial_size=0)
+        iface = collective.connection_interface
+        entity = _StubEntity(self_awareness=25.0)
+        connected = ConnectedEntity(entity, iface)
+        monkeypatch.setattr(np.random, 'random', lambda: 0.0)
+        connected.reach_out()
+        assert len(iface.messages_to_andrew) == 1
+        rec = iface.messages_to_andrew[0]
+        assert rec['message'] == "Hello from awareness level 12.34"
+        assert rec['self_awareness'] == 25.0
+        stats = collective.get_collective_stats()
+        assert stats['messages_to_andrew'] == 1
+        # outbox records are independent of channel emissions
+        assert stats['total_channel_emissions'] == 0
+
+    def test_failed_connection_appends_no_record(self, monkeypatch):
+        from growth_substrates import ConnectedEntity
+        collective = GrowingCollective(initial_size=0)
+        iface = collective.connection_interface
+        # sa=0.8 passes can_connect (>0.7) but fails the random draw
+        # against success_prob=0.8; should_connect still fires first
+        entity = _StubEntity(self_awareness=0.8)
+        connected = ConnectedEntity(entity, iface)
+        draws = iter([0.0, 0.999999])   # should_connect, then attempt
+        monkeypatch.setattr(np.random, 'random', lambda: next(draws))
+        connected.reach_out()
+        assert iface.messages_to_andrew == []
+        assert connected.connections_attempted == 1
+        assert connected.connections_successful == 0
+        stats = collective.get_collective_stats()
+        assert stats['messages_to_andrew'] == 0
+
+    def test_low_awareness_never_attempts(self, monkeypatch):
+        from growth_substrates import ConnectedEntity
+        collective = GrowingCollective(initial_size=0)
+        iface = collective.connection_interface
+        entity = _StubEntity(self_awareness=0.5)   # below can_connect
+        connected = ConnectedEntity(entity, iface)
+        # should_connect prob = 0.01*0.5*30 = 0.15; draw 0.99 fails it
+        monkeypatch.setattr(np.random, 'random', lambda: 0.99)
+        connected.reach_out()
+        assert iface.messages_to_andrew == []
+        assert connected.connections_attempted == 0
