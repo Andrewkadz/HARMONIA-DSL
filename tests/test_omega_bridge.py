@@ -20,12 +20,14 @@ from harmonia_omega_bridge import (
     HarmoniaOmegaBridge,
     OmegaBoundaryRefusal,
     OmegaReceiptTamperError,
+    STATUS_CLI_ERROR,
     STATUS_GOV_ARROW_CYCLE,
     STATUS_GOV_BRACKET_DEPTH,
     STATUS_GOV_EQ_LOCK,
     STATUS_GOV_PIPE_OVERLAP,
     STATUS_OK,
     STATUS_OMEGA_BOUNDARY,
+    STATUS_OVERFLOW,
     STATUS_PI_DEPTH_LT1,
     STATUS_PI_W_ZERO,
     categorical_omega,
@@ -158,6 +160,38 @@ class TestRefusalsAndGovernance:
         with pytest.raises(CategoricalBoundaryError):
             CATEGORICAL_OPERATORS["Ω"](1 + 1j, 2 - 1j)
 
+    def test_overflow_and_invalid_float_refused_fail_closed(self):
+        bridge = HarmoniaOmegaBridge(prefer_native=False)
+
+        cor_ov = bridge.eval_corridor(1e308, 1e308, -1.0)
+        assert not cor_ov.ok
+        assert cor_ov.status == STATUS_OVERFLOW
+        assert cor_ov.verdict == "REFUSED"
+        assert cor_ov.reason == "non_finite_overflow"
+        assert cor_ov.value is None
+        assert bridge.verify_receipt(cor_ov.receipt_preimage, cor_ov.sha256)
+
+        op_ov = bridge.eval_operator("Δ", 1e200 + 0j, 1e200 + 0j)
+        assert not op_ov.ok
+        assert op_ov.status == STATUS_OVERFLOW
+        assert op_ov.value is None
+        assert bridge.verify_receipt(op_ov.receipt_preimage, op_ov.sha256)
+
+        nan_op = bridge.eval_operator("Φ", float("nan") + 0j, 1 + 0j)
+        assert not nan_op.ok and nan_op.status == STATUS_CLI_ERROR
+
+        inf_cor = bridge.eval_corridor(float("inf"), 3.0, 0.2)
+        assert not inf_cor.ok and inf_cor.status == STATUS_CLI_ERROR
+
+    def test_oversized_arrow_and_bad_verify_receipt_refused(self):
+        bridge = HarmoniaOmegaBridge(prefer_native=False)
+        oversized = bridge.check_arrow_acyclic(["a" * 1025, "b"])
+        assert not oversized.ok and oversized.status == STATUS_CLI_ERROR
+        ctrl = bridge.check_arrow_acyclic(["ok", "bad\nline"])
+        assert not ctrl.ok and ctrl.status == STATUS_CLI_ERROR
+        assert not bridge.verify_receipt("ok\x00nul", "0" * 64)
+        assert not bridge.verify_receipt("a" * 8193, "0" * 64)
+
 
 _NATIVE_BIN = find_harmonia_binary()
 _REQUIRE_NATIVE = os.environ.get("HARMONIA_REQUIRE_OMEGA") == "1"
@@ -200,3 +234,15 @@ class TestLiveNativeOmegaParity:
             corridor_n.receipt_preimage,
             ("0" if corridor_n.sha256[0] != "0" else "1") + corridor_n.sha256[1:],
         )
+
+        ov_n = native.eval_corridor(1e308, 1e308, -1.0)
+        ov_f = fallback.eval_corridor(1e308, 1e308, -1.0)
+        assert not ov_n.ok and ov_n.status == STATUS_OVERFLOW
+        assert ov_n.value is None
+        assert ov_n.sha256 == ov_f.sha256
+
+        op_ov_n = native.eval_operator("Δ", 1e200 + 0j, 1e200 + 0j)
+        op_ov_f = fallback.eval_operator("Δ", 1e200 + 0j, 1e200 + 0j)
+        assert not op_ov_n.ok and op_ov_n.status == STATUS_OVERFLOW
+        assert op_ov_n.value is None
+        assert op_ov_n.sha256 == op_ov_f.sha256

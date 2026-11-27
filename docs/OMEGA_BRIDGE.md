@@ -42,11 +42,13 @@ runtime binary (`harmonia-om-macos` on Apple Silicon macOS or
 | `1000001` | `Ω` Theorem 3.2 categorical boundary refusal |
 | `1000002` | `π(z, 0)` singularity refusal |
 | `1000003` | `π` recursion depth `n < 1` refusal |
+| `1000004` | Non-finite / floating-point overflow refusal |
 | `1000011` | `\|` disjoint sector check failed (overlap or zero mask) |
 | `1000012` | `[]` recursion depth exceeded ceiling (`< 1` or `depth > ceiling`) |
 | `1000013` | `->` cyclic progression detected |
 | `1000014` | `=` lock invariant violated |
 | `1000015` | SHA-256 receipt tamper check failed |
+| `1000099` | Invalid, non-finite, or oversized CLI arguments |
 
 ## Quick Usage
 

@@ -29,6 +29,7 @@ STATUS_OK = 0
 STATUS_OMEGA_BOUNDARY = 1000001
 STATUS_PI_W_ZERO = 1000002
 STATUS_PI_DEPTH_LT1 = 1000003
+STATUS_OVERFLOW = 1000004
 STATUS_GOV_PIPE_OVERLAP = 1000011
 STATUS_GOV_BRACKET_DEPTH = 1000012
 STATUS_GOV_ARROW_CYCLE = 1000013
@@ -277,12 +278,27 @@ class HarmoniaOmegaBridge:
         core = _core()
         in_base = f"{_fmt_f64(z.real)},{_fmt_f64(z.imag)},{_fmt_f64(w.real)},{_fmt_f64(w.imag)}"
         if tag == "Omega":
+            if not (math.isfinite(z.real) and math.isfinite(z.imag) and math.isfinite(w.real) and math.isfinite(w.imag)):
+                pre, sha = _make_receipt("CLI", "invalid_float", "REFUSED:invalid_arguments", STATUS_CLI_ERROR)
+                return OmegaReceiptResult(
+                    ok=False, op="CLI", status=STATUS_CLI_ERROR, verdict="REFUSED",
+                    reason="invalid_arguments", value=None, sha256=sha, receipt_preimage=pre,
+                    backend="python-fallback", exit_code=1,
+                )
             rsn = "omega_theorem_3_2_categorical_boundary"
             pre, sha = _make_receipt("Omega", in_base, f"REFUSED:{rsn}", STATUS_OMEGA_BOUNDARY)
             return OmegaReceiptResult(
                 ok=False, op="Omega", status=STATUS_OMEGA_BOUNDARY, verdict="REFUSED",
                 reason=rsn, value=None, sha256=sha, receipt_preimage=pre,
                 backend="python-fallback", exit_code=11,
+            )
+
+        if not (math.isfinite(z.real) and math.isfinite(z.imag) and math.isfinite(w.real) and math.isfinite(w.imag)):
+            pre, sha = _make_receipt("CLI", "invalid_float", "REFUSED:invalid_arguments", STATUS_CLI_ERROR)
+            return OmegaReceiptResult(
+                ok=False, op="CLI", status=STATUS_CLI_ERROR, verdict="REFUSED",
+                reason="invalid_arguments", value=None, sha256=sha, receipt_preimage=pre,
+                backend="python-fallback", exit_code=1,
             )
 
         if tag == "Pi":
@@ -319,6 +335,14 @@ class HarmoniaOmegaBridge:
         ri = _norm_zero(res.imag)
         norm_c = complex(rr, ri)
         ab = _cabs(norm_c)
+        if not (math.isfinite(rr) and math.isfinite(ri) and math.isfinite(ab)):
+            in_final = f"{in_base},{int(n)}" if tag == "Pi" else in_base
+            pre, sha = _make_receipt(tag, in_final, "REFUSED:non_finite_overflow", STATUS_OVERFLOW)
+            return OmegaReceiptResult(
+                ok=False, op=tag, status=STATUS_OVERFLOW, verdict="REFUSED",
+                reason="non_finite_overflow", value=None, sha256=sha, receipt_preimage=pre,
+                backend="python-fallback", exit_code=19,
+            )
         pre, sha = _make_receipt(tag, in_str, f"{_fmt_f64(rr)},{_fmt_f64(ri)},{_fmt_f64(ab)}", STATUS_OK)
         return OmegaReceiptResult(
             ok=True, op=tag, status=STATUS_OK, verdict="OK", reason="ok",
@@ -331,17 +355,32 @@ class HarmoniaOmegaBridge:
         native = self._call_native(["--corridor", _fmt_f64(p_val), _fmt_f64(s_val), _fmt_f64(e_val)])
         if native is not None:
             rc, d = native
+            val = float(d["sigma"]) if d.get("ok") and d.get("sigma") is not None else None
             return OmegaReceiptResult(
                 ok=bool(d["ok"]), op=str(d["op"]), status=int(d["status"]),
                 verdict=str(d["verdict"]), reason=str(d["reason"]),
-                value=float(d["sigma"]), sha256=str(d["sha256"]),
+                value=val, sha256=str(d["sha256"]),
                 receipt_preimage=str(d["receipt_preimage"]),
                 backend="omega-om2-native", exit_code=rc,
                 sigma_bits=d.get("sigma_bits"),
             )
 
+        if not (math.isfinite(p_val) and math.isfinite(s_val) and math.isfinite(e_val)):
+            pre, sha = _make_receipt("CLI", "invalid_float", "REFUSED:invalid_arguments", STATUS_CLI_ERROR)
+            return OmegaReceiptResult(
+                ok=False, op="CLI", status=STATUS_CLI_ERROR, verdict="REFUSED",
+                reason="invalid_arguments", value=None, sha256=sha, receipt_preimage=pre,
+                backend="python-fallback", exit_code=1,
+            )
         sig = _norm_zero((s_val + p_val) * (1.0 - e_val))
         in_str = f"{_fmt_f64(p_val)},{_fmt_f64(s_val)},{_fmt_f64(e_val)}"
+        if not math.isfinite(sig):
+            pre, sha = _make_receipt("Sigma", in_str, "REFUSED:non_finite_overflow", STATUS_OVERFLOW)
+            return OmegaReceiptResult(
+                ok=False, op="Sigma", status=STATUS_OVERFLOW, verdict="REFUSED",
+                reason="non_finite_overflow", value=None, sha256=sha, receipt_preimage=pre,
+                backend="python-fallback", exit_code=19,
+            )
         pre, sha = _make_receipt("Sigma", in_str, _fmt_f64(sig), STATUS_OK)
         return OmegaReceiptResult(
             ok=True, op="Sigma", status=STATUS_OK, verdict="OK", reason="ok",
@@ -399,6 +438,27 @@ class HarmoniaOmegaBridge:
 
     def check_arrow_acyclic(self, states: Sequence[Any]) -> OmegaReceiptResult:
         items = [str(s) for s in states]
+        for item in items:
+            try:
+                raw_b = item.encode("utf-8", errors="strict")
+            except UnicodeEncodeError:
+                raw_b = b"\x00"
+            if any(b < 32 for b in raw_b) or len(raw_b) > 1024:
+                pre, sha = _make_receipt("CLI", "oversized_or_invalid_frame", "REFUSED:invalid_arguments", STATUS_CLI_ERROR)
+                return OmegaReceiptResult(
+                    ok=False, op="CLI", status=STATUS_CLI_ERROR, verdict="REFUSED",
+                    reason="invalid_arguments", value=None, sha256=sha, receipt_preimage=pre,
+                    backend="omega-om2-native" if self.native_available else "python-fallback",
+                    exit_code=1,
+                )
+        if len(items) > 256 or sum(len(s.encode("utf-8")) + 1 for s in items) > 7680:
+            pre, sha = _make_receipt("CLI", "oversized_or_invalid_frame", "REFUSED:invalid_arguments", STATUS_CLI_ERROR)
+            return OmegaReceiptResult(
+                ok=False, op="CLI", status=STATUS_CLI_ERROR, verdict="REFUSED",
+                reason="invalid_arguments", value=None, sha256=sha, receipt_preimage=pre,
+                backend="omega-om2-native" if self.native_available else "python-fallback",
+                exit_code=1,
+            )
         if len(items) < 2:
             st = STATUS_GOV_ARROW_CYCLE
             rsn = "gov_arrow_cycle_detected"
@@ -468,7 +528,14 @@ class HarmoniaOmegaBridge:
         )
 
     def verify_receipt(self, preimage: str, sha256_hex: str) -> bool:
-        expected = hashlib.sha256(preimage.encode("utf-8")).hexdigest()
+        try:
+            pre_bytes = preimage.encode("utf-8", errors="strict")
+            sha_bytes = sha256_hex.encode("utf-8", errors="strict")
+        except UnicodeEncodeError:
+            return False
+        if "\x00" in preimage or "\x00" in sha256_hex or len(pre_bytes) > 8192 or len(sha_bytes) > 256:
+            return False
+        expected = hashlib.sha256(pre_bytes).hexdigest()
         native_ok = True
         exe = find_harmonia_binary(self.binary_path) if self.prefer_native else None
         if exe is not None:
