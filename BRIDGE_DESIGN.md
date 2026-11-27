@@ -138,3 +138,49 @@ added (Step 3) after Step-2 tests are green.
 - Prohibitions maintained: mixed forms and single-register forms are
   errors; π/Δ binary register forms and any further symbols require a
   new ratified entry here first.
+
+## Step 4 ratification: binary π/Δ register forms and ε-convergence loop
+
+Extends Step 3 with the remaining numerical math-core operators (`π`, `Δ`)
+and the opt-in additive ε-convergence loop (`[ε? ...]`), leaving all plain
+`[..]` and pinned scalar invariants untouched.
+
+1. **Binary `Δ` and `π` register dispatch:**
+   - `Δ @z @w` dispatches to `fusion_transformation(z, w)` (`phi_pi_e_math_core.py`);
+     writes the result **in-place** to `@z` (first operand); `@w` is never
+     written; `current_value` passes through unchanged; pinned scalars are
+     untouched.
+   - `π @z @w` (and `Π @z @w` as accepted glyph alias) dispatches to
+     `transcendent_continuity(z, w, n=n)`; writes the result **in-place** to
+     `@z`; `@w` is never written; `current_value` passes through unchanged;
+     pinned scalars are untouched.
+   - **Depth parameter `n` for `π`:** Defaults to `n = 1`. To supply a
+     non-default positive integer depth without introducing mixed
+     register+literal operands, set the scalar attribute `#pi_n`
+     (e.g. `#pi_n 4` before `π @z @w`). Invalid `#pi_n` (non-integer or `< 1`)
+     raises `ValueError`.
+   - **Domain enforcement:** `w == 0` (including an unset register reading
+     as `0j`) raises `ValueError` via `transcendent_continuity` (proofs,
+     Thm 3.2), failing closed.
+   - **Prohibitions preserved:** mixed forms (`π @z 1.0`, `Δ 1.0 @w`) and
+     single-register forms (`π @z`, `Δ @z`) remain syntax errors;
+     categorical operators (`Ω`, etc.) continue rejecting register operands.
+
+2. **Opt-in additive ε-convergence loop (`[ε? ...]`):**
+   - **Plain `[..]` is unchanged forever:** `[body]` executes exactly 10
+     iterations on the shared context (`[Ψ 1]` → `ψ = 10.0`).
+   - **Additive syntax:**
+     - `[ε? @z @w tol]` or `[ε? @z @w tol max_batches]` runs batched
+       `incremental_insight` steps (`CONVERGE_BATCH_SIZE = 1000` internal
+       math-core steps per outer batch, default cap `100` batches) writing
+       in-place to `@z` until `|@z − @w| <= tol` or `max_batches` is
+       reached.
+     - `[ε? @z @w tol [max_batches] | body]` (or newline-separated body)
+       executes `body` up to `max_batches` times until `|@z − @w| <= tol`
+       or the hard cap fires, guaranteeing termination even on
+       non-converging (`π`-driven) registers.
+   - **Readouts and isolation:** Records `#converge_steps` (batches/iterations
+     executed) and `#converged` (`1.0` if converged else `0.0`) in
+     `context.scalars` (never touching pinned scalars), and returns the
+     final residual distance `|@z − @w|`. Non-positive tolerances, invalid
+     caps, and mixed register+literal operands are rejected.

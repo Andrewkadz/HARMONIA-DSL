@@ -25,6 +25,8 @@ import math
 import re
 
 PHI_RATIONAL_LOCAL = 89 / 55   # Fibonacci convergent, used by Ξ
+CONVERGE_BATCH_SIZE = 1000     # BRIDGE_DESIGN Decision 3 / Step 4 batch size
+DEFAULT_CONVERGE_MAX_BATCHES = 100
 import numpy as np
 from collections import defaultdict, deque
 from enum import Enum
@@ -179,6 +181,7 @@ class PhiPiEInterpreterFixed:
         self.symbols = {
             'Φ': self.stabilize,         # Harmonic Equilibrium
             'Π': self.transcend,         # Transcendent Continuity
+            'π': self.transcend,         # Transcendent Continuity (lowercase alias)
             'Ε': self.ignite,           # Ignition / Initiation
             'ε': self.micro_ignite,     # Micro-Ignition
             'Δ': self.fuse,             # Fusion / Transformation
@@ -247,7 +250,7 @@ class PhiPiEInterpreterFixed:
             # Γ (growth) and ζ (recurrence) are candidate reducers per the
             # Φπε architecture, but currently only touch phase/charge, so
             # they stay modulators until given real read-state semantics.
-            'modulator': {'Π', 'Ε', 'Δ', 'δ', 'Λ', 'λ', 'Γ', 'Ω', 'ω',
+            'modulator': {'Π', 'π', 'Ε', 'Δ', 'δ', 'Λ', 'λ', 'Γ', 'Ω', 'ω',
                           'Ξ', 'ζ', 'Τ', 'Ρ', 'Θ', 'η', 'χ', 'n'},
         }
 
@@ -381,16 +384,17 @@ class PhiPiEInterpreterFixed:
         code = code.replace('ASCII_OUTPUT_MODE', '').replace('[:ASCII:]', '')
 
         # Proper allowed characters including all Greek letters, newline, '-',
-        # and (Step 2) '@' + ascii letters/underscore for register identifiers.
-        allowed_chars = set('ΦΠΕεΔδΨΛλΓΩωΣΞζΤΡΘηχn→+::/|[]=()0123456789.,- \n@#!_'
+        # (Step 2) '@' + ascii letters/underscore for register identifiers,
+        # and (Step 4) 'π' and '?' for convergence-loop syntax.
+        allowed_chars = set('ΦΠπΕεΔδΨΛλΓΩωΣΞζΤΡΘηχn→+::/|[]=()?0123456789.,- \n@#!_'
                             'abcdefghijklmnopqrstuvwxyz'
                             'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
         code = ''.join(c for c in code if c in allowed_chars)
 
         return code
 
-    # Matches an int or float literal, optionally negative (e.g. 5, 5.0, -0.2)
-    _NUMBER_RE = re.compile(r'-?(\d+\.\d*|\.\d+|\d+)')
+    # Matches an int or float literal, optionally negative (e.g. 5, 5.0, -0.2, 1e-3)
+    _NUMBER_RE = re.compile(r'-?(?:\d+\.\d*|\.\d+|\d+)(?:[eE][+-]?\d+)?')
     # Matches a register identifier (BRIDGE_DESIGN Step 2): @name
     _REGISTER_RE = re.compile(r'@[A-Za-z_][A-Za-z0-9_]*')
     # Matches a scalar attribute (LOGIC_NODES_DESIGN): #name
@@ -579,43 +583,55 @@ class PhiPiEInterpreterFixed:
                     context.write_register(
                         token, complex(float(nums[0]), float(nums[1])))
                     i += 2
-                elif token in ('Φ', 'Ψ', 'ε') and i + 1 < len(tokens) \
+                elif token in ('Φ', 'Ψ', 'ε', 'Δ') and i + 1 < len(tokens) \
                         and same_line(i, i + 1) \
                         and self.is_register_token(tokens[i + 1]):
-                    # Binary register forms (BRIDGE_DESIGN Step 3):
-                    # Φ/Ψ/ε @z @w -> math-core operator on (z, w),
+                    # Binary register forms (BRIDGE_DESIGN Steps 3 & 4):
+                    # Φ/Ψ/ε/Δ @z @w -> math-core operator on (z, w),
                     # result written IN-PLACE to the first operand.
-                    operands = tokens[i + 1:i + 3]
-                    if len(operands) != 2 or not same_line(i, i + 2) or \
-                            not all(self.is_register_token(t) for t in operands):
-                        raise SyntaxError(
-                            f"'{token}' register form requires exactly two "
-                            f"register operands: '{token} @z @w' — mixed or "
-                            f"partial forms are forbidden")
+                    operands = self._require_two_registers(
+                        tokens, i, same_line, token)
                     from phi_pi_e_math_core import (
-                        harmonic_equilibrium, incremental_insight,
-                        recursive_animation)
+                        fusion_transformation, harmonic_equilibrium,
+                        incremental_insight, recursive_animation)
                     op = {'Φ': harmonic_equilibrium,
                           'Ψ': recursive_animation,
-                          'ε': incremental_insight}[token]
+                          'ε': incremental_insight,
+                          'Δ': fusion_transformation}[token]
                     z = context.read_register(operands[0])
                     w = context.read_register(operands[1])
                     context.write_register(operands[0], op(z, w))
                     # current_value passes through unchanged (register ops
                     # live in the ℂ layer; only Λ reduces to ℝ)
                     i += 2
+                elif token in ('π', 'Π') and i + 1 < len(tokens) \
+                        and same_line(i, i + 1) \
+                        and self.is_register_token(tokens[i + 1]):
+                    # Binary π register form (BRIDGE_DESIGN Step 4):
+                    # π @z @w -> transcendent_continuity(z, w, n=#pi_n or 1),
+                    # result written IN-PLACE to @z; w == 0 raises ValueError.
+                    operands = self._require_two_registers(
+                        tokens, i, same_line, token)
+                    from phi_pi_e_math_core import transcendent_continuity
+                    z = context.read_register(operands[0])
+                    w = context.read_register(operands[1])
+                    n_raw = context.scalars.get('#pi_n', 1.0)
+                    n_int = int(n_raw)
+                    if n_raw != n_int or n_int < 1:
+                        raise ValueError(
+                            f"π recursion depth #pi_n must be a positive "
+                            f"integer (got {n_raw})")
+                    context.write_register(
+                        operands[0], transcendent_continuity(z, w, n=n_int))
+                    i += 2
                 elif token == 'Λ' and i + 1 < len(tokens) \
                         and same_line(i, i + 1) \
                         and self.is_register_token(tokens[i + 1]):
                     # Λ register reduction: Λ @z @w -> lambda_obs
                     # (BRIDGE_DESIGN resolved item 3; math-core Λ is binary)
-                    operands = tokens[i + 1:i + 3]
-                    if len(operands) != 2 or not same_line(i, i + 2) or \
-                            not all(self.is_register_token(t) for t in operands):
-                        raise SyntaxError(
-                            "Λ register reduction requires exactly two "
-                            "register operands: 'Λ @z @w' — mixed or "
-                            "partial forms are forbidden")
+                    operands = self._require_two_registers(
+                        tokens, i, same_line, 'Λ',
+                        noun="register reduction")
                     from phi_pi_e_math_core import structural_illumination
                     z = context.read_register(operands[0])
                     w = context.read_register(operands[1])
@@ -630,8 +646,9 @@ class PhiPiEInterpreterFixed:
                             and self.is_register_token(tokens[i + 1]):
                         raise SyntaxError(
                             f"'{token}' does not accept register operands "
-                            f"(only Φ/Ψ/ε/Λ operate on registers, per "
-                            f"BRIDGE_DESIGN Step 3)")
+                            f"(only Φ/Ψ/ε/π/Δ/Λ and tier-2 structural "
+                            f"symbols operate on registers, per "
+                            f"BRIDGE_DESIGN Step 4)")
                     handler = self.symbols[token]
                     # Φ with three numeric args is a full state initialization:
                     #   Φ ψ φ ε   (e.g. "Φ 5 3 0.1" -> psi=5, phi=3, eps=0.1)
@@ -681,23 +698,108 @@ class PhiPiEInterpreterFixed:
             traceback.print_exc()
             raise RuntimeError(error_msg) from e
 
+    def _require_two_registers(self, tokens: List[str], i: int,
+                               same_line, symbol: str,
+                               noun: str = "register form") -> List[str]:
+        """Validate two same-line register operands for binary math-core dispatch."""
+        operands = tokens[i + 1:i + 3]
+        if (len(operands) != 2 or not same_line(i, i + 2)
+                or not all(self.is_register_token(t) for t in operands)):
+            raise SyntaxError(
+                f"'{symbol}' {noun} requires exactly two register operands: "
+                f"'{symbol} @z @w' — mixed or partial forms are forbidden")
+        return operands
+
     def execute_loop(self, loop_code: str, context: FieldContext) -> Any:
         """Execute code inside a loop.
 
-        FIXED (fix/loop-context): iterations now share the caller's
-        persistent FieldContext, so loops can accumulate state. The old
-        code called execute() without a context, which built a fresh
-        context every iteration — the same defect class as the broken
-        time-stepping runner (state silently reset each pass).
+        Plain `[body]` runs 10 iterations on the caller's persistent
+        FieldContext (fix/loop-context, invariant forever).
+
+        Opt-in additive convergence form `[ε? @z @w tol [cap] [| body]]`
+        (BRIDGE_DESIGN Step 4) runs batched ε steps (or `body`) until
+        `|@z − @w| <= tol` or the hard cap fires.
         """
-        # Execute the loop code multiple times (or until convergence)
+        stripped = loop_code.lstrip()
+        if stripped.startswith('ε?') and (
+                len(stripped) == 2 or stripped[2].isspace()):
+            return self._execute_converge_loop(stripped, context)
+
+        # Plain [..] semantics: fixed 10 iterations on shared context.
         result = None
         for iteration in range(10):  # Max 10 iterations
             result = self.execute(loop_code, context)
-            # TODO: convergence check — per Φπε proofs, ε-convergence
-            # (micro-ignition settling below threshold) is the natural
-            # loop-exit criterion, replacing the fixed 10-iteration cap.
         return result
+
+    def _execute_converge_loop(self, loop_code: str,
+                               context: FieldContext) -> float:
+        """Execute `[ε? @z @w tol [max_batches] [| body]]` convergence loop."""
+        body: Optional[str] = None
+        if '|' in loop_code:
+            header, body = loop_code.split('|', 1)
+            if not body.strip():
+                raise SyntaxError(
+                    "convergence loop body after '|' cannot be empty")
+        elif '\n' in loop_code:
+            header, raw_body = loop_code.split('\n', 1)
+            if raw_body.strip():
+                body = raw_body
+        else:
+            header = loop_code
+
+        parts = header.split()
+        if len(parts) not in (4, 5) or parts[0] != 'ε?':
+            raise SyntaxError(
+                "convergence loop requires '[ε? @z @w tol [max_batches]]' "
+                "(optionally followed by '| body')")
+
+        z_reg, w_reg = parts[1], parts[2]
+        if not (self.is_register_token(z_reg) and self.is_register_token(w_reg)):
+            raise SyntaxError(
+                "convergence loop requires two register operands '@z @w' — "
+                "mixed literal forms are forbidden")
+
+        if not self.is_number_token(parts[3]):
+            raise SyntaxError(
+                f"convergence tolerance must be numeric (got {parts[3]!r})")
+        tol = float(parts[3])
+        if not math.isfinite(tol) or tol <= 0.0:
+            raise ValueError(
+                f"convergence tolerance must be positive and finite (got {tol})")
+
+        if len(parts) == 5:
+            if not self.is_number_token(parts[4]):
+                raise SyntaxError(
+                    f"convergence cap must be numeric (got {parts[4]!r})")
+            cap_f = float(parts[4])
+            max_batches = int(cap_f)
+            if not math.isfinite(cap_f) or cap_f != max_batches or max_batches < 1:
+                raise ValueError(
+                    f"convergence cap must be a positive integer (got {parts[4]!r})")
+        else:
+            max_batches = DEFAULT_CONVERGE_MAX_BATCHES
+
+        from phi_pi_e_math_core import incremental_insight
+
+        steps = 0
+        dist = abs(context.read_register(z_reg) - context.read_register(w_reg))
+        converged = dist <= tol
+        while not converged and steps < max_batches:
+            steps += 1
+            if body is not None:
+                self.execute(body, context)
+            else:
+                z_val = context.read_register(z_reg)
+                w_val = context.read_register(w_reg)
+                for _ in range(CONVERGE_BATCH_SIZE):
+                    z_val = incremental_insight(z_val, w_val)
+                context.write_register(z_reg, z_val)
+            dist = abs(context.read_register(z_reg) - context.read_register(w_reg))
+            converged = dist <= tol
+
+        context.set_scalar('#converge_steps', float(steps))
+        context.set_scalar('#converged', 1.0 if converged else 0.0)
+        return dist
 
     # ===== OPERATOR IMPLEMENTATIONS =====
     # (All the operator methods from the original, unchanged)
