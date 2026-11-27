@@ -67,6 +67,17 @@ class TestPdfWorkedExamples:
         assert abs(spiral.real - 0.7071) < 3e-4
         assert abs(spiral.imag - 0.7071) < 3e-4
 
+    def test_pi_example_5_1_exponent_constant(self):
+        """E5: PDF Example 5.1's 0.7069+0.7073i uses 22/7 in the exponent,
+        whereas phi_pi_e_math_core.py uses math.pi in cmath.exp (authoritative)."""
+        exp_22_7 = cmath.exp(1j * PI_RATIONAL / 4)
+        assert abs(exp_22_7.real - 0.7069) < 5e-5
+        assert abs(exp_22_7.imag - 0.7073) < 5e-5
+        z, w = 2 + 3j, 1 + 1j
+        got = transcendent_continuity(z, w, n=4)
+        exp_authoritative = PI_RATIONAL * (z + w * cmath.exp(1j * math.pi / 4)) / (1 + abs(z) / abs(w))
+        assert got == exp_authoritative
+
     def test_lambda_fine_structure_example(self):
         """Λ⁻¹·(1/3) = 0.00729927 = α (proofs, Λ Example 5.1 / Thm 4.2)."""
         assert abs((1 / LAMBDA_CONSTANT) * (1 / 3) - 0.00729927) < 5e-9
@@ -91,6 +102,17 @@ class TestPhiProperties:
         """Thm 4.1: Φ(z,w) ≠ z+w whenever z ≠ w."""
         for z, w in SAMPLES:
             if z != w:
+                assert harmonic_equilibrium(z, w) != z + w
+
+    def test_non_fusional_requires_nonzero_sum(self):
+        """E3: Φ(z, -z) = 0 = z + w even when z != w; non-fusionality holds iff z + w != 0 (and z != w)."""
+        for z in (1 + 1j, 3 + 4j, -2 + 0.5j):
+            w = -z
+            assert z != w
+            assert harmonic_equilibrium(z, w) == 0
+            assert harmonic_equilibrium(z, w) == z + w
+        for z, w in SAMPLES:
+            if z != w and z + w != 0:
                 assert harmonic_equilibrium(z, w) != z + w
 
     def test_harmonic_stability(self):
@@ -176,6 +198,21 @@ class TestPiProperties:
                 result = transcendent_continuity(z, w, n=4)
                 assert abs(result) <= PI_RATIONAL * abs(w) + 1e-9
 
+    def test_printed_sum_bound_counterexample(self):
+        """E4: Printed Thm 4.2 bound |π(z,w)| <= π|z+w| fails at z = -w; true bound π|w| holds."""
+        z, w = 1 + 0j, -1 + 0j
+        val = transcendent_continuity(z, w, n=4)
+        assert PI_RATIONAL * abs(z + w) == 0.0
+        assert abs(val) > 1.2
+        assert abs(val) <= PI_RATIONAL * abs(w) + 1e-12
+
+    def test_iterates_stay_bounded_by_pi_w(self):
+        """E5: |π^k(z,w)| never grows as π^k; every iterate obeys |π^k(z,w)| <= π|w|."""
+        z, w = 2 + 3j, 1 + 1j
+        trail = pi_iterate(z, w, steps=50)
+        bound = PI_RATIONAL * abs(w)
+        assert all(abs(pt) <= bound + 1e-12 for pt in trail)
+
     def test_non_termination(self):
         """Thm 4.1: iterates keep moving — no fixed point emerges."""
         trail = pi_iterate(2 + 3j, 1 + 1j, steps=40)
@@ -198,8 +235,27 @@ class TestLambdaProperties:
         """Thm 4.2: Λ⁻¹·(1/3) = α."""
         assert abs(1 / (3 * LAMBDA_CONSTANT) - FINE_STRUCTURE_ALPHA) < 1e-15
 
+    def test_crystallization_requires_nonorthogonal_and_norm_threshold(self):
+        """E6: Λ Thm 4.1 fails for orthogonal pairs (Re(z̄w)=0) and for |z|²+|w|² <= 137/134."""
+        z_orth, w_orth = 1 + 0j, 0 + 1j
+        assert structural_illumination(z_orth, w_orth) == 0
+        z_sm, w_sm = 0.5 + 0j, 0.5 * cmath.exp(1j * math.pi / 6)
+        rhs_sm = abs(2 * (z_sm.conjugate() * w_sm).real) / (abs(z_sm) ** 2 + abs(w_sm) ** 2)
+        assert abs(structural_illumination(z_sm, w_sm)) < rhs_sm
+        for z, w in SAMPLES:
+            r2 = abs(z) ** 2 + abs(w) ** 2
+            coupling = abs(2 * (z.conjugate() * w).real)
+            if coupling > 0 and r2 > 137 / 134:
+                assert abs(structural_illumination(z, w)) > coupling / r2
+
 
 class TestDeltaProperties:
+    def test_simplified_exact_form(self):
+        """E7: Δ(z,w) = (137/3)·z·w / (137/3 + |z-w|) = 137·z·w / (137 + 3|z-w|)."""
+        for z, w in SAMPLES:
+            expected = (137 * z * w) / (137 + 3 * abs(z - w))
+            assert abs(fusion_transformation(z, w) - expected) < 1e-12
+
     def test_fusion_amplification(self):
         """Thm 4.2: for |z|,|w| < √Λ, |Δ(z,w)| > |z·w|/(1+|z−w|)."""
         bound = math.sqrt(LAMBDA_CONSTANT)
@@ -207,6 +263,13 @@ class TestDeltaProperties:
             if 0 < abs(z) < bound and 0 < abs(w) < bound and z != w:
                 assert abs(fusion_transformation(z, w)) > \
                     abs(z * w) / (1 + abs(z - w))
+
+    def test_fusion_amplification_universal(self):
+        """E7: |Δ(z,w)| > |z·w|/(1+|z-w|) holds for all z,w != 0 with z != w, even outside |z|,|w| < sqrt(Λ)."""
+        pairs = SAMPLES + [(10 + 0j, 20 + 0j), (12 - 5j, -8 + 9j)]
+        for z, w in pairs:
+            if z != 0 and w != 0 and z != w:
+                assert abs(fusion_transformation(z, w)) > abs(z * w) / (1 + abs(z - w))
 
     def test_fine_structure_fusion_coupling(self):
         """Thm 4.3: Δ = (1/9)/α²."""
